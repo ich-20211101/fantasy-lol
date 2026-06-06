@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Java / Spring
+target/
+*.class
+*.war
+build/
+.gradle/
+
+# Node / React
+node_modules/
+dist/
+build/
+.env
+
+# Logs
+*.log
+logs/
+
+# Docker / DB
+postgres-data/
+redis-data/
+
+# Secrets
+application-secret.yml
+application-local.yml
+.env.local
+.env.development.local
+.env.production.local
+.env.*
