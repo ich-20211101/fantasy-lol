@@ -37,21 +37,24 @@ CREATE TABLE IF NOT EXISTS team_roster (
 
 CREATE TABLE IF NOT EXISTS matches (
     match_id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    leaguepedia_match_id VARCHAR(255) UNIQUE,
     season_name VARCHAR(100),
-    home_team   VARCHAR(100) NOT NULL,
-    away_team   VARCHAR(100) NOT NULL,
+    team1   VARCHAR(100) NOT NULL,
+    team2   VARCHAR(100) NOT NULL,
     match_date  TIMESTAMP NOT NULL,
     best_of     INT DEFAULT 1,
     status      VARCHAR(20) DEFAULT 'SCHEDULED',
-    winner_team VARCHAR(100)
+    winner VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS player_stats (
     player_stat_id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    leaguepedia_game_id VARCHAR(255) UNIQUE,
     match_id            BIGINT NOT NULL,
     game_number         INT NOT NULL,
     player_id           BIGINT NOT NULL,
     team                VARCHAR(100),
+    role                VARCHAR(20),
     champion            VARCHAR(100),
     kills               INT DEFAULT 0,
     deaths              INT DEFAULT 0,

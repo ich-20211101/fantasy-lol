@@ -4,8 +4,11 @@ import com.fantasylol.backend.dto.UserDto;
 import com.fantasylol.backend.entity.User;
 import com.fantasylol.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -25,6 +28,20 @@ public class UserService {
                 .username(saved.getUsername())
                 .email(saved.getEmail())
                 .build();
+    }
+
+    public UserDto.Response getCurrentUser(OAuth2User oauth2User) {
+
+        String email = oauth2User.getAttribute("email");
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        return UserDto.Response.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .profileImageUrl(user.getProfileImageUrl())
+                .build();
+
     }
 
 }
