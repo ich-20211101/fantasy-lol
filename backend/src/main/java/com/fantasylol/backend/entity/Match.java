@@ -32,8 +32,6 @@ public class Match {
     @Column(nullable = false)
     private LocalDateTime matchDate;
 
-    private Integer bestOf;
-
     @Column(nullable = false)
     @Builder.Default
     private String status = "SCHEDULED";

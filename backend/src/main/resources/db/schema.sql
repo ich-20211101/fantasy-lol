@@ -42,7 +42,6 @@ CREATE TABLE IF NOT EXISTS matches (
     team1   VARCHAR(100) NOT NULL,
     team2   VARCHAR(100) NOT NULL,
     match_date  TIMESTAMP NOT NULL,
-    best_of     INT DEFAULT 1,
     status      VARCHAR(20) DEFAULT 'SCHEDULED',
     winner VARCHAR(100)
 );

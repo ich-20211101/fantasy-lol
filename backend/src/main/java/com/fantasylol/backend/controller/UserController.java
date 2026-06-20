@@ -61,27 +61,4 @@ public class UserController {
 
     }
 
-    @GetMapping("/test-login")
-    public ResponseEntity<String> testLogin() throws Exception {
-        leaguepediaClient.login();
-        return ResponseEntity.ok("success");
-    }
-    @GetMapping("/test-players")
-    public ResponseEntity<JsonNode> testPlayers() throws Exception {
-        leaguepediaClient.login();
-        JsonNode gameResult = leaguepediaClient.cargoQuery(
-                "ScoreboardGames",
-                "GameId,Team1,Team2,DateTime_UTC,OverviewPage,Winner",
-                "OverviewPage LIKE '%LCK%2026%' AND DateTime_UTC >= '2026-06-13 00:00:00'",
-                10
-        );
-        JsonNode result = leaguepediaClient.cargoQuery(
-                "ScoreboardPlayers",
-                "Name,Team,Role,Champion,Kills,Deaths,Assists,Gold,CS,DamageToChampions,VisionScore,PlayerWin,GameId",
-                "OverviewPage='LCK/2026 Season/Road to MSI' AND GameId LIKE '%Round 4_1%'",
-                50
-        );
-        return ResponseEntity.ok(result);
-    }
-
 }
