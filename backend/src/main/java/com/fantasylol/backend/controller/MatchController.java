@@ -2,6 +2,7 @@ package com.fantasylol.backend.controller;
 
 import com.fantasylol.backend.repository.MatchRepository;
 import com.fantasylol.backend.service.MatchSyncService;
+import com.fantasylol.backend.service.PlayerSyncService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class MatchController {
 
     private final MatchRepository matchRepository;
     private final MatchSyncService matchSyncService;
+    private final PlayerSyncService playerSyncService;
 
     @PostMapping("/sync")
     @Operation(summary = "Sync match data by date")
@@ -30,6 +32,19 @@ public class MatchController {
         try {
             matchSyncService.syncByDate(date);
             return ResponseEntity.ok("Sync completed for date: " + date);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Sync failed: " + e.getMessage());
+        }
+
+    }
+
+    @PostMapping("/players/sync")
+    @Operation(summary = "Sync players from Leaguepedia")
+    public ResponseEntity<String> syncPlayers(@RequestParam String overviewPage) {
+
+        try {
+            playerSyncService.syncPlayers(overviewPage);
+            return ResponseEntity.ok("Player sync completed: " + overviewPage);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Sync failed: " + e.getMessage());
         }
