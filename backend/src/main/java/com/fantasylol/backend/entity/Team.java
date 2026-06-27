@@ -25,6 +25,9 @@ public class Team {
     @Column(nullable = false)
     private String teamName;
 
+    @Builder.Default
+    private Boolean rosterLocked = false;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
