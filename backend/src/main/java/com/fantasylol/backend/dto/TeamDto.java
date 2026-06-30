@@ -11,16 +11,8 @@ public class TeamDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class CreateRequest {
-        private String teamName;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
     public static class RosterSubmitRequest{
+        private String teamName;
         private List<Long> playerIds;
     }
 

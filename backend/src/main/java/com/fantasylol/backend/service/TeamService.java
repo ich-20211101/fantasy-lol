@@ -14,10 +14,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +26,7 @@ public class TeamService {
 
     private static final int ROSTER_SIZE = 8;
     private static final int STARTER_SIZE = 5;
-    private static final Set<String> POSITIONS = Set.of("Top", "Jungle", "Mid", "Bot", "Support");
+    private static final Set<String> REQUIRED_POSITIONS = Set.of("Top", "Jungle", "Mid", "Bot", "Support");
 
     private final TeamRepository teamRepository;
     private final TeamRosterRepository teamRosterRepository;
@@ -34,84 +34,25 @@ public class TeamService {
     private final UserRepository userRepository;
 
     @Transactional
-    public TeamDto.Response createTeam(OAuth2User oAuth2User, TeamDto.CreateRequest request) {
+    public TeamDto.Response submitRoster(OAuth2User oAuth2User, TeamDto.RosterSubmitRequest request) {
 
         User user = getUser(oAuth2User);
+        List<Player> players = validateAndFetchRosterPlayers(request.getPlayerIds());
+        Team team = teamRepository.findByUserUserId(user.getUserId())
+                .orElseGet(() -> Team.builder().user(user).build());
 
-        teamRepository.findByUserUserId(user.getUserId()).ifPresent(t -> {
-            throw new IllegalStateException("Team already exists");
-        });
-
-        Team team = teamRepository.save(Team.builder()
-                .user(user)
-                .teamName(request.getTeamName())
-                .build());
-
-        return toResponse(team, List.of());
-
-    }
-
-    @Transactional
-    public TeamDto.Response submitRoster(OAuth2User oAuth2User, Long teamId, TeamDto.RosterSubmitRequest request) {
-
-        User user = getUser(oAuth2User);
-        Team team = getTeamAndValidateOwner(teamId, user);
-
-        if (team.getRosterLocked()) {
-            throw new IllegalStateException("Team is already locked");
+        if (Boolean.TRUE.equals(team.getRosterLocked())) {
+            throw new IllegalStateException("시즌이 시작되어 로스터를 수정할 수 없습니다");
         }
 
-        List<Long> playerIds = request.getPlayerIds();
+        team.setTeamName(request.getTeamName());
+        Team savedTeam = teamRepository.save(team);
 
-        if (playerIds == null || playerIds.size() != ROSTER_SIZE) {
-            throw new IllegalArgumentException("Select exactly 8 players");
-        }
+        replaceRoster(savedTeam, players);
 
-        if (playerIds.stream().distinct().count() != ROSTER_SIZE) {
-            throw new IllegalArgumentException("Duplicate players detected");
-        }
+        List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(savedTeam.getTeamId());
 
-        List<Player> players = playerRepository.findAllById(playerIds);
-
-        if (players.size() != ROSTER_SIZE) {
-            throw new IllegalArgumentException("Invalid player selected");
-        }
-
-        Map<String, List<Player>> byPosition = players.stream()
-                .collect(Collectors.groupingBy(Player::getPosition));
-
-        for (String pos : POSITIONS) {
-            if (!byPosition.containsKey(pos)) {
-                throw new IllegalArgumentException(pos + " player not found");
-            }
-        }
-
-        Map<String, Boolean> starterByPosition = POSITIONS.stream()
-                .collect(Collectors.toMap(Function.identity(), pos -> true));
-
-        List<TeamRoster> rosterEntries = players.stream()
-                .map(player -> {
-                    boolean isStarter = starterByPosition.getOrDefault(player.getPosition(), false);
-
-                    if (isStarter) {
-                        starterByPosition.put(player.getPosition(), false);
-                    }
-
-                    return TeamRoster.builder()
-                            .team(team)
-                            .player(player)
-                            .isStarter(isStarter)
-                            .build();
-
-                })
-                .collect(Collectors.toList());
-
-        teamRosterRepository.saveAll(rosterEntries);
-
-        team.setRosterLocked(true);
-        teamRepository.save(team);
-
-        return toResponse(team, rosterEntries);
+        return toResponse(savedTeam, roster);
 
     }
 
@@ -119,61 +60,120 @@ public class TeamService {
     public TeamDto.Response updateStarters(OAuth2User oAuth2User, Long teamId, TeamDto.StarterUpdateRequest request) {
 
         User user = getUser(oAuth2User);
-        Team team = getTeamAndValidateOwner(teamId, user);
-
-        if (!team.getRosterLocked()) {
-            throw new IllegalStateException("Roster not locked");
-        }
-
-        List<Long> starterPlayerIds = request.getPlayerIds();
-
-        if (starterPlayerIds == null || starterPlayerIds.size() != STARTER_SIZE) {
-            throw new IllegalArgumentException("Select exactly 5 players");
-        }
-
+        Team team = getOwnedTeam(teamId, user);
         List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(teamId);
 
-        Set<Long> rosterPlayerIds = roster.stream()
-                .map(r -> r.getPlayer().getPlayerId())
-                .collect(Collectors.toSet());
-
-        for (Long pid : starterPlayerIds) {
-            if (!rosterPlayerIds.contains(pid)) {
-                throw new IllegalArgumentException("Player not found");
-            }
+        if (roster.isEmpty()) {
+            throw new IllegalStateException("등록된 로스터가 없습니다");
         }
 
-        List<Player> starterPlayers = roster.stream()
-                .filter(r -> starterPlayerIds.contains(r.getPlayer().getPlayerId()))
-                .map(TeamRoster::getPlayer)
-                .collect(Collectors.toList());
+        Set<Long> starterIds = validateStarterSelection(request.getPlayerIds(), roster);
 
-        Map<String, Long> positionCount = starterPlayers.stream()
-                .collect(Collectors.groupingBy(Player::getPosition, Collectors.counting()));
-
-        for (String pos : POSITIONS) {
-            if (!positionCount.containsKey(pos) || positionCount.get(pos) != 1) {
-                throw new IllegalArgumentException(pos + " player not found");
-            }
-        }
-
-        roster.forEach(r -> {
-            r.setIsStarter(starterPlayerIds.contains(r.getPlayer().getPlayerId()));
-            teamRosterRepository.save(r);
-        });
+        roster.forEach(r -> r.setIsStarter(starterIds.contains(r.getPlayer().getPlayerId())));
+        teamRosterRepository.saveAll(roster);
 
         return toResponse(team, roster);
 
     }
 
-    @Transactional
-    public TeamDto.Response getTeam(OAuth2User oAuth2User, Long teamId) {
+    @Transactional(readOnly = true)
+    public TeamDto.Response getMyTeam(OAuth2User oAuth2User) {
 
         User user = getUser(oAuth2User);
-        Team team = getTeamAndValidateOwner(teamId, user);
-        List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(teamId);
 
-        return toResponse(team, roster);
+        return teamRepository.findByUserUserId(user.getUserId())
+                .map(team -> toResponse(team, teamRosterRepository.findByTeamTeamId(team.getTeamId())))
+                .orElse(null);
+
+    }
+
+    private List<Player> validateAndFetchRosterPlayers(List<Long> playerIds) {
+
+        if (playerIds == null || playerIds.size() != ROSTER_SIZE) {
+            throw new IllegalArgumentException("선수는 정확히 " + ROSTER_SIZE + "명이어야 합니다.");
+        }
+
+        Set<Long> uniqueIds = new LinkedHashSet<>(playerIds);
+        if (uniqueIds.size() != ROSTER_SIZE) {
+            throw new IllegalArgumentException("중복된 선수가 포함되어 있습니다.");
+        }
+
+        List<Player> players = playerRepository.findAllById(uniqueIds);
+        if (players.size() != ROSTER_SIZE) {
+            throw new IllegalArgumentException("존재하지 않는 선수가 포함되어 있습니다.");
+        }
+
+        Set<String> coveredPositions = players.stream()
+                .map(Player::getPosition)
+                .collect(Collectors.toSet());
+
+        Set<String> missing = REQUIRED_POSITIONS.stream()
+                .filter(pos -> !coveredPositions.contains(pos))
+                .collect(Collectors.toSet());
+
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException("다음 포지션 선수가 없습니다: " + String.join(", ", missing));
+        }
+
+        return players;
+
+    }
+
+    private Set<Long> validateStarterSelection(List<Long> starterPlayerIds, List<TeamRoster> roster) {
+
+        if (starterPlayerIds == null || starterPlayerIds.size() != STARTER_SIZE) {
+            throw new IllegalArgumentException("스타터는 정확히 " + STARTER_SIZE + "명이어야 합니다.");
+        }
+
+        Map<Long, Player> rosterPlayersById = roster.stream()
+                .collect(Collectors.toMap(r -> r.getPlayer().getPlayerId(), TeamRoster::getPlayer));
+
+        Set<Long> starterIds = new LinkedHashSet<>(starterPlayerIds);
+        if (starterIds.size() != STARTER_SIZE) {
+            throw new IllegalArgumentException("중복된 선수가 포함되어 있습니다.");
+        }
+
+        for (Long id : starterIds) {
+            if (!rosterPlayersById.containsKey(id)) {
+                throw new IllegalArgumentException("로스터에 없는 선수입니다: " + id);
+            }
+        }
+
+        Map<String, Long> positionCounts = starterIds.stream()
+                .map(rosterPlayersById::get)
+                .collect(Collectors.groupingBy(Player::getPosition, Collectors.counting()));
+
+        for (String pos : REQUIRED_POSITIONS) {
+            if (positionCounts.getOrDefault(pos, 0L) != 1L) {
+                throw new IllegalArgumentException(pos + " 포지션 스타터가 정확히 1명이어야 합니다.");
+            }
+        }
+
+        return starterIds;
+
+    }
+
+    private void replaceRoster(Team team, List<Player> players) {
+
+        List<TeamRoster> existing = teamRosterRepository.findByTeamTeamId(team.getTeamId());
+        if (!existing.isEmpty()) {
+            teamRosterRepository.deleteAll(existing);
+        }
+
+        Set<String> assignedStarterPositions = new LinkedHashSet<>();
+
+        List<TeamRoster> newRoster = players.stream()
+                .map(player -> {
+                    boolean isStarter = assignedStarterPositions.add(player.getPosition());
+                    return TeamRoster.builder()
+                            .team(team)
+                            .player(player)
+                            .isStarter(isStarter)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        teamRosterRepository.saveAll(newRoster);
 
     }
 
@@ -182,17 +182,17 @@ public class TeamService {
         String email = oAuth2User.getAttribute("email");
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
     }
 
-    private Team getTeamAndValidateOwner(Long teamId, User user) {
+    private Team getOwnedTeam(Long teamId, User user) {
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         if (!team.getUser().getUserId().equals(user.getUserId())) {
-            throw new IllegalStateException("You can only edit your own team");
+            throw new IllegalStateException("본인의 팀만 수정할 수 있습니다.");
         }
 
         return team;
@@ -215,10 +215,10 @@ public class TeamService {
         return TeamDto.Response.builder()
                 .teamId(team.getTeamId())
                 .teamName(team.getTeamName())
+                .rosterLocked(Boolean.TRUE.equals(team.getRosterLocked()))
                 .roster(rosterResponses)
                 .build();
 
     }
-
 
 }

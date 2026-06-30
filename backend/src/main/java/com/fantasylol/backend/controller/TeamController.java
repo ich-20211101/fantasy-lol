@@ -18,29 +18,18 @@ public class TeamController {
 
     private final TeamService teamService;
 
-    @PostMapping
-    @Operation(summary = "Create fantasy team")
-    public ResponseEntity<TeamDto.Response> createTeam(
-            @AuthenticationPrincipal OAuth2User oAuth2User,
-            @RequestBody TeamDto.CreateRequest request) {
-        return ResponseEntity.ok(teamService.createTeam(oAuth2User, request));
+    @GetMapping("/me")
+    @Operation(summary = "Get my team")
+    public ResponseEntity<TeamDto.Response> getMyTeam(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        return ResponseEntity.ok(teamService.getMyTeam(oAuth2User));
     }
 
-    @GetMapping("/{teamId}")
-    @Operation(summary = "Get team")
-    public ResponseEntity<TeamDto.Response> getTeam(
-            @AuthenticationPrincipal OAuth2User oAuth2User,
-            @PathVariable Long teamId) {
-        return ResponseEntity.ok(teamService.getTeam(oAuth2User, teamId));
-    }
-
-    @PostMapping("/{teamId}/roster")
-    @Operation(summary = "Submit roster (8 players, one-time)")
+    @PutMapping("/roster")
+    @Operation(summary = "Submit or resubmit roster (8 players, pre-season only)")
     public ResponseEntity<TeamDto.Response> submitRoster(
             @AuthenticationPrincipal OAuth2User oAuth2User,
-            @PathVariable Long teamId,
             @RequestBody TeamDto.RosterSubmitRequest request) {
-        return ResponseEntity.ok(teamService.submitRoster(oAuth2User, teamId, request));
+        return ResponseEntity.ok(teamService.submitRoster(oAuth2User, request));
     }
 
     @PutMapping("/{teamId}/starters")
