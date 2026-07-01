@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/teams")
 @RequiredArgsConstructor
@@ -22,6 +24,12 @@ public class TeamController {
     @Operation(summary = "Get my team")
     public ResponseEntity<TeamDto.Response> getMyTeam(@AuthenticationPrincipal OAuth2User oAuth2User) {
         return ResponseEntity.ok(teamService.getMyTeam(oAuth2User));
+    }
+
+    @GetMapping("/me/starters")
+    @Operation(summary = "Get my current starters")
+    public ResponseEntity<List<TeamDto.RosterPlayerResponse>> getStarters(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        return ResponseEntity.ok(teamService.getStarters(oAuth2User));
     }
 
     @PutMapping("/roster")

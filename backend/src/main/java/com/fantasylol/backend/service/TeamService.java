@@ -87,6 +87,27 @@ public class TeamService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<TeamDto.RosterPlayerResponse> getStarters(OAuth2User oAuth2User) {
+
+        User user = getUser(oAuth2User);
+        Team team = teamRepository.findByUserUserId(user.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        return teamRosterRepository.findByTeamTeamId(team.getTeamId()).stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsStarter()))
+                .map(r -> TeamDto.RosterPlayerResponse.builder()
+                        .teamRosterId(r.getTeamRosterId())
+                        .playerId(r.getPlayer().getPlayerId())
+                        .playerName(r.getPlayer().getPlayerName())
+                        .position(r.getPlayer().getPosition())
+                        .teamName(r.getPlayer().getTeamName())
+                        .isStarter(r.getIsStarter())
+                        .build())
+                .toList();
+
+    }
+
     private List<Player> validateAndFetchRosterPlayers(List<Long> playerIds) {
 
         if (playerIds == null || playerIds.size() != ROSTER_SIZE) {
