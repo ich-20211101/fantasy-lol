@@ -21,7 +21,6 @@ import java.time.LocalDate;
 @Tag(name = "Match", description = "Match management API")
 public class MatchController {
 
-    private final MatchRepository matchRepository;
     private final MatchSyncService matchSyncService;
     private final PlayerSyncService playerSyncService;
 

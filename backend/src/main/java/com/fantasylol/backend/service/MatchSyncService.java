@@ -25,8 +25,9 @@ public class MatchSyncService {
     private final MatchRepository matchRepository;
     private final PlayerRepository playerRepository;
     private final PlayerStatRepository playerStatRepository;
+    private final ScoreCalculator scoreCalculator;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Transactional
     public void syncByDate(LocalDate date) throws Exception {
@@ -46,111 +47,139 @@ public class MatchSyncService {
 
         JsonNode matchList = matchSchedules.path("cargoquery");
 
-        if (matchSchedules.isEmpty()) {
+        if (matchList.isEmpty()) {
             log.info("No matches found: {}", date);
             return;
         }
 
         for (JsonNode matchNode : matchList) {
-            JsonNode t = matchNode.path("title");
-            String team1 = t.path("Team1").asText();
-            String team2 = t.path("Team2").asText();
-            String winner = t.path("Winner").asText();
-            String winnerTeam = winner.equals("1") ? team1 : team2;
-            String overviewPage = t.path("OverviewPage").asText();
-            String dateTimeStr = t.path("DateTime UTC").asText();
 
-            // ScoreboardGames에서 해당 매치 게임 목록 조회
-            JsonNode games = leaguepediaClient.cargoQuery(
-                    "ScoreboardGames",
-                    "GameId,Team1,Team2,DateTime_UTC",
-                    "OverviewPage='" + overviewPage + "' AND Team1='" + team1 + "' AND Team2='" + team2 + "'",
-                    10
-            );
-
-            JsonNode gameList = games.path("cargoquery");
-
-            if (gameList.isEmpty()) {
-                log.info("No games found for match: {} vs {}", team1, team2);
-                continue;
+            try {
+                syncMatch(matchNode);
+            } catch (Exception e) {
+                log.error("Failed to sync match: {}", matchNode, e);
             }
-
-            String matchId = gameList.get(0).path("title").path("GameId").asText();
-            matchId = matchId.substring(0, matchId.lastIndexOf("_"));
-
-            // Match 저장
-            final String finalMatchId = matchId;
-            final String finalWinnerTeam = winnerTeam;
-            Match match = matchRepository.findByLeaguepediaMatchId(matchId)
-                    .orElseGet(() -> matchRepository.save(Match.builder()
-                            .leaguepediaMatchId(finalMatchId)
-                            .seasonName(overviewPage)
-                            .team1(team1)
-                            .team2(team2)
-                            .matchDate(LocalDateTime.parse(dateTimeStr, formatter))
-                            .status("COMPLETED")
-                            .winner(finalWinnerTeam)
-                            .build()));
-
-            // 각 게임 PlayerStat 저장
-            for (JsonNode game : gameList) {
-
-                String gameId = game.path("title").path("GameId").asText();
-                int gameNumber = extractGameNumber(gameId);
-
-                JsonNode statsResponse = leaguepediaClient.cargoQuery(
-                        "ScoreboardPlayers",
-                        "Name,Team,Role,Champion,Kills,Deaths,Assists,Gold,CS,DamageToChampions,VisionScore,PlayerWin",
-                        "GameId='" + gameId + "'",
-                        10
-                );
-
-                for (JsonNode stat : statsResponse.path("cargoquery")) {
-                    JsonNode s = stat.path("title");
-                    String playerName = s.path("Name").asText();
-                    String teamName = s.path("Team").asText();
-                    String leaguepediaGameId = gameId + "-" + playerName;
-
-                    if (playerStatRepository.findByLeaguepediaGameId(leaguepediaGameId).isPresent()) {
-                        continue;
-                    }
-
-                    Player player = playerRepository.findByPlayerNameAndTeamName(playerName, teamName)
-                            .orElseGet(() -> playerRepository.save(Player.builder()
-                                    .playerName(playerName)
-                                    .teamName(teamName)
-                                    .position(s.path("Role").asText())
-                                    .build()));
-
-                    playerStatRepository.save(PlayerStat.builder()
-                            .match(match)
-                            .gameNumber(gameNumber)
-                            .player(player)
-                            .leaguepediaGameId(leaguepediaGameId)
-                            .team(teamName)
-                            .role(s.path("Role").asText())
-                            .champion(s.path("Champion").asText())
-                            .kills(s.path("Kills").asInt(0))
-                            .deaths(s.path("Deaths").asInt(0))
-                            .assists(s.path("Assists").asInt(0))
-                            .gold(s.path("Gold").asInt(0))
-                            .cs(s.path("CS").asInt(0))
-                            .damageToChampions(s.path("DamageToChampions").asInt(0))
-                            .visionScore(s.path("VisionScore").asInt(0))
-                            .playerWin("Yes".equals(s.path("PlayerWin").asText()))
-                            .build());
-
-                }
-
-                log.info("Synced game {}", gameId);
-
-            }
-
-            log.info("Synced match: {} vs {} | Winner: {}", team1, team2, winnerTeam);
 
         }
 
         log.info("Sync completed for date: {}", date);
+
+    }
+
+    private void syncMatch(JsonNode matchNode) throws Exception {
+
+        JsonNode t = matchNode.path("title");
+
+        String team1 = t.path("Team1").asText();
+        String team2 = t.path("Team2").asText();
+        String winner = t.path("Winner").asText();
+        String winnerTeam = winner.equals("1") ? team1 : team2;
+        String overviewPage = t.path("OverviewPage").asText();
+        String dateTimeStr = t.path("DateTime UTC").asText();
+
+        JsonNode games = leaguepediaClient.cargoQuery(
+                "ScoreboardGames",
+                "GameId,Team1,Team2,DateTime_UTC",
+                "OverviewPage='" + overviewPage + "' AND Team1='" + team1 + "' AND Team2='" + team2 + "'",
+                10
+        );
+
+        JsonNode gameList = games.path("cargoquery");
+
+        if (gameList.isEmpty()) {
+            log.info("No games found for match: {} vs {}", team1, team2);
+            return;
+        }
+
+        String firstGameId = gameList.get(0).path("title").path("GameId").asText();
+        String matchId = firstGameId.substring(0, firstGameId.lastIndexOf("_"));
+
+        Match match = matchRepository.findByLeaguepediaMatchId(matchId)
+                .orElseGet(() -> matchRepository.save(Match.builder()
+                        .leaguepediaMatchId(matchId)
+                        .seasonName(overviewPage)
+                        .team1(team1)
+                        .team2(team2)
+                        .matchDate(LocalDateTime.parse(dateTimeStr, FORMATTER))
+                        .status("COMPLETED")
+                        .winner(winnerTeam)
+                        .build()));
+
+        for (JsonNode game : gameList) {
+
+            String gameId = game.path("title").path("GameId").asText();
+            syncGameStats(match, gameId);
+
+        }
+
+        log.info("Synced match: {} vs {} | Winner: {}", team1, team2, winnerTeam);
+
+    }
+
+    private void syncGameStats(Match match, String gameId) throws Exception {
+
+        int gameNumber = extractGameNumber(gameId);
+
+        JsonNode statsResponse = leaguepediaClient.cargoQuery(
+                "ScoreboardPlayers",
+                "Name,Team,Role,Champion,Kills,Deaths,Assists,Gold,CS,DamageToChampions,VisionScore,PlayerWin",
+                "GameId='" + gameId + "'",
+                10
+        );
+
+        for (JsonNode stat : statsResponse.path("cargoquery")) {
+
+            JsonNode s = stat.path("title");
+            String rawName = s.path("Name").asText();
+            String playerName = sanitizePlayerName(rawName);
+            String teamName = s.path("Team").asText();
+            String leaguepediaGameId = gameId + "-" + rawName;
+
+            if (playerStatRepository.findByLeaguepediaGameId(leaguepediaGameId).isPresent()) {
+                continue;
+            }
+
+            Player player = playerRepository.findByPlayerNameAndTeamName(playerName, teamName)
+                    .orElseGet(() -> playerRepository.save(Player.builder()
+                            .playerName(playerName)
+                            .teamName(teamName)
+                            .position(s.path("Role").asText())
+                            .build()));
+
+            PlayerStat playerStat = PlayerStat.builder()
+                    .match(match)
+                    .gameNumber(gameNumber)
+                    .player(player)
+                    .leaguepediaGameId(leaguepediaGameId)
+                    .team(teamName)
+                    .role(s.path("Role").asText())
+                    .champion(s.path("Champion").asText())
+                    .kills(s.path("Kills").asInt(0))
+                    .deaths(s.path("Deaths").asInt(0))
+                    .assists(s.path("Assists").asInt(0))
+                    .gold(s.path("Gold").asInt(0))
+                    .cs(s.path("CS").asInt(0))
+                    .damageToChampions(s.path("DamageToChampions").asInt(0))
+                    .visionScore(s.path("VisionScore").asInt(0))
+                    .playerWin("Yes".equals(s.path("PlayerWin").asText()))
+                    .build();
+
+            playerStat.setActualScore(scoreCalculator.calculateActualScore(playerStat));
+            playerStatRepository.save(playerStat);
+
+        }
+
+        log.info("Synced game {}", gameId);
+
+    }
+
+    private String sanitizePlayerName(String name) {
+
+        if (name.contains("(")) {
+            return name.substring(0, name.indexOf("(")).trim();
+        }
+
+        return name;
 
     }
 
