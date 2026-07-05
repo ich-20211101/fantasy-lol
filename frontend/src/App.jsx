@@ -1,145 +1,203 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import './App.css'
+
 import RosterPage from './pages/RosterPage'
 import StarterPage from './pages/StarterPage'
+import BottomNav from './components/BottomNav'
 
-const POS_LABEL = { Top: '탑', Jungle: '정글', Mid: '미드', Bot: '원딜', Support: '서포터' }
+import { getMe, loginWithGoogle, logout } from './api/users'
+import { getMyTeam } from './api/teams'
+import { getPlayers } from './api/players'
 
-function Home({ user, team, starters, handleGoogleLogin, handleLogout }) {
+function Home({ user, team, players, handleGoogleLogin, handleLogout }) {
+  const rows = useMemo(() => {
+    const rowSize = 8
+    const rowCount = 5
+
+    return Array.from({ length: rowCount }, (_, rowIndex) => {
+      const start = rowIndex * rowSize
+      const row = players.slice(start, start + rowSize)
+
+      return [...row, ...row]
+    })
+  }, [players])
+
+  const shifts = ['0%', '-12%', '-5%', '-18%', '-8%']
+  const speeds = ['128s', '142s', '136s', '150s', '132s']
+
   return (
-    <div style={{ textAlign: 'center', marginTop: '100px' }}>
-      <h1>⚔️ Fantasy LoL</h1>
-      <p>나만의 판타지 리그 오브 레전드</p>
-      {user ? (
-        <div>
-          <img src={user.profileImageUrl} alt="profile" />
-          <p>Hello, <strong>{user.username}</strong>!</p>
+    <main className="lfm-page">
+      <section className="lfm-frame">
+        <header className="lfm-header">
+          <div className="lfm-brand-wrap">
+            <span className="lfm-logo">LFM</span>
+            <span className="lfm-logo-line" />
+            <span className="lfm-brand">
+              LoL Fantasy<br />Maker
+            </span>
+          </div>
+        </header>
 
-          {team ? (
-            <div style={{ maxWidth: 480, margin: '24px auto', textAlign: 'left' }}>
-              <h3 style={{ textAlign: 'center' }}>{team.teamName}</h3>
-              <div style={{ textAlign: 'center', marginBottom: 12 }}>
-                <Link to="/starters">스타터 변경</Link>
-              </div>
+        <div className="lfm-scroll">
+          <section className="lfm-hero">
+            <h1>
+              PROVE<br />YOUR<br />SQUAD
+            </h1>
+            <p>
+              제한된 예산 내 최적의 8인 로스터 구성<br />
+              실제 LCK 성적 기반의 랭킹 레이스
+            </p>
+          </section>
 
-              {/* 스타터 */}
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>스타터</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {starters.map(p => (
-                  <div key={p.teamRosterId} style={{
-                    padding: '10px 14px',
-                    border: '2px solid #000',
-                    borderRadius: 8,
-                    display: 'flex',
-                    justifyContent: 'space-between'
-                  }}>
-                    <div>
-                      <div style={{ fontWeight: 500 }}>{p.playerName}</div>
-                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                        {p.teamName} | {POS_LABEL[p.position]}
-                      </div>
+          <section className="lfm-marquee">
+            {rows.map((row, rowIndex) => (
+              <div
+                key={rowIndex}
+                className="lfm-marquee-row"
+                style={{
+                  '--start': shifts[rowIndex],
+                  '--speed': speeds[rowIndex],
+                }}
+              >
+                {row.map((player, index) => (
+                  <div
+                    className="lfm-player-card"
+                    key={`${player.playerId}-${index}`}
+                  >
+                    <div className="lfm-player-name">
+                      {player.playerName}
+                    </div>
+                    <div className="lfm-player-sub">
+                      {player.teamName} | {player.position}
                     </div>
                   </div>
                 ))}
               </div>
+            ))}
+          </section>
 
-              {/* 구분선 */}
-              <hr style={{ margin: '16px 0', borderColor: '#eee' }} />
+          <footer className="lfm-footer-info">
+            <div className="lfm-footer-links">
+              <span>PRIVACY POLICY</span>
+              <span>SCORE POLICY</span>
+              <span>CONTACT US</span>
+            </div>
+            <p>
+              본 사이트는 LCK 팬페이지입니다. 라이엇 및 LCK와 무관하며,
+              경기 데이터를 기반으로 한 시뮬레이션 콘텐츠만을 제공합니다.
+            </p>
+          </footer>
+        </div>
 
-              {/* 벤치 */}
-              <div style={{ fontWeight: 600, marginBottom: 8, color: '#888' }}>벤치</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {team.roster
-                  .filter(p => !starters.some(s => s.playerId === p.playerId))
-                  .map(p => (
-                    <div key={p.teamRosterId} style={{
-                      padding: '10px 14px',
-                      border: '1px solid #ddd',
-                      borderRadius: 8,
-                      display: 'flex',
-                      justifyContent: 'space-between'
-                    }}>
-                      <div>
-                        <div style={{ fontWeight: 500, color: '#888' }}>{p.playerName}</div>
-                        <div style={{ fontSize: 12, color: '#aaa', marginTop: 2 }}>
-                          {p.teamName} | {POS_LABEL[p.position]}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p>아직 팀이 없어요.</p>
-              <Link to="/roster">로스터 구성하기</Link>
-            </div>
+        <div className="lfm-cta-area">
+          {user && (
+            <p className="lfm-user">
+              Hello, <strong>{user.username}</strong>
+            </p>
           )}
 
-          <br /><br />
-          <button onClick={handleLogout}>Sign Out</button>
+          {user ? (
+            team ? (
+              <Link className="lfm-cta" to="/starters">
+                내 팀 확인하기
+              </Link>
+            ) : (
+              <Link className="lfm-cta" to="/roster">
+                팀 창단하기
+              </Link>
+            )
+          ) : (
+            <button className="lfm-cta" onClick={handleGoogleLogin}>
+              <span>G</span>
+              구글 계정으로 팀 창단하기
+            </button>
+          )}
+
+          {user && (
+            <button className="lfm-signout" onClick={handleLogout}>
+              Sign Out
+            </button>
+          )}
         </div>
-      ) : (
-        <button onClick={handleGoogleLogin}>Sign in with Google</button>
-      )}
-    </div>
+
+        <BottomNav />
+      </section>
+    </main>
   )
 }
 
 function App() {
   const [user, setUser] = useState(null)
   const [team, setTeam] = useState(null)
+  const [players, setPlayers] = useState([])
 
   useEffect(() => {
-    fetch('http://localhost:8080/users/me', {
-      credentials: 'include',
-      redirect: 'manual'
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setUser(data))
-      .catch(() => {})
+    getPlayers()
+      .then(setPlayers)
+      .catch(error => {
+        console.error('Failed to load players:', error)
+      })
   }, [])
 
   useEffect(() => {
-    if (!user) return
-    fetch('http://localhost:8080/teams/me', {
-      credentials: 'include'
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setTeam(data))
-      .catch(() => {})
+    getMe()
+      .then(setUser)
+      .catch(error => {
+        console.error('Failed to load user:', error)
+        setUser(null)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!user) {
+      setTeam(null)
+      return
+    }
+
+    getMyTeam()
+      .then(setTeam)
+      .catch(error => {
+        console.error('Failed to load team:', error)
+        setTeam(null)
+      })
   }, [user])
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google'
+    loginWithGoogle()
   }
 
   const handleLogout = async () => {
-    await fetch('http://localhost:8080/users/logout', {
-      method: 'POST',
-      credentials: 'include'
-    })
+    await logout()
     setUser(null)
     setTeam(null)
   }
 
-  const [starters, setStarters] = useState([])
-
-  useEffect(() => {
-    if (!team) return
-    fetch('http://localhost:8080/teams/me/starters', { credentials: 'include' })
-      .then(res => res.ok ? res.json() : [])
-      .then(data => setStarters(data))
-      .catch(() => {})
-  }, [team])
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home user={user} team={team} starters={starters} handleGoogleLogin={handleGoogleLogin} handleLogout={handleLogout} />} />
-        <Route path="/roster" element={user ? <RosterPage /> : <div>로그인이 필요합니다.</div>} />
-        <Route path="/starters" element={user ? <StarterPage /> : <div>로그인이 필요합니다.</div>} />
+        <Route
+          path="/"
+          element={
+            <Home
+              user={user}
+              team={team}
+              players={players}
+              handleGoogleLogin={handleGoogleLogin}
+              handleLogout={handleLogout}
+            />
+          }
+        />
+
+        <Route
+          path="/roster"
+          element={user ? <RosterPage /> : <div>로그인이 필요합니다.</div>}
+        />
+
+        <Route
+          path="/starters"
+          element={user ? <StarterPage /> : <div>로그인이 필요합니다.</div>}
+        />
       </Routes>
     </BrowserRouter>
   )

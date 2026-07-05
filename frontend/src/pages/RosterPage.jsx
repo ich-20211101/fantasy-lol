@@ -1,188 +1,288 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import './RosterPage.css'
+
+import { getPlayers } from '../api/players'
+import { saveRoster } from '../api/teams'
 
 const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
-const POS_LABEL = { Top: '탑', Jungle: '정글', Mid: '미드', Bot: '원딜', Support: '서포터' }
+
+const POS_LABEL = {
+  Top: 'TOP',
+  Jungle: 'JUG',
+  Mid: 'MID',
+  Bot: 'BOT',
+  Support: 'SPT',
+}
+
+const MAX_ROSTER_SIZE = 8
+const PLAYER_POINT = 10
+const TOTAL_POINT = 80
 
 export default function RosterPage() {
   const navigate = useNavigate()
+
   const [players, setPlayers] = useState([])
-  const [selected, setSelected] = useState(new Set())
-  const [posFilter, setPosFilter] = useState('')
-  const [teamFilter, setTeamFilter] = useState('')
-  const [teams, setTeams] = useState([])
-  const [step, setStep] = useState(1)
-  const [teamName, setTeamName] = useState('')
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [positionFilter, setPositionFilter] = useState('Top')
+  const [teamFilter, setTeamFilter] = useState('ALL')
+  const [teamOpen, setTeamOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    fetch('http://localhost:8080/players', { credentials: 'include' })
-      .then(r => r.json())
-      .then(data => {
-        setPlayers(data)
-        setTeams([...new Set(data.map(p => p.teamName))].sort())
+    getPlayers()
+      .then(setPlayers)
+      .catch(error => {
+        console.error(error)
+        setPlayers([])
       })
   }, [])
 
-  const filtered = players
-    .filter(p => !posFilter || p.position === posFilter)
-    .filter(p => !teamFilter || p.teamName === teamFilter)
+  const teams = useMemo(() => {
+    const uniqueTeams = [...new Set(players.map(player => player.teamName))]
+    return ['ALL', ...uniqueTeams.sort()]
+  }, [players])
 
-  const selectedPlayers = players.filter(p => selected.has(p.playerId))
+  const filteredPlayers = useMemo(() => {
+    return players
+      .filter(player => player.position === positionFilter)
+      .filter(player => teamFilter === 'ALL' || player.teamName === teamFilter)
+  }, [players, positionFilter, teamFilter])
 
-  const toggle = (id) => {
-    setSelected(prev => {
+  const selectedCount = selectedIds.size
+  const remainingPoint = TOTAL_POINT - selectedCount * PLAYER_POINT
+
+  const togglePlayer = (playerId) => {
+    setSelectedIds(prev => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else if (next.size < 8) {
-        next.add(id)
+
+      if (next.has(playerId)) {
+        next.delete(playerId)
+        return next
       }
+
+      if (next.size >= MAX_ROSTER_SIZE) return next
+
+      next.add(playerId)
       return next
     })
   }
 
-const submit = async () => {
-  if (!teamName.trim()) {
-    setMessage('팀 이름을 입력해주세요.')
-    return
-  }
+  const handleSubmit = async () => {
+    if (selectedCount !== MAX_ROSTER_SIZE) return
 
-  try {
-    const res = await fetch('http://localhost:8080/teams/roster', {
-      method: 'PUT',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        teamName: teamName.trim(),
-        playerIds: [...selected]
+    try {
+      setIsSubmitting(true)
+      setMessage('')
+
+      await saveRoster({
+        teamName: 'My LFM Team',
+        playerIds: [...selectedIds],
       })
-    })
 
-    const result = await res.json()
-
-    if (res.ok) {
-      window.location.href = '/'
-    } else {
-      setMessage(result.error || '등록 실패')
+      navigate('/')
+    } catch (error) {
+      console.error(error)
+      setMessage(error.message || '저장 중 오류가 발생했습니다.')
+    } finally {
+      setIsSubmitting(false)
     }
-  } catch (e) {
-    console.error('submit error:', e)
-    setMessage('오류가 발생했습니다.')
-  }
-}
-
-  if (step === 2) {
-    return (
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px' }}>
-        <button onClick={() => setStep(1)} style={{ marginBottom: 16 }}>← 뒤로</button>
-        <h3 style={{ marginBottom: 16 }}>선택한 선수 ({selectedPlayers.length}명)</h3>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-          {selectedPlayers.map(p => (
-            <div key={p.playerId} style={{ padding: '10px 14px', border: '1px solid #ddd', borderRadius: 8, display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontWeight: 500 }}>{p.playerName}</div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{p.teamName} | {POS_LABEL[p.position]}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>팀 이름</label>
-          <input
-            type="text"
-            value={teamName}
-            onChange={e => setTeamName(e.target.value)}
-            placeholder="팀 이름을 입력하세요"
-            style={{ width: '100%', padding: '10px 12px', border: '1px solid #ddd', borderRadius: 8, fontSize: 15 }}
-          />
-        </div>
-
-        {message && <p style={{ marginBottom: 12, color: 'red' }}>{message}</p>}
-
-        <button
-          onClick={submit}
-          disabled={!teamName.trim()}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: teamName.trim() ? '#000' : '#ccc',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            fontSize: 15,
-            cursor: teamName.trim() ? 'pointer' : 'not-allowed'
-          }}
-        >
-          저장
-        </button>
-      </div>
-    )
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <span>선수 선택</span>
-        <span style={{ fontWeight: 500 }}>{selected.size} / 8</span>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <select value={posFilter} onChange={e => setPosFilter(e.target.value)} style={{ flex: 1 }}>
-          <option value=''>포지션 전체</option>
-          {POSITIONS.map(p => <option key={p} value={p}>{POS_LABEL[p]}</option>)}
-        </select>
-        <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{ flex: 1 }}>
-          <option value=''>팀 전체</option>
-          {teams.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-        {filtered.map(p => (
-          <div
-            key={p.playerId}
-            onClick={() => toggle(p.playerId)}
-            style={{
-              padding: '12px 14px',
-              border: selected.has(p.playerId) ? '2px solid #000' : '1px solid #ddd',
-              borderRadius: 8,
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: selected.has(p.playerId) ? '#f5f5f5' : '#fff'
-            }}
+    <main className="build-page">
+      <section className="build-frame">
+        <header className="build-header">
+          <button
+            type="button"
+            className="build-back"
+            onClick={() => navigate('/')}
           >
-            <div>
-              <div style={{ fontWeight: 500 }}>{p.playerName}</div>
-              <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                {p.teamName} | {POS_LABEL[p.position]}
-              </div>
-            </div>
-            {selected.has(p.playerId) && <span>✓</span>}
-          </div>
-        ))}
-      </div>
+            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
+              <path
+                d="M8 1L1.5 7.5L8 14"
+                stroke="#0b0b0c"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
 
-      <button
-        onClick={() => setStep(2)}
-        disabled={selected.size !== 8}
-        style={{
-          width: '100%',
-          padding: '12px',
-          background: selected.size === 8 ? '#000' : '#ccc',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 8,
-          fontSize: 15,
-          cursor: selected.size === 8 ? 'pointer' : 'not-allowed'
-        }}
-      >
-        로스터 구성
-      </button>
-    </div>
+          <span className="build-header-title">BUILD ROSTER</span>
+        </header>
+
+        <section className="build-round">
+          <span>2026 LCK Round 3</span>
+          <strong>{remainingPoint} P</strong>
+        </section>
+
+        <nav className="build-tabs">
+          {POSITIONS.map(position => {
+            const active = positionFilter === position
+
+            return (
+              <button
+                type="button"
+                key={position}
+                className={active ? 'active' : ''}
+                onClick={() => setPositionFilter(position)}
+              >
+                <div>
+                  <span>{POS_LABEL[position]}</span>
+                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                    <path
+                      d="M1 5L4.7 8.6L12 1"
+                      stroke={active ? '#0b0b0c' : '#9a9a9e'}
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </button>
+            )
+          })}
+        </nav>
+
+        <section className="build-list">
+          <div className="build-team-filter">
+            <div className="build-dropdown">
+              <button
+                type="button"
+                className="build-dropdown-trigger"
+                onClick={() => setTeamOpen(prev => !prev)}
+              >
+                <span>{teamFilter}</span>
+                <svg width="11" height="7" viewBox="0 0 11 7" fill="none">
+                  <path
+                    d="M1 1L5.5 5.5L10 1"
+                    stroke="#6a6a6f"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+
+              {teamOpen && (
+                <div className="build-dropdown-menu">
+                  {teams.map(team => {
+                    const active = team === teamFilter
+
+                    return (
+                      <button
+                        type="button"
+                        key={team}
+                        className={active ? 'active' : ''}
+                        onClick={() => {
+                          setTeamFilter(team)
+                          setTeamOpen(false)
+                        }}
+                      >
+                        <span>{team}</span>
+                        {active && (
+                          <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                            <path
+                              d="M1 4L4 7L10 1"
+                              stroke="#0b0b0c"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {filteredPlayers.map(player => {
+            const selected = selectedIds.has(player.playerId)
+
+            return (
+              <article
+                key={player.playerId}
+                className={`build-player ${selected ? 'selected' : ''}`}
+              >
+                <button type="button" className="build-info">
+                  <svg width="4" height="11" viewBox="0 0 4 11" fill="#6a6a6f">
+                    <circle cx="2" cy="1.4" r="1.4" />
+                    <rect x="1.1" y="3.7" width="1.8" height="7" rx="0.9" />
+                  </svg>
+                </button>
+
+                <div className="build-player-main">
+                  <div className="build-player-title">
+                    <span>{player.playerName}</span>
+                    <em>{POS_LABEL[player.position]}</em>
+                  </div>
+                  <p>
+                    {player.teamName} | {POS_LABEL[player.position]}
+                  </p>
+                </div>
+
+                <strong className="build-point">{PLAYER_POINT}P</strong>
+
+                <button
+                  type="button"
+                  className="build-toggle"
+                  onClick={() => togglePlayer(player.playerId)}
+                >
+                  {selected ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M1.6 1.6L10.4 10.4M10.4 1.6L1.6 10.4"
+                        stroke="#0b0b0c"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path
+                        d="M6.5 1.4V11.6M1.4 6.5H11.6"
+                        stroke="#0b0b0c"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </article>
+            )
+          })}
+
+          <footer className="build-footer-info">
+            <div>
+              <span>PRIVACY POLICY</span>
+              <span>SCORE POLICY</span>
+              <span>CONTACT US</span>
+            </div>
+            <p>
+              본 사이트는 LCK 팬페이지입니다. 라이엇 및 LCK와 무관하며,
+              경기 데이터를 기반으로 한 시뮬레이션 콘텐츠만을 제공합니다.
+            </p>
+          </footer>
+        </section>
+
+        <section className="build-action">
+          {message && <p>{message}</p>}
+
+          <button
+            type="button"
+            disabled={selectedCount !== MAX_ROSTER_SIZE || isSubmitting}
+            onClick={handleSubmit}
+          >
+            내 로스터 보기{' '}
+            <span>
+              {selectedCount}/{MAX_ROSTER_SIZE}
+            </span>
+          </button>
+        </section>
+      </section>
+    </main>
   )
 }

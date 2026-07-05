@@ -52,6 +52,8 @@ public class MatchSyncService {
             return;
         }
 
+        log.info("### Raw MatchSchedule: {}", matchList);
+
         for (JsonNode matchNode : matchList) {
 
             try {
