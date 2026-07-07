@@ -72,11 +72,13 @@ CREATE TABLE IF NOT EXISTS player_stats (
 CREATE TABLE IF NOT EXISTS user_scores (
     user_score_id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id         BIGINT NOT NULL,
-    week_number     INT, -- 몇 주차인지
-    season_name     VARCHAR(100), -- 시즌명
-    weekly_score    DOUBLE PRECISION DEFAULT 0.0,
-    seasonal_score  DOUBLE PRECISION DEFAULT 0.0,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    week_number     INT NOT NULL,
+    season_name     VARCHAR(100) NOT NULL,
+    weekly_score    DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    seasonal_score  DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    updated_at      TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    UNIQUE (user_id, week_number, season_name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_teams_user_id ON teams(user_id);

@@ -11,7 +11,7 @@ const POS_LABEL = {
   Top: 'TOP',
   Jungle: 'JUG',
   Mid: 'MID',
-  Bot: 'BOT',
+  Bot: 'ADC',
   Support: 'SPT',
 }
 
@@ -29,6 +29,7 @@ export default function RosterPage() {
   const [teamOpen, setTeamOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+  const [showLimitPopup, setShowLimitPopup] = useState(false)
 
   useEffect(() => {
     getPlayers()
@@ -50,6 +51,14 @@ export default function RosterPage() {
       .filter(player => teamFilter === 'ALL' || player.teamName === teamFilter)
   }, [players, positionFilter, teamFilter])
 
+  const filledPositions = useMemo(() => {
+    const set = new Set()
+    players.forEach(player => {
+      if (selectedIds.has(player.playerId)) set.add(player.position)
+    })
+    return set
+  }, [players, selectedIds])
+
   const selectedCount = selectedIds.size
   const remainingPoint = TOTAL_POINT - selectedCount * PLAYER_POINT
 
@@ -62,7 +71,10 @@ export default function RosterPage() {
         return next
       }
 
-      if (next.size >= MAX_ROSTER_SIZE) return next
+      if (next.size >= MAX_ROSTER_SIZE) {
+        setShowLimitPopup(true)
+        return next
+      }
 
       next.add(playerId)
       return next
@@ -93,6 +105,31 @@ export default function RosterPage() {
   return (
     <main className="build-page">
       <section className="build-frame">
+        {showLimitPopup && (
+          <div className="build-limit-overlay">
+            <div className="build-limit-modal">
+              <div className="build-limit-body">
+                <div className="build-limit-icon">
+                  <svg width="6" height="20" viewBox="0 0 6 20" fill="#0b0b0c">
+                    <rect x="1.6" y="0" width="2.8" height="12" rx="1.4" />
+                    <circle cx="3" cy="17.5" r="2" />
+                  </svg>
+                </div>
+                <p>
+                  최대 8명까지<br />선택 가능합니다.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="build-limit-confirm"
+                onClick={() => setShowLimitPopup(false)}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        )}
+
         <header className="build-header">
           <button
             type="button"
@@ -120,6 +157,7 @@ export default function RosterPage() {
         <nav className="build-tabs">
           {POSITIONS.map(position => {
             const active = positionFilter === position
+            const filled = filledPositions.has(position)
 
             return (
               <button
@@ -130,10 +168,16 @@ export default function RosterPage() {
               >
                 <div>
                   <span>{POS_LABEL[position]}</span>
-                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                  <svg
+                    width="13"
+                    height="10"
+                    viewBox="0 0 13 10"
+                    fill="none"
+                    className={`build-tab-check ${filled ? 'filled' : ''}`}
+                  >
                     <path
                       d="M1 5L4.7 8.6L12 1"
-                      stroke={active ? '#0b0b0c' : '#9a9a9e'}
+                      stroke="currentColor"
                       strokeWidth="2.2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -199,61 +243,65 @@ export default function RosterPage() {
             </div>
           </div>
 
-          {filteredPlayers.map(player => {
-            const selected = selectedIds.has(player.playerId)
+          <div className="build-player-list">
+            {filteredPlayers.map(player => {
+              const selected = selectedIds.has(player.playerId)
 
-            return (
-              <article
-                key={player.playerId}
-                className={`build-player ${selected ? 'selected' : ''}`}
-              >
-                <button type="button" className="build-info">
-                  <svg width="4" height="11" viewBox="0 0 4 11" fill="#6a6a6f">
-                    <circle cx="2" cy="1.4" r="1.4" />
-                    <rect x="1.1" y="3.7" width="1.8" height="7" rx="0.9" />
-                  </svg>
-                </button>
-
-                <div className="build-player-main">
-                  <div className="build-player-title">
-                    <span>{player.playerName}</span>
-                    <em>{POS_LABEL[player.position]}</em>
-                  </div>
-                  <p>
-                    {player.teamName} | {POS_LABEL[player.position]}
-                  </p>
-                </div>
-
-                <strong className="build-point">{PLAYER_POINT}P</strong>
-
-                <button
-                  type="button"
-                  className="build-toggle"
-                  onClick={() => togglePlayer(player.playerId)}
+              return (
+                <article
+                  key={player.playerId}
+                  className={`build-player ${selected ? 'selected' : ''}`}
                 >
-                  {selected ? (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path
-                        d="M1.6 1.6L10.4 10.4M10.4 1.6L1.6 10.4"
-                        stroke="#0b0b0c"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                      />
+                  <button type="button" className="build-info">
+                    <svg width="4" height="11" viewBox="0 0 4 11" fill="#6a6a6f">
+                      <circle cx="2" cy="1.4" r="1.4" />
+                      <rect x="1.1" y="3.7" width="1.8" height="7" rx="0.9" />
                     </svg>
-                  ) : (
-                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                      <path
-                        d="M6.5 1.4V11.6M1.4 6.5H11.6"
-                        stroke="#0b0b0c"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </article>
-            )
-          })}
+                  </button>
+
+                  <div className="build-player-main">
+                    <div className="build-player-title">
+                      <span>{player.playerName}</span>
+                      <span className="build-player-score">
+                        {player.lastSeasonScore ?? '0,321'}
+                      </span>
+                    </div>
+                    <p>
+                      {player.teamName} | {POS_LABEL[player.position]}
+                    </p>
+                  </div>
+
+                  <strong className="build-point">{PLAYER_POINT}P</strong>
+
+                  <button
+                    type="button"
+                    className={`build-toggle ${selected ? 'selected' : ''}`}
+                    onClick={() => togglePlayer(player.playerId)}
+                  >
+                    {selected ? (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path
+                          d="M1.6 1.6L10.4 10.4M10.4 1.6L1.6 10.4"
+                          stroke="currentColor"
+                          strokeWidth="1.9"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <path
+                          d="M6.5 1.4V11.6M1.4 6.5H11.6"
+                          stroke="currentColor"
+                          strokeWidth="1.9"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </article>
+              )
+            })}
+          </div>
 
           <footer className="build-footer-info">
             <div>

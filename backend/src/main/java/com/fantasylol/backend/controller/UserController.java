@@ -1,8 +1,10 @@
 package com.fantasylol.backend.controller;
 
 import com.fantasylol.backend.dto.UserDto;
+import com.fantasylol.backend.dto.UserScoreDto;
 import com.fantasylol.backend.repository.UserRepository;
 import com.fantasylol.backend.service.LeaguepediaClient;
+import com.fantasylol.backend.service.UserScoreService;
 import com.fantasylol.backend.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +29,7 @@ public class UserController {
 
     private final UserService userService;
     private final LeaguepediaClient leaguepediaClient;
+    private final UserScoreService userScoreService;
 
     @PostMapping
     @Operation(summary = "Creat User")
@@ -59,6 +62,11 @@ public class UserController {
 
         return ResponseEntity.ok().build();
 
+    }
+
+    @GetMapping("/me/scores")
+    public ResponseEntity<UserScoreDto.Response> getMyScores(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        return ResponseEntity.ok(userScoreService.getMyScores(oAuth2User));
     }
 
 }

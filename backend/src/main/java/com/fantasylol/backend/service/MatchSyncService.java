@@ -28,6 +28,7 @@ public class MatchSyncService {
     private final ScoreCalculator scoreCalculator;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final UserScoreService userScoreService;
 
     @Transactional
     public void syncByDate(LocalDate date) throws Exception {
@@ -115,6 +116,8 @@ public class MatchSyncService {
         }
 
         log.info("Synced match: {} vs {} | Winner: {}", team1, team2, winnerTeam);
+
+        userScoreService.updateScoresForMatch(match);
 
     }
 
