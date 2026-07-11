@@ -1,48 +1,73 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
     container_name: fantasy-lol-postgres
+    restart: unless-stopped
+
     environment:
-      POSTGRES_DB: fantasy_lol
-      POSTGRES_USER: fantasy
-      POSTGRES_PASSWORD: fantasy1234
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./backend/src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./backend/src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fantasy -d fantasy_lol"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
+
   redis:
     image: redis:7.2-alpine
     container_name: fantasy-lol-redis
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
+
     volumes:
       - redis-data:/data
+
     command: redis-server --appendonly yes
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+
     container_name: fantasy-lol-backend
+    restart: unless-stopped
+
     ports:
       - "8080:8080"
+
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fantasy_lol
-      SPRING_DATASOURCE_USERNAME: fantasy
-      SPRING_DATASOURCE_PASSWORD: fantasy1234
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      LEAGUEPEDIA_USERNAME: ${LEAGUEPEDIA_USERNAME}
+      LEAGUEPEDIA_PASSWORD: ${LEAGUEPEDIA_PASSWORD}
+
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+
 volumes:
   postgres-data:
   redis-data:
