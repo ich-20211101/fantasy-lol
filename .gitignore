@@ -31,6 +31,7 @@ redis-data/
 application-secret.yml
 application-local.yml
 .env.local
+.env.prod
 .env.development.local
 .env.production.local
 .env.*
