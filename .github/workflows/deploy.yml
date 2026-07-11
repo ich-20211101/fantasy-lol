@@ -1,0 +1,132 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/fantasy-lol-backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Frontend build
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      # Backend Docker image build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # SSH setup
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      # Remove previous temporary frontend build
+      - name: Prepare frontend upload directory
+        run: |
+          ssh \
+            -i ~/.ssh/ec2_key \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            "rm -rf /tmp/fantasy-lol-dist"
+
+      # Copy frontend build to EC2
+      - name: Upload frontend build
+        run: |
+          scp \
+            -i ~/.ssh/ec2_key \
+            -r frontend/dist \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/fantasy-lol-dist"
+
+      # Authenticate EC2 to private GHCR
+      - name: Log in to GHCR from EC2
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        run: |
+          printf '%s' "${GHCR_READ_TOKEN}" | ssh \
+            -i ~/.ssh/ec2_key \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
+            "docker login ghcr.io -u '${GHCR_USERNAME}' --password-stdin"
+
+      # Release application on EC2
+      - name: Deploy application
+        run: |
+          ssh \
+            -i ~/.ssh/ec2_key \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+              set -euo pipefail
+
+              cd /home/ubuntu/apps/fantasy-lol
+
+              git pull --ff-only origin main
+
+              export BACKEND_IMAGE=ghcr.io/ich-20211101/fantasy-lol-backend:latest
+
+              docker compose pull backend
+              docker compose up -d --no-build backend
+
+              sudo mkdir -p /var/www/fantasy-lol
+              sudo rm -rf /var/www/fantasy-lol/*
+              sudo cp -r /tmp/fantasy-lol-dist/* /var/www/fantasy-lol/
+              sudo rm -rf /tmp/fantasy-lol-dist
+
+              sudo nginx -t
+              sudo systemctl reload nginx
+
+              docker image prune -f
+              docker compose ps
+          EOF

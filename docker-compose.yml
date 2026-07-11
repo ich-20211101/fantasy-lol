@@ -37,15 +37,13 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ${BACKEND_IMAGE:-ghcr.io/ich-20211101/fantasy-lol-backend:latest}
 
     container_name: fantasy-lol-backend
     restart: unless-stopped
 
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
 
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
