@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import './RosterPage.css'
 
 import { getPlayers } from '../api/players'
-import { saveRoster } from '../api/teams'
+import LanguageToggle from '../components/LanguageToggle'
 
 const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
 
@@ -20,15 +21,18 @@ const PLAYER_POINT = 10
 const TOTAL_POINT = 80
 
 export default function RosterPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [players, setPlayers] = useState([])
-  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [selectedIds, setSelectedIds] = useState(() => {
+    const incoming = location.state?.selectedPlayers
+    return incoming ? new Set(incoming.map(player => player.playerId)) : new Set()
+  })
   const [positionFilter, setPositionFilter] = useState('Top')
   const [teamFilter, setTeamFilter] = useState('ALL')
   const [teamOpen, setTeamOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState('')
   const [showLimitPopup, setShowLimitPopup] = useState(false)
 
   useEffect(() => {
@@ -81,25 +85,11 @@ export default function RosterPage() {
     })
   }
 
-  const handleSubmit = async () => {
-    if (selectedCount !== MAX_ROSTER_SIZE) return
+  const handleReview = () => {
+    if (selectedCount === 0) return
 
-    try {
-      setIsSubmitting(true)
-      setMessage('')
-
-      await saveRoster({
-        teamName: 'My LFM Team',
-        playerIds: [...selectedIds],
-      })
-
-      navigate('/')
-    } catch (error) {
-      console.error(error)
-      setMessage(error.message || '저장 중 오류가 발생했습니다.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    const selectedPlayers = players.filter(player => selectedIds.has(player.playerId))
+    navigate('/roster/mine', { state: { selectedPlayers } })
   }
 
   return (
@@ -116,7 +106,7 @@ export default function RosterPage() {
                   </svg>
                 </div>
                 <p>
-                  최대 8명까지<br />선택 가능합니다.
+                  {t('buildRoster.limitPopupLine1')}<br />{t('buildRoster.limitPopupLine2')}
                 </p>
               </div>
               <button
@@ -124,7 +114,7 @@ export default function RosterPage() {
                 className="build-limit-confirm"
                 onClick={() => setShowLimitPopup(false)}
               >
-                확인
+                {t('buildRoster.limitConfirm')}
               </button>
             </div>
           </div>
@@ -146,11 +136,11 @@ export default function RosterPage() {
             </svg>
           </button>
 
-          <span className="build-header-title">BUILD ROSTER</span>
+          <span className="build-header-title">{t('buildRoster.headerTitle')}</span>
         </header>
 
         <section className="build-round">
-          <span>2026 LCK Round 3</span>
+          <span>{t('common.round')}</span>
           <strong>{remainingPoint} P</strong>
         </section>
 
@@ -305,26 +295,25 @@ export default function RosterPage() {
 
           <footer className="build-footer-info">
             <div>
-              <span>PRIVACY POLICY</span>
-              <span>SCORE POLICY</span>
-              <span>CONTACT US</span>
+              <span>{t('common.privacyPolicy')}</span>
+              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
+              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
+              <LanguageToggle />
             </div>
             <p>
-              본 사이트는 LCK 팬페이지입니다. 라이엇 및 LCK와 무관하며,
-              경기 데이터를 기반으로 한 시뮬레이션 콘텐츠만을 제공합니다.
+              {t('common.disclaimer')}
             </p>
+            <div className="build-footer-wordmark">{t('common.wordmark')}</div>
           </footer>
         </section>
 
         <section className="build-action">
-          {message && <p>{message}</p>}
-
           <button
             type="button"
-            disabled={selectedCount !== MAX_ROSTER_SIZE || isSubmitting}
-            onClick={handleSubmit}
+            disabled={selectedCount === 0}
+            onClick={handleReview}
           >
-            내 로스터 보기{' '}
+            {t('buildRoster.ctaLabel')}{' '}
             <span>
               {selectedCount}/{MAX_ROSTER_SIZE}
             </span>

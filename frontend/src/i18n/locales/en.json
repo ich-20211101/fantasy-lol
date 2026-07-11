@@ -1,0 +1,88 @@
+{
+  "common": {
+    "privacyPolicy": "Privacy policy",
+    "scorePolicy": "Score policy",
+    "contactUs": "Contact us",
+    "disclaimer": "This site is an LCK fan page. It is not affiliated with Riot Games or LCK, and provides simulation content based on match data only.",
+    "wordmark": "PROVE YOUR SQUAD",
+    "loginRequired": "Login required.",
+    "round": "2026 LCK Round 3"
+  },
+  "bottomNav": {
+    "myTeam": "My Team",
+    "leaderboard": "Leaderboard",
+    "info": "Info",
+    "profile": "Profile"
+  },
+  "home": {
+    "titleLine1": "PROVE",
+    "titleLine2": "YOUR",
+    "titleLine3": "SQUAD",
+    "subtitleLine1": "Build the optimal 8-player roster within a limited budget",
+    "subtitleLine2": "A ranking race based on real LCK performance",
+    "cta": "Build My LCK Team",
+    "googleLogin": "Continue with Google"
+  },
+  "buildRoster": {
+    "headerTitle": "BUILD ROSTER",
+    "limitPopupLine1": "You can select",
+    "limitPopupLine2": "up to 8 players.",
+    "limitConfirm": "Confirm",
+    "ctaLabel": "My Roster"
+  },
+  "myRoster": {
+    "headerTitle": "MY ROSTER",
+    "squadStatus": "SQUAD STATUS",
+    "remaining": "REMAINING",
+    "selectPlayerPlaceholder": "Select Player",
+    "selectPlayersBtn": "Select Players",
+    "buyRoster": "Buy Roster {{point}}p"
+  },
+  "registerTeam": {
+    "headerTitle": "SUBMIT TEAM",
+    "introLine1": "Your roster is complete.",
+    "introLine2": "Enter a team name to join the league.",
+    "inputPlaceholder": "MyDreamTeam",
+    "alertTooLong": "Please use 10 characters or fewer",
+    "alertProfanity": "Names containing profanity are not allowed.",
+    "listHeaderLabel": "My Roster",
+    "valueLabel": "Club Value",
+    "submitBtn": "Submit Roster",
+    "errorGeneric": "An error occurred while saving.",
+    "doneTitleLine1": "SQUAD",
+    "doneTitleLine2": "SUBMITTED",
+    "doneEyebrow": "2026 LCK ROUND3",
+    "doneTeamLabel": "Team",
+    "doneOwnerLabel": "Owner",
+    "doneDesc": "Next, register your starting lineup for this week's matches. Starters can be changed weekly.",
+    "doneHomeBtn": "Go Home",
+    "doneLineupBtn": "Register Starting Lineup"
+  },
+  "myTeam": {
+    "rankEyebrowRound": "2026 LCK Round 3",
+    "rankEyebrowWeek": "Week {{week}}",
+    "rankTitleLine1": "SEE WHERE",
+    "rankTitleLine2": "YOU STAND",
+    "rankDescLine1": "Ranking results are in.",
+    "rankDescLine2": "Check your team's rank on the leaderboard.",
+    "rankDontShow": "Don't show again",
+    "rankClose": "Close",
+    "rankView": "View My Rank",
+    "teamLabel": "Team",
+    "benchLabel": "BENCH",
+    "ctaLabel": "Set Up Starting Squad",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left"
+  },
+  "setLineup": {
+    "headerTitle": "BUILD SQUAD",
+    "week": "WEEK {{week}}",
+    "autoFill": "Auto Fill",
+    "demoteTooltip": "Move to bench",
+    "promoteTooltip": "Move to starting lineup",
+    "confirmBtn": "Confirm Starting Squad",
+    "loading": "Loading...",
+    "errorSaveFailed": "Save failed",
+    "errorGeneric": "An error occurred."
+  }
+}

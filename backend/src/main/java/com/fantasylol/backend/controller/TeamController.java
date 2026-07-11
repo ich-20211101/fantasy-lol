@@ -49,4 +49,11 @@ public class TeamController {
         return ResponseEntity.ok(teamService.updateStarters(oAuth2User, teamId, request));
     }
 
+    @DeleteMapping("/me")
+    @Operation(summary = "[TEST] Delete my team and roster")
+    public ResponseEntity<Void> deleteMyTeam(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        teamService.deleteMyTeam(oAuth2User);
+        return ResponseEntity.noContent().build();
+    }
+
 }

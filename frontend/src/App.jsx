@@ -1,16 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import './App.css'
 
 import RosterPage from './pages/RosterPage'
+import MyRosterPage from './pages/MyRosterPage'
 import StarterPage from './pages/StarterPage'
+import MyTeamPage from './pages/MyTeamPage'
+import RegisterTeamPage from './pages/RegisterTeamPage'
 import BottomNav from './components/BottomNav'
+import LanguageToggle from './components/LanguageToggle'
 
 import { getMe, loginWithGoogle, logout } from './api/users'
 import { getMyTeam } from './api/teams'
 import { getPlayers } from './api/players'
 
-function Home({ user, team, players, handleGoogleLogin, handleLogout }) {
+function Home({ user, players, handleGoogleLogin, handleLogout }) {
+  const { t } = useTranslation()
+
   const rows = useMemo(() => {
     const rowSize = 8
     const rowCount = 5
@@ -42,11 +49,11 @@ function Home({ user, team, players, handleGoogleLogin, handleLogout }) {
         <div className="lfm-scroll">
           <section className="lfm-hero">
             <h1>
-              PROVE<br />YOUR<br />SQUAD
+              {t('home.titleLine1')}<br />{t('home.titleLine2')}<br />{t('home.titleLine3')}
             </h1>
             <p>
-              제한된 예산 내 최적의 8인 로스터 구성<br />
-              실제 LCK 성적 기반의 랭킹 레이스
+              {t('home.subtitleLine1')}<br />
+              {t('home.subtitleLine2')}
             </p>
           </section>
 
@@ -79,40 +86,23 @@ function Home({ user, team, players, handleGoogleLogin, handleLogout }) {
 
           <footer className="lfm-footer-info">
             <div className="lfm-footer-links">
-              <span>PRIVACY POLICY</span>
-              <span>SCORE POLICY</span>
-              <span>CONTACT US</span>
+              <span>{t('common.privacyPolicy')}</span>
+              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
+              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
+              <LanguageToggle />
             </div>
             <p>
-              본 사이트는 LCK 팬페이지입니다. 라이엇 및 LCK와 무관하며,
-              경기 데이터를 기반으로 한 시뮬레이션 콘텐츠만을 제공합니다.
+              {t('common.disclaimer')}
             </p>
+            <div className="lfm-footer-wordmark">{t('common.wordmark')}</div>
           </footer>
         </div>
 
         <div className="lfm-cta-area">
-          {user && (
-            <p className="lfm-user">
-              Hello, <strong>{user.username}</strong>
-            </p>
-          )}
-
           {user ? (
-            team ? (
-              <Link className="lfm-cta" to="/starters">
-                내 팀 확인하기1
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                  <path d="M2 8.5h11M9 4l4.5 4.5L9 13" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            ) : (
-              <Link className="lfm-cta" to="/roster">
-                팀 창단하기2
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-                  <path d="M2 8.5h11M9 4l4.5 4.5L9 13" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            )
+            <Link className="lfm-cta" to="/roster">
+              {t('home.cta')}
+            </Link>
           ) : (
             <button className="lfm-cta" onClick={handleGoogleLogin}>
               <svg width="20" height="20" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -121,24 +111,19 @@ function Home({ user, team, players, handleGoogleLogin, handleLogout }) {
                 <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" />
                 <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
               </svg>
-              Google 계정으로 시작하기
-            </button>
-          )}
-
-          {user && (
-            <button className="lfm-signout" onClick={handleLogout}>
-              Sign Out
+              {t('home.googleLogin')}
             </button>
           )}
         </div>
 
-        <BottomNav />
+        <BottomNav user={user} onLogout={handleLogout} />
       </section>
     </main>
   )
 }
 
 function App() {
+  const { t } = useTranslation()
   const [user, setUser] = useState(null)
   const [team, setTeam] = useState(null)
   const [players, setPlayers] = useState([])
@@ -160,18 +145,22 @@ function App() {
       })
   }, [])
 
+  const refreshTeam = () => {
+    return getMyTeam()
+      .then(setTeam)
+      .catch(error => {
+        console.error('Failed to load team:', error)
+        setTeam(null)
+      })
+  }
+
   useEffect(() => {
     if (!user) {
       setTeam(null)
       return
     }
 
-    getMyTeam()
-      .then(setTeam)
-      .catch(error => {
-        console.error('Failed to load team:', error)
-        setTeam(null)
-      })
+    refreshTeam()
   }, [user])
 
   const handleGoogleLogin = () => {
@@ -190,24 +179,43 @@ function App() {
         <Route
           path="/"
           element={
-            <Home
-              user={user}
-              team={team}
-              players={players}
-              handleGoogleLogin={handleGoogleLogin}
-              handleLogout={handleLogout}
-            />
+            user && team ? (
+              <MyTeamPage user={user} team={team} onLogout={handleLogout} onTeamDeleted={refreshTeam} />
+            ) : (
+              <Home
+                user={user}
+                players={players}
+                handleGoogleLogin={handleGoogleLogin}
+                handleLogout={handleLogout}
+              />
+            )
           }
         />
 
         <Route
           path="/roster"
-          element={user ? <RosterPage /> : <div>로그인이 필요합니다.</div>}
+          element={user ? <RosterPage /> : <div>{t('common.loginRequired')}</div>}
+        />
+
+        <Route
+          path="/roster/mine"
+          element={user ? <MyRosterPage /> : <div>{t('common.loginRequired')}</div>}
+        />
+
+        <Route
+          path="/roster/register"
+          element={user ? <RegisterTeamPage user={user} onTeamCreated={refreshTeam} /> : <div>{t('common.loginRequired')}</div>}
         />
 
         <Route
           path="/starters"
-          element={user ? <StarterPage /> : <div>로그인이 필요합니다.</div>}
+          element={
+            user ? (
+              <StarterPage user={user} onLogout={handleLogout} onTeamUpdated={refreshTeam} />
+            ) : (
+              <div>{t('common.loginRequired')}</div>
+            )
+          }
         />
       </Routes>
     </BrowserRouter>

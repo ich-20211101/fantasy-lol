@@ -1,0 +1,380 @@
+.myroster-page {
+  min-height: 100vh;
+  background: #0b0b0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
+  text-align: left;
+}
+
+.myroster-frame {
+  width: 390px;
+  height: 844px;
+  background: #f8f9fa;
+  border-radius: 44px;
+  border: 1px solid rgba(11, 11, 12, 0.14);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+
+/* header */
+.myroster-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 52px 20px 16px;
+  border-bottom: 1px solid rgba(11, 11, 12, 0.08);
+}
+
+.myroster-back {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(11, 11, 12, 0.14);
+  border-radius: 11px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.myroster-back:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+.myroster-header-title {
+  flex: 1;
+  margin-right: 36px;
+  text-align: center;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.15;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #0b0b0c;
+}
+
+/* round row */
+.myroster-round {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 67px;
+  padding: 12px 22px 0;
+}
+
+.myroster-round span:first-child {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.4px;
+  color: #0b0b0c;
+}
+
+.myroster-round-spacer {
+  visibility: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  padding: 8px 15px;
+  border-radius: 20px;
+}
+
+/* scroll body */
+.myroster-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 22px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: none;
+}
+
+.myroster-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* status dashboard */
+.myroster-dashboard {
+  flex: none;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(11, 11, 12, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.myroster-dashboard-cell {
+  flex: 1;
+  padding: 15px 18px;
+}
+
+.myroster-dashboard-cell.right {
+  text-align: right;
+}
+
+.myroster-dashboard-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(11, 11, 12, 0.12);
+}
+
+.myroster-dashboard-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #9a9a9e;
+  font-weight: 500;
+}
+
+.myroster-dashboard-value {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  color: #0b0b0c;
+  margin-top: 5px;
+}
+
+.myroster-dashboard-value span {
+  color: #c8c8cc;
+}
+
+/* position slots */
+.myroster-slot {
+  display: flex;
+  flex-direction: column;
+}
+
+.myroster-slot-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #6a6a6f;
+  margin-bottom: 9px;
+}
+
+/* player card (always in the selected/filled state) */
+.myroster-player {
+  border: 1.5px solid #0b0b0c;
+  box-shadow: inset 0 0 0 1px #0b0b0c;
+  border-radius: 16px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 10px;
+  background: #f8f9fa;
+}
+
+.myroster-info {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid rgba(11, 11, 12, 0.26);
+  border-radius: 50%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.myroster-info:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+.myroster-player-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.myroster-player-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.myroster-player-title span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  color: #0b0b0c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.myroster-player-title span.myroster-player-score {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.15;
+  color: #f8f9fa;
+  background: #0B0B0C;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.myroster-player-main p {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  line-height: 1.15;
+  color: #9a9a9e;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.myroster-point {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.15;
+  color: #0b0b0c;
+}
+
+.myroster-remove {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1.6px solid #8a8a8f;
+  border-radius: 50%;
+  background: #f8f9fa;
+  color: #8a8a8f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.myroster-remove:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+/* empty slot placeholder */
+.myroster-slot-empty {
+  border: 1.5px dashed rgba(11, 11, 12, 0.24);
+  border-radius: 16px;
+  padding: 26px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #a4a4a8;
+}
+
+/* footer */
+.myroster-footer {
+  margin-top: 20px;
+  border-top: 1px solid rgba(11, 11, 12, 0.1);
+  padding: 24px 4px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.myroster-footer > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+}
+
+.myroster-footer span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  line-height: 1.15;
+  letter-spacing: 0.4px;
+  color: #0b0b0c;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.myroster-footer p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.65;
+  color: #9a9a9e;
+  font-weight: 500;
+}
+
+.myroster-footer-wordmark {
+  margin-top: 6px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: -0.4px;
+  color: #0b0b0c;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* fixed bottom action bar */
+.myroster-action {
+  flex: none;
+  display: flex;
+  gap: 11px;
+  padding: 12px 20px 30px;
+}
+
+.myroster-action-select {
+  flex: none;
+  border: 1.5px solid #0b0b0c;
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 18px 22px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #0b0b0c;
+  cursor: pointer;
+}
+
+.myroster-action-select:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+.myroster-action-buy {
+  flex: 1;
+  border: none;
+  border-radius: 16px;
+  padding: 18px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  background: #eef0f7;
+  color: #a6acbd;
+  cursor: not-allowed;
+}
+
+.myroster-action-buy:not(:disabled) {
+  background: #0b0b0c;
+  color: #f8f9fa;
+  cursor: pointer;
+}
+
+.myroster-action-buy:not(:disabled):hover {
+  opacity: 0.92;
+}

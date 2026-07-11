@@ -242,4 +242,14 @@ public class TeamService {
 
     }
 
+    @Transactional
+    public void deleteMyTeam(OAuth2User oAuth2User) {
+        User user = getUser(oAuth2User);
+        Team team = teamRepository.findByUserUserId(user.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        teamRosterRepository.deleteAll(teamRosterRepository.findByTeamTeamId(team.getTeamId()));
+        teamRepository.delete(team);
+    }
+
 }

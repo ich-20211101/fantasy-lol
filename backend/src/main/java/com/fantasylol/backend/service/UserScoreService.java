@@ -101,24 +101,23 @@ public class UserScoreService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        UserScore latest = userScoreRepository.findTopByUserUserIdOrderByUpdatedAtDesc(user.getUserId())
+                .orElse(null);
+
+        if (latest == null) {
+            return UserScoreDto.Response.builder()
+                    .weeklyScore(0.0)
+                    .seasonalScore(0.0)
+                    .build();
+        }
+
         int currentWeek = LocalDateTime.now().get(WeekFields.ISO.weekOfWeekBasedYear());
 
-        List<UserScore> allScores = userScoreRepository.findAll().stream()
-                .filter(s -> s.getUser().getUserId().equals(user.getUserId()))
-                .toList();
-
-        double weeklyScore = allScores.stream()
-                .filter(s -> s.getWeekNumber() == currentWeek)
-                .mapToDouble(UserScore::getWeeklyScore)
-                .sum();
-
-        double seasonalScore = allScores.stream()
-                .mapToDouble(UserScore::getWeeklyScore)
-                .sum();
+        double weeklyScore = latest.getWeekNumber() == currentWeek ? latest.getWeeklyScore() : 0.0;
 
         return UserScoreDto.Response.builder()
                 .weeklyScore(weeklyScore)
-                .seasonalScore(seasonalScore)
+                .seasonalScore(latest.getSeasonalScore())
                 .build();
 
     }

@@ -15,4 +15,6 @@ public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
     Double findSeasonalScoreByUserIdAndSeasonName(@Param("userId") Long userId, @Param("seasonName") String seasonName);
 
     List<UserScore> findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(Integer weekNumber, String seasonName);
+
+    Optional<UserScore> findTopByUserUserIdOrderByUpdatedAtDesc(Long userId);
 }

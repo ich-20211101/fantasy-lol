@@ -1,5 +1,6 @@
 package com.fantasylol.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
@@ -48,6 +49,8 @@ public class TeamDto {
         private String playerName;
         private String position;
         private String teamName;
+
+        @JsonProperty("isStarter")
         private boolean isStarter;
     }
 
