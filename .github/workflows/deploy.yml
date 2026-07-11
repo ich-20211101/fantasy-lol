@@ -8,24 +8,51 @@ on:
 
 concurrency:
   group: production-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/fantasy-lol-backend
+  AWS_REGION: ap-northeast-2
+
+  S3_BUCKET: fantasy-lol-deploy-150432925593-ap-northeast-2-an
+  EC2_INSTANCE_ID: i-059b6add8eb0de6f0
+
+  GHCR_USERNAME: ich-20211101
+  BACKEND_IMAGE: ghcr.io/ich-20211101/fantasy-lol-backend
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # --------------------------------------------------
+      # Source checkout
+      # --------------------------------------------------
+
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      # Frontend build
+      # --------------------------------------------------
+      # AWS authentication through GitHub OIDC
+      # --------------------------------------------------
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      # --------------------------------------------------
+      # Frontend build and artifact upload
+      # --------------------------------------------------
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -41,7 +68,29 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      # Backend Docker image build
+      - name: Package frontend artifact
+        run: |
+          set -euo pipefail
+
+          test -f frontend/dist/index.html
+
+          tar \
+            -C frontend/dist \
+            -czf "frontend-${GITHUB_SHA}.tar.gz" \
+            .
+
+      - name: Upload frontend artifact to S3
+        run: |
+          set -euo pipefail
+
+          aws s3 cp \
+            "frontend-${GITHUB_SHA}.tar.gz" \
+            "s3://${S3_BUCKET}/frontend/frontend-${GITHUB_SHA}.tar.gz"
+
+      # --------------------------------------------------
+      # Backend Docker image build and publication
+      # --------------------------------------------------
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -64,70 +113,180 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # SSH setup
-      - name: Configure SSH
+      # --------------------------------------------------
+      # Deployment through AWS Systems Manager
+      # --------------------------------------------------
+
+      - name: Create SSM deployment command
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          python3 <<'PY'
+          import json
+          import os
 
-          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
-          chmod 600 ~/.ssh/ec2_key
+          sha = os.environ["GITHUB_SHA"]
+          bucket = os.environ["S3_BUCKET"]
+          backend_image = os.environ["BACKEND_IMAGE"]
+          ghcr_username = os.environ["GHCR_USERNAME"]
 
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+          deployment_script = f"""
+          set -euo pipefail
 
-      # Remove previous temporary frontend build
-      - name: Prepare frontend upload directory
+          APP_DIR="/home/ubuntu/apps/fantasy-lol"
+          ARTIFACT="/tmp/frontend-{sha}.tar.gz"
+          NEXT_RELEASE="/var/www/fantasy-lol-next"
+          CURRENT_RELEASE="/var/www/fantasy-lol"
+          PREVIOUS_RELEASE="/var/www/fantasy-lol-previous"
+
+          echo "Downloading frontend artifact"
+
+          aws s3 cp \
+            "s3://{bucket}/frontend/frontend-{sha}.tar.gz" \
+            "$ARTIFACT"
+
+          echo "Reading GHCR token from Parameter Store"
+
+          GHCR_TOKEN=$(aws ssm get-parameter \
+            --name "/fantasy-lol/prod/ghcr/token" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          echo "Logging in to private GHCR"
+
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io \
+            --username "{ghcr_username}" \
+            --password-stdin
+
+          unset GHCR_TOKEN
+
+          echo "Updating application repository"
+
+          sudo -u ubuntu -H git -C "$APP_DIR" fetch origin main
+          sudo -u ubuntu -H git -C "$APP_DIR" checkout main
+          sudo -u ubuntu -H git -C "$APP_DIR" reset --hard "{sha}"
+
+          cd "$APP_DIR"
+
+          export BACKEND_IMAGE="{backend_image}:{sha}"
+
+          echo "Deploying backend image"
+
+          docker compose pull backend
+          docker compose up -d --no-build backend
+
+          echo "Waiting for backend health check"
+
+          BACKEND_READY=false
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent \
+              "http://127.0.0.1:8080/actuator/health" \
+              > /dev/null; then
+              BACKEND_READY=true
+              break
+            fi
+
+            sleep 2
+          done
+
+          if [ "$BACKEND_READY" != "true" ]; then
+            echo "Backend health check failed"
+            docker compose logs --tail=100 backend
+            exit 1
+          fi
+
+          echo "Preparing frontend release"
+
+          rm -rf "$NEXT_RELEASE"
+          mkdir -p "$NEXT_RELEASE"
+
+          tar -xzf "$ARTIFACT" -C "$NEXT_RELEASE"
+
+          test -f "$NEXT_RELEASE/index.html"
+
+          echo "Switching frontend release"
+
+          rm -rf "$PREVIOUS_RELEASE"
+
+          if [ -d "$CURRENT_RELEASE" ]; then
+            mv "$CURRENT_RELEASE" "$PREVIOUS_RELEASE"
+          fi
+
+          mv "$NEXT_RELEASE" "$CURRENT_RELEASE"
+
+          nginx -t
+          systemctl reload nginx
+
+          rm -f "$ARTIFACT"
+
+          docker image prune -f
+          docker compose ps
+
+          echo "Deployment completed successfully"
+          """
+
+          with open("ssm-parameters.json", "w", encoding="utf-8") as file:
+              json.dump(
+                  {
+                      "commands": [deployment_script]
+                  },
+                  file
+              )
+          PY
+
+      - name: Send deployment command
+        id: deploy
         run: |
-          ssh \
-            -i ~/.ssh/ec2_key \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
-            "rm -rf /tmp/fantasy-lol-dist"
+          set -euo pipefail
 
-      # Copy frontend build to EC2
-      - name: Upload frontend build
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Fantasy LoL ${GITHUB_SHA}" \
+            --parameters file://ssm-parameters.json \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "command_id=${COMMAND_ID}" >> "$GITHUB_OUTPUT"
+          echo "SSM command ID: ${COMMAND_ID}"
+
+      - name: Wait for deployment
         run: |
-          scp \
-            -i ~/.ssh/ec2_key \
-            -r frontend/dist \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/fantasy-lol-dist"
+          set -euo pipefail
 
-      # Authenticate EC2 to private GHCR
-      - name: Log in to GHCR from EC2
-        env:
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
-          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+          COMMAND_ID="${{ steps.deploy.outputs.command_id }}"
+
+          set +e
+
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${EC2_INSTANCE_ID}"
+
+          WAIT_STATUS=$?
+
+          set -e
+
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${EC2_INSTANCE_ID}" \
+            --query '{
+              Status:Status,
+              StandardOutput:StandardOutputContent,
+              StandardError:StandardErrorContent
+            }'
+
+          if [ "$WAIT_STATUS" -ne 0 ]; then
+            echo "Deployment failed"
+            exit "$WAIT_STATUS"
+          fi
+
+      # --------------------------------------------------
+      # Artifact cleanup
+      # --------------------------------------------------
+
+      - name: Remove uploaded artifact after failed deployment
+        if: failure()
         run: |
-          printf '%s' "${GHCR_READ_TOKEN}" | ssh \
-            -i ~/.ssh/ec2_key \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" \
-            "docker login ghcr.io -u '${GHCR_USERNAME}' --password-stdin"
-
-      # Release application on EC2
-      - name: Deploy application
-        run: |
-          ssh \
-            -i ~/.ssh/ec2_key \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
-              set -euo pipefail
-
-              cd /home/ubuntu/apps/fantasy-lol
-
-              git pull --ff-only origin main
-
-              export BACKEND_IMAGE=ghcr.io/ich-20211101/fantasy-lol-backend:latest
-
-              docker compose pull backend
-              docker compose up -d --no-build backend
-
-              sudo mkdir -p /var/www/fantasy-lol
-              sudo rm -rf /var/www/fantasy-lol/*
-              sudo cp -r /tmp/fantasy-lol-dist/* /var/www/fantasy-lol/
-              sudo rm -rf /tmp/fantasy-lol-dist
-
-              sudo nginx -t
-              sudo systemctl reload nginx
-
-              docker image prune -f
-              docker compose ps
-          EOF
+          aws s3 rm \
+            "s3://${S3_BUCKET}/frontend/frontend-${GITHUB_SHA}.tar.gz" \
+            || true
