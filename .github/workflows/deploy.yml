@@ -129,7 +129,7 @@ jobs:
           ghcr_username = os.environ["GHCR_USERNAME"]
 
           deployment_script = f"""
-          set -euo pipefail
+          set -eu
 
           APP_DIR="/home/ubuntu/apps/fantasy-lol"
           ARTIFACT="/tmp/frontend-{sha}.tar.gz"
