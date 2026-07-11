@@ -33,6 +33,10 @@ spring:
               - email
               - profile
 
+app:
+  oauth2:
+    success-redirect-url: /
+
 server:
   port: ${SERVER_PORT:8080}
 
