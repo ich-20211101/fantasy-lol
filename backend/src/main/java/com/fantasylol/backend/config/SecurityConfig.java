@@ -26,10 +26,19 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/", "/swagger-ui/**", "/api-docs/**", "/actuator/**",
-                            "/users/test-login", "/users/test-players",
-                            "/matches/sync", "/matches/players/sync",
-                            "/players").permitAll()
+                    .requestMatchers(
+                            "/",
+                            "/swagger-ui.html",
+                            "/swagger-ui/**",
+                            "/api-docs/**",
+                            "/v3/api-docs/**",
+                            "/actuator/**",
+                            "/users/test-login",
+                            "/users/test-players",
+                            "/matches/sync",
+                            "/matches/players/sync",
+                            "/players"
+                    ).permitAll()
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
