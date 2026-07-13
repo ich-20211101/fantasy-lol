@@ -120,6 +120,42 @@ html, body {
   animation-name: lfmR;
 }
 
+.lfm-marquee-skeleton-row {
+  display: flex;
+  gap: 11px;
+}
+
+.lfm-player-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.lfm-skeleton-bar {
+  height: 12px;
+  border-radius: 4px;
+  background: rgba(11, 11, 12, 0.08);
+  animation: lfmPulse 1.4s ease-in-out infinite;
+}
+
+.lfm-skeleton-bar-name {
+  width: 70%;
+}
+
+.lfm-skeleton-bar-sub {
+  width: 45%;
+  height: 9px;
+}
+
+@keyframes lfmPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 .lfm-player-card {
   flex: none;
   width: 186px;

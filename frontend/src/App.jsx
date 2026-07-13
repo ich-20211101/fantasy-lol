@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import './App.css'
@@ -21,6 +21,7 @@ import { getPlayers } from './api/players'
 
 function Home({ user, players, handleGoogleLogin }) {
   const { t } = useTranslation()
+  const marqueeRef = useRef(null)
 
   const rows = useMemo(() => {
     const rowSize = 8
@@ -36,6 +37,18 @@ function Home({ user, players, handleGoogleLogin }) {
 
   const shifts = ['0%', '-6%', '-3%', '-9%', '-2%']
   const speeds = ['128s', '142s', '136s', '150s', '132s']
+  const isLoading = players.length === 0
+
+  useEffect(() => {
+    // iOS Safari sometimes fails to start CSS animations driven by inline
+    // custom properties on first paint; forcing a reflow kicks it off.
+    const rowEls = marqueeRef.current?.querySelectorAll('.lfm-marquee-row')
+    rowEls?.forEach((row) => {
+      row.style.animation = 'none'
+      void row.offsetHeight
+      row.style.animation = ''
+    })
+  }, [players])
 
   return (
     <main className="lfm-page">
@@ -53,31 +66,42 @@ function Home({ user, players, handleGoogleLogin }) {
             </p>
           </section>
 
-          <section className="lfm-marquee">
-            {rows.map((row, rowIndex) => (
-              <div
-                key={rowIndex}
-                className="lfm-marquee-row"
-                style={{
-                  '--start': shifts[rowIndex],
-                  '--speed': speeds[rowIndex],
-                }}
-              >
-                {row.map((player, index) => (
+          <section className="lfm-marquee" ref={marqueeRef}>
+            {isLoading
+              ? Array.from({ length: 5 }, (_, rowIndex) => (
+                  <div key={`skeleton-${rowIndex}`} className="lfm-marquee-skeleton-row">
+                    {Array.from({ length: 8 }, (_, cardIndex) => (
+                      <div className="lfm-player-card lfm-player-card-skeleton" key={cardIndex}>
+                        <div className="lfm-skeleton-bar lfm-skeleton-bar-name" />
+                        <div className="lfm-skeleton-bar lfm-skeleton-bar-sub" />
+                      </div>
+                    ))}
+                  </div>
+                ))
+              : rows.map((row, rowIndex) => (
                   <div
-                    className="lfm-player-card"
-                    key={`${player.playerId}-${index}`}
+                    key={rowIndex}
+                    className="lfm-marquee-row"
+                    style={{
+                      '--start': shifts[rowIndex],
+                      '--speed': speeds[rowIndex],
+                    }}
                   >
-                    <div className="lfm-player-name">
-                      {player.playerName}
-                    </div>
-                    <div className="lfm-player-sub">
-                      {player.teamName} | {player.position}
-                    </div>
+                    {row.map((player, index) => (
+                      <div
+                        className="lfm-player-card"
+                        key={`${player.playerId}-${index}`}
+                      >
+                        <div className="lfm-player-name">
+                          {player.playerName}
+                        </div>
+                        <div className="lfm-player-sub">
+                          {player.teamName} | {player.position}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
-              </div>
-            ))}
           </section>
 
           <Footer marginTop="24px" padding="24px 24px 40px" />
