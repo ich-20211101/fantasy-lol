@@ -10,7 +10,6 @@
 
 .setlineup-frame {
   width: 100%;
-  max-width: 390px;
   height: 100vh;
   height: 100dvh;
   background: #f8f9fa;
@@ -19,6 +18,12 @@
   flex-direction: column;
   position: relative;
   text-align: left;
+}
+
+@media (min-width: 600px) {
+  .setlineup-frame {
+    max-width: 390px;
+  }
 }
 
 /* week / countdown / auto fill */
@@ -85,6 +90,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: 16px 22px 12px;
   display: flex;
   flex-direction: column;

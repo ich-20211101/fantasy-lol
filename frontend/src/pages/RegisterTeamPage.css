@@ -10,7 +10,6 @@
 
 .register-frame {
   width: 100%;
-  max-width: 390px;
   height: 100vh;
   height: 100dvh;
   background: #f8f9fa;
@@ -19,6 +18,12 @@
   flex-direction: column;
   position: relative;
   text-align: left;
+}
+
+@media (min-width: 600px) {
+  .register-frame {
+    max-width: 390px;
+  }
 }
 
 /* intro / name input */
@@ -103,6 +108,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: 6px 24px 12px;
   scrollbar-width: none;
 }

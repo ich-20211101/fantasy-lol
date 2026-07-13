@@ -2,9 +2,20 @@
   box-sizing: border-box;
 }
 
+html {
+  overscroll-behavior: none;
+}
+
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+#root {
+  height: 100%;
 }
 
 .lfm-page {
@@ -20,7 +31,6 @@ html, body {
 
 .lfm-frame {
   width: 100%;
-  max-width: 390px;
   height: 100vh;
   height: 100dvh;
   background: #f8f9fa;
@@ -30,11 +40,20 @@ html, body {
   text-align: left;
 }
 
+/* Any real phone (even the widest ones) stays full-width;
+   only cap to a mobile-sized column once we're clearly on a tablet/desktop viewport. */
+@media (min-width: 600px) {
+  .lfm-frame {
+    max-width: 390px;
+  }
+}
+
 .lfm-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;
   scrollbar-width: none;
