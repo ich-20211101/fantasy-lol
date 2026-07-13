@@ -85,5 +85,34 @@
     "loading": "Loading...",
     "errorSaveFailed": "Save failed",
     "errorGeneric": "An error occurred."
+  },
+  "profile": {
+    "accountManagement": "Account Management",
+    "logout": "Log out",
+    "withdraw": "Delete Account :(",
+    "nickPopupTitle": "Change your nickname?",
+    "nickClose": "Close",
+    "nickSave": "Save",
+    "errorGeneric": "An error occurred while saving."
+  },
+  "withdraw": {
+    "titleLine1": "Wait, leaving",
+    "titleLine2": "already?",
+    "descLine1": "Let us know why you're leaving —",
+    "descLine2": "it helps us make LFM better.",
+    "reason1": "Lost interest in LoL",
+    "reason2": "The site is hard to use",
+    "reason3": "Lack of trust",
+    "reason4": "It's not fun",
+    "reason5": "Just changed my mind",
+    "notePlaceholder": "Feel free to leave any additional feedback (optional)",
+    "continueBtn": "Keep using LFM :)",
+    "nextBtn": "Next",
+    "confirmTitleLine1": "{{username}},",
+    "confirmTitleLine2": "are you sure?",
+    "warningPrefix": "Withdrawing will immediately delete all your data, including your roster and rankings, and ",
+    "warningUnderline": "it cannot be undone.",
+    "confirmBtn": "Yes, delete my account :(",
+    "errorGeneric": "An error occurred while processing your withdrawal."
   }
 }

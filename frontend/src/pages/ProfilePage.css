@@ -1,0 +1,228 @@
+.profile-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
+  text-align: left;
+}
+
+.profile-frame {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: #f8f9fa;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+
+@media (min-width: 600px) {
+  .profile-frame {
+    max-width: 390px;
+  }
+}
+
+/* scroll body */
+.profile-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 20px 22px 0;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+
+.profile-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* nickname row */
+.profile-nick-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px;
+}
+
+.profile-nick-name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -1px;
+  color: #0b0b0c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-nick-edit {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.profile-nick-edit:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+/* account management card */
+.profile-menu-card {
+  flex: none;
+  margin-top: 18px;
+  border: 1.5px solid rgba(11, 11, 12, 0.16);
+  border-radius: 16px;
+  padding: 6px 4px;
+}
+
+.profile-menu-label {
+  padding: 12px 14px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #9a9a9e;
+  text-transform: uppercase;
+}
+
+.profile-menu-item {
+  padding: 13px 14px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: #0b0b0c;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 11px;
+}
+
+.profile-menu-item:hover {
+  background: rgba(11, 11, 12, 0.05);
+}
+
+/* spacer pushes footer to the bottom on tall screens */
+.profile-spacer {
+  flex: 1;
+  min-height: 300px;
+}
+
+/* nickname change popup */
+.profile-nick-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  background: rgba(11, 11, 12, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+.profile-nick-modal {
+  width: 100%;
+  background: #f8f9fa;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 28px 64px -20px rgba(0, 0, 0, 0.55);
+  padding: 30px 26px 24px;
+}
+
+.profile-nick-title {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.4px;
+  color: #0b0b0c;
+}
+
+.profile-nick-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  border-bottom: 2px solid #0b0b0c;
+  background: transparent;
+  margin-top: 20px;
+  padding: 12px 2px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #0b0b0c;
+  outline: none;
+}
+
+.profile-nick-alert {
+  height: 20px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.profile-nick-error {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e11d2e;
+}
+
+.profile-nick-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.profile-nick-close {
+  flex: none;
+  border: 1.5px solid #0b0b0c;
+  background: transparent;
+  border-radius: 14px;
+  padding: 15px 24px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #0b0b0c;
+  cursor: pointer;
+}
+
+.profile-nick-close:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+.profile-nick-save {
+  flex: 1;
+  border: none;
+  border-radius: 14px;
+  padding: 15px;
+  background: #0b0b0c;
+  color: #f8f9fa;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.profile-nick-save:not(:disabled):hover {
+  opacity: 0.92;
+}
+
+.profile-nick-save:disabled {
+  background: #9a9a9e;
+  cursor: not-allowed;
+}

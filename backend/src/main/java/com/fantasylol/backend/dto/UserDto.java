@@ -26,4 +26,23 @@ public class UserDto {
         private String profileImageUrl;
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class NicknameUpdateRequest {
+        private String username;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class WithdrawRequest {
+        private String reason;
+        private String note;
+    }
+
 }

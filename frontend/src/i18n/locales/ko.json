@@ -84,5 +84,34 @@
     "loading": "로딩 중...",
     "errorSaveFailed": "저장 실패",
     "errorGeneric": "오류가 발생했습니다."
+  },
+  "profile": {
+    "accountManagement": "계정관리",
+    "logout": "로그아웃",
+    "withdraw": "탈퇴 :(",
+    "nickPopupTitle": "닉네임을 변경하시겠어요?",
+    "nickClose": "닫기",
+    "nickSave": "저장",
+    "errorGeneric": "저장 중 오류가 발생했습니다."
+  },
+  "withdraw": {
+    "titleLine1": "잠깐, 벌써",
+    "titleLine2": "가시게요?",
+    "descLine1": "떠나시는 이유를 알려주시면",
+    "descLine2": "더 나은 LFM을 만드는 데 큰 힘이 돼요.",
+    "reason1": "롤에 관심이 없어져서",
+    "reason2": "사이트가 불편해서",
+    "reason3": "신뢰도가 부족해서",
+    "reason4": "재미가 없어서",
+    "reason5": "단순변심",
+    "notePlaceholder": "더 해주고 싶은 말이 있다면 편하게 남겨주세요 (선택)",
+    "continueBtn": "계속 이용하기 :)",
+    "nextBtn": "다음",
+    "confirmTitleLine1": "{{username}}님",
+    "confirmTitleLine2": "정말 가시게요?",
+    "warningPrefix": "탈퇴하면 로스터, 랭킹을 포함한 모든 데이터가 즉시 삭제되고 ",
+    "warningUnderline": "복구할 수 없어요.",
+    "confirmBtn": "정말 탈퇴하기 :(",
+    "errorGeneric": "탈퇴 처리 중 오류가 발생했습니다."
   }
 }

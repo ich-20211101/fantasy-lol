@@ -69,4 +69,29 @@ public class UserController {
         return ResponseEntity.ok(userScoreService.getMyScores(oAuth2User));
     }
 
+    @PatchMapping("/me/nickname")
+    @Operation(summary = "Update nickname")
+    public ResponseEntity<UserDto.Response> updateNickname(@AuthenticationPrincipal OAuth2User oAuth2User,
+                                                           @RequestBody UserDto.NicknameUpdateRequest request) {
+        return ResponseEntity.ok(userService.updateNickname(oAuth2User, request));
+    }
+
+    @DeleteMapping("/me")
+    @Operation(summary = "Withdraw (delete account)")
+    public ResponseEntity<Void> withdraw(@AuthenticationPrincipal OAuth2User oAuth2User,
+                                         @RequestBody UserDto.WithdrawRequest request,
+                                         HttpServletRequest httpRequest) {
+
+        userService.withdraw(oAuth2User, request);
+
+        SecurityContextHolder.clearContext();
+        HttpSession session = httpRequest.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        return ResponseEntity.ok().build();
+
+    }
+
 }

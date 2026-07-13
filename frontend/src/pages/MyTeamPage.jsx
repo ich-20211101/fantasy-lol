@@ -46,7 +46,7 @@ function isRankPopupSuppressed() {
   return elapsedMs < RANK_POPUP_SUPPRESS_DAYS * 24 * 60 * 60 * 1000
 }
 
-export default function MyTeamPage({ user, team, onLogout, onTeamDeleted }) {
+export default function MyTeamPage({ team, onTeamDeleted }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
@@ -266,7 +266,7 @@ export default function MyTeamPage({ user, team, onLogout, onTeamDeleted }) {
           </button>
         </div>
 
-        <BottomNav user={user} onLogout={onLogout} />
+        <BottomNav />
       </section>
     </main>
   )

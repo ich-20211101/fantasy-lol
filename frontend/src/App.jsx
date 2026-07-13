@@ -8,6 +8,9 @@ import MyRosterPage from './pages/MyRosterPage'
 import StarterPage from './pages/StarterPage'
 import MyTeamPage from './pages/MyTeamPage'
 import RegisterTeamPage from './pages/RegisterTeamPage'
+import ProfilePage from './pages/ProfilePage'
+import WithdrawPage from './pages/WithdrawPage'
+import WithdrawConfirmPage from './pages/WithdrawConfirmPage'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -16,7 +19,7 @@ import { getMe, loginWithGoogle, logout } from './api/users'
 import { getMyTeam } from './api/teams'
 import { getPlayers } from './api/players'
 
-function Home({ user, players, handleGoogleLogin, handleLogout }) {
+function Home({ user, players, handleGoogleLogin }) {
   const { t } = useTranslation()
 
   const rows = useMemo(() => {
@@ -98,7 +101,7 @@ function Home({ user, players, handleGoogleLogin, handleLogout }) {
           )}
         </div>
 
-        <BottomNav user={user} onLogout={handleLogout} />
+        <BottomNav />
       </section>
     </main>
   )
@@ -118,13 +121,17 @@ function App() {
       })
   }, [])
 
-  useEffect(() => {
-    getMe()
+  const refreshUser = () => {
+    return getMe()
       .then(setUser)
       .catch(error => {
         console.error('Failed to load user:', error)
         setUser(null)
       })
+  }
+
+  useEffect(() => {
+    refreshUser()
   }, [])
 
   const refreshTeam = () => {
@@ -155,6 +162,11 @@ function App() {
     setTeam(null)
   }
 
+  const handleWithdrawn = () => {
+    setUser(null)
+    setTeam(null)
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -162,13 +174,12 @@ function App() {
           path="/"
           element={
             user && team ? (
-              <MyTeamPage user={user} team={team} onLogout={handleLogout} onTeamDeleted={refreshTeam} />
+              <MyTeamPage team={team} onTeamDeleted={refreshTeam} />
             ) : (
               <Home
                 user={user}
                 players={players}
                 handleGoogleLogin={handleGoogleLogin}
-                handleLogout={handleLogout}
               />
             )
           }
@@ -193,7 +204,34 @@ function App() {
           path="/starters"
           element={
             user ? (
-              <StarterPage user={user} onLogout={handleLogout} onTeamUpdated={refreshTeam} />
+              <StarterPage onTeamUpdated={refreshTeam} />
+            ) : (
+              <div>{t('common.loginRequired')}</div>
+            )
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            user ? (
+              <ProfilePage user={user} onLogout={handleLogout} onUserUpdated={refreshUser} />
+            ) : (
+              <div>{t('common.loginRequired')}</div>
+            )
+          }
+        />
+
+        <Route
+          path="/withdraw"
+          element={user ? <WithdrawPage /> : <div>{t('common.loginRequired')}</div>}
+        />
+
+        <Route
+          path="/withdraw/confirm"
+          element={
+            user ? (
+              <WithdrawConfirmPage user={user} onWithdrawn={handleWithdrawn} />
             ) : (
               <div>{t('common.loginRequired')}</div>
             )

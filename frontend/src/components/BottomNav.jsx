@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import './BottomNav.css'
 
-function BottomNav({ user, onLogout }) {
+function BottomNav() {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
@@ -46,7 +46,7 @@ function BottomNav({ user, onLogout }) {
     {
       key: 'profile',
       label: t('bottomNav.profile'),
-      path: null, // TODO: 프로필 페이지 생기면 연결 (지금은 로그인 시 로그아웃 트리거로 임시 사용)
+      path: '/profile',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="8" r="3.6" />
@@ -57,10 +57,6 @@ function BottomNav({ user, onLogout }) {
   ]
 
   const handleClick = (tab) => {
-    if (tab.key === 'profile' && user) {
-      onLogout?.()
-      return
-    }
     if (tab.path) {
       navigate(tab.path)
     }

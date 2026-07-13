@@ -39,7 +39,7 @@ function scoreValue(player) {
   return parseInt(String(player.lastSeasonScore ?? '0').replace(/[^0-9]/g, ''), 10) || 0
 }
 
-export default function StarterPage({ user, onLogout, onTeamUpdated }) {
+export default function StarterPage({ onTeamUpdated }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
 
@@ -268,7 +268,7 @@ export default function StarterPage({ user, onLogout, onTeamUpdated }) {
           </button>
         </section>
 
-        <BottomNav user={user} onLogout={onLogout} />
+        <BottomNav />
       </section>
     </main>
   )

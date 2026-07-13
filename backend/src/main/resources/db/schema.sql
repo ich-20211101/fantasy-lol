@@ -81,6 +81,14 @@ CREATE TABLE IF NOT EXISTS user_scores (
     UNIQUE (user_id, week_number, season_name)
 );
 
+CREATE TABLE IF NOT EXISTS withdrawal_feedbacks (
+    withdrawal_feedback_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id     BIGINT,
+    reason      VARCHAR(50) NOT NULL,
+    note        VARCHAR(500),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_teams_user_id ON teams(user_id);
 CREATE INDEX IF NOT EXISTS idx_team_roster_team_id ON team_roster(team_id);
 CREATE INDEX IF NOT EXISTS idx_player_stats_match_id ON player_stats(match_id);
