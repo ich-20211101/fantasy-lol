@@ -5,6 +5,7 @@ import com.fantasylol.backend.repository.PlayerRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class PlayerSyncService {
     private final LeaguepediaClient leaguepediaClient;
     private final PlayerRepository playerRepository;
 
+    @CacheEvict(cacheNames = "players", allEntries = true)
     @Transactional
     public void syncPlayers(String overviewPage) throws Exception {
 
