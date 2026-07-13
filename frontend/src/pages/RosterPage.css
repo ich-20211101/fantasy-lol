@@ -1,63 +1,24 @@
 .build-page {
   min-height: 100vh;
-  background: #0b0b0c;
+  min-height: 100dvh;
+  background: #f8f9fa;
   display: flex;
-  align-items: center;
   justify-content: center;
   font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
   text-align: left;
 }
 
 .build-frame {
-  width: 390px;
-  height: 844px;
+  width: 100%;
+  max-width: 390px;
+  height: 100vh;
+  height: 100dvh;
   background: #f8f9fa;
-  border-radius: 44px;
-  border: 1px solid rgba(11, 11, 12, 0.14);
-  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
   text-align: left;
-}
-
-/* header */
-.build-header {
-  flex: none;
-  display: flex;
-  align-items: center;
-  padding: 52px 20px 16px;
-  border-bottom: 1px solid rgba(11, 11, 12, 0.08);
-}
-
-.build-back {
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(11, 11, 12, 0.14);
-  border-radius: 11px;
-  background: #f8f9fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.build-back:hover {
-  background: rgba(11, 11, 12, 0.06);
-}
-
-.build-header-title {
-  flex: 1;
-  margin-right: 36px;
-  text-align: center;
-  font-family: 'Archivo', sans-serif;
-  font-weight: 800;
-  font-size: 16px;
-  line-height: 1.15;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #0b0b0c;
 }
 
 /* round / point */
@@ -344,55 +305,6 @@
 
 .build-toggle:hover {
   background: rgba(11, 11, 12, 0.06);
-}
-
-/* footer */
-.build-footer-info {
-  margin-top: 20px;
-  border-top: 1px solid rgba(11, 11, 12, 0.1);
-  padding: 24px 4px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.build-footer-info > div {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 20px;
-}
-
-.build-footer-info span {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 700;
-  font-size: 11.5px;
-  line-height: 1.15;
-  letter-spacing: 0.4px;
-  color: #0b0b0c;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.build-footer-info p {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.65;
-  color: #9a9a9e;
-  font-weight: 500;
-}
-
-.build-footer-wordmark {
-  margin-top: 6px;
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900;
-  font-size: 15px;
-  letter-spacing: -0.4px;
-  color: #0b0b0c;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
 /* bottom action */

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import LanguageToggle from '../components/LanguageToggle'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import './MyRosterPage.css'
 
 const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
@@ -58,24 +59,11 @@ export default function MyRosterPage() {
   return (
     <main className="myroster-page">
       <section className="myroster-frame">
-        <header className="myroster-header">
-          <button
-            type="button"
-            className="myroster-back"
-            onClick={() => navigate('/roster', { state: { selectedPlayers } })}
-          >
-            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
-              <path
-                d="M8 1L1.5 7.5L8 14"
-                stroke="#0b0b0c"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-
-          <span className="myroster-header-title">{t('myRoster.headerTitle')}</span>
-        </header>
+        <Header
+          variant="back"
+          title={t('myRoster.headerTitle')}
+          onBack={() => navigate('/roster', { state: { selectedPlayers } })}
+        />
 
         <section className="myroster-round">
           <span>{t('common.round')}</span>
@@ -149,18 +137,7 @@ export default function MyRosterPage() {
             </div>
           ))}
 
-          <footer className="myroster-footer">
-            <div>
-              <span>{t('common.privacyPolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
-              <LanguageToggle />
-            </div>
-            <p>
-              {t('common.disclaimer')}
-            </p>
-            <div className="myroster-footer-wordmark">{t('common.wordmark')}</div>
-          </footer>
+          <Footer marginTop="20px" padding="24px 4px 40px" />
         </section>
 
         <section className="myroster-action">

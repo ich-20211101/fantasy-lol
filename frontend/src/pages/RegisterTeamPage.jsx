@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import './RegisterTeamPage.css'
 
 import { saveRoster } from '../api/teams'
-import LanguageToggle from '../components/LanguageToggle'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 const POS_LABEL = {
   Top: 'TOP',
@@ -76,10 +77,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
     return (
       <main className="register-page">
         <section className="register-frame">
-          <header className="register-header">
-            <div className="register-back-spacer" />
-            <span className="register-header-title">{t('registerTeam.headerTitle')}</span>
-          </header>
+          <Header variant="back" title={t('registerTeam.headerTitle')} showBackButton={false} />
 
           <div className="register-done-body">
             <h1 className="register-done-title">
@@ -119,14 +117,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
   return (
     <main className="register-page">
       <section className="register-frame">
-        <header className="register-header">
-          <button type="button" className="register-back" onClick={() => navigate('/roster')}>
-            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
-              <path d="M8 1L1.5 7.5L8 14" stroke="#0b0b0c" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-          </button>
-          <span className="register-header-title">{t('registerTeam.headerTitle')}</span>
-        </header>
+        <Header variant="back" title={t('registerTeam.headerTitle')} onBack={() => navigate('/roster')} />
 
         <div className="register-intro">
           <h2>
@@ -165,18 +156,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
             </div>
           ))}
 
-          <footer className="register-footer">
-            <div>
-              <span>{t('common.privacyPolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
-              <LanguageToggle />
-            </div>
-            <p>
-              {t('common.disclaimer')}
-            </p>
-            <div className="register-footer-wordmark">{t('common.wordmark')}</div>
-          </footer>
+          <Footer marginTop="20px" padding="24px 4px 40px" />
         </div>
 
         <div className="register-submit-area">

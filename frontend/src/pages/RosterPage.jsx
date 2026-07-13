@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import './RosterPage.css'
 
 import { getPlayers } from '../api/players'
-import LanguageToggle from '../components/LanguageToggle'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
 
@@ -120,24 +121,7 @@ export default function RosterPage() {
           </div>
         )}
 
-        <header className="build-header">
-          <button
-            type="button"
-            className="build-back"
-            onClick={() => navigate('/')}
-          >
-            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
-              <path
-                d="M8 1L1.5 7.5L8 14"
-                stroke="#0b0b0c"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-
-          <span className="build-header-title">{t('buildRoster.headerTitle')}</span>
-        </header>
+        <Header variant="back" title={t('buildRoster.headerTitle')} onBack={() => navigate('/')} />
 
         <section className="build-round">
           <span>{t('common.round')}</span>
@@ -293,18 +277,7 @@ export default function RosterPage() {
             })}
           </div>
 
-          <footer className="build-footer-info">
-            <div>
-              <span>{t('common.privacyPolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
-              <LanguageToggle />
-            </div>
-            <p>
-              {t('common.disclaimer')}
-            </p>
-            <div className="build-footer-wordmark">{t('common.wordmark')}</div>
-          </footer>
+          <Footer marginTop="20px" padding="24px 4px 40px" />
         </section>
 
         <section className="build-action">

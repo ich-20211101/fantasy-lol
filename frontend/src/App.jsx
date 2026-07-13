@@ -9,7 +9,8 @@ import StarterPage from './pages/StarterPage'
 import MyTeamPage from './pages/MyTeamPage'
 import RegisterTeamPage from './pages/RegisterTeamPage'
 import BottomNav from './components/BottomNav'
-import LanguageToggle from './components/LanguageToggle'
+import Header from './components/Header'
+import Footer from './components/Footer'
 
 import { getMe, loginWithGoogle, logout } from './api/users'
 import { getMyTeam } from './api/teams'
@@ -36,15 +37,7 @@ function Home({ user, players, handleGoogleLogin, handleLogout }) {
   return (
     <main className="lfm-page">
       <section className="lfm-frame">
-        <header className="lfm-header">
-          <div className="lfm-brand-wrap">
-            <span className="lfm-logo">LFM</span>
-            <span className="lfm-logo-line" />
-            <span className="lfm-brand">
-              LoL Fantasy<br />Maker
-            </span>
-          </div>
-        </header>
+        <Header variant="logo" divider={false} />
 
         <div className="lfm-scroll">
           <section className="lfm-hero">
@@ -84,18 +77,7 @@ function Home({ user, players, handleGoogleLogin, handleLogout }) {
             ))}
           </section>
 
-          <footer className="lfm-footer-info">
-            <div className="lfm-footer-links">
-              <span>{t('common.privacyPolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
-              <LanguageToggle />
-            </div>
-            <p>
-              {t('common.disclaimer')}
-            </p>
-            <div className="lfm-footer-wordmark">{t('common.wordmark')}</div>
-          </footer>
+          <Footer marginTop="24px" padding="24px 24px 40px" />
         </div>
 
         <div className="lfm-cta-area">

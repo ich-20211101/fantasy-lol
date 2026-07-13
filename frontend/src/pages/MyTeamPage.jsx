@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import './MyTeamPage.css'
 
 import BottomNav from '../components/BottomNav'
-import LanguageToggle from '../components/LanguageToggle'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import { deleteMyTeam } from '../api/teams'
 
 const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
@@ -166,15 +167,7 @@ export default function MyTeamPage({ user, team, onLogout, onTeamDeleted }) {
           </div>
         )}
 
-        <header className="myteam-header">
-          <div className="lfm-brand-wrap">
-            <span className="lfm-logo">LFM</span>
-            <span className="lfm-logo-line" />
-            <span className="lfm-brand">
-              LoL Fantasy<br />Maker
-            </span>
-          </div>
-        </header>
+        <Header variant="logo" />
 
         <div className={`myteam-title ${collapsed ? 'collapsed' : ''}`}>
           <div className="myteam-title-label">{t('myTeam.rankEyebrowRound')}</div>
@@ -243,18 +236,7 @@ export default function MyTeamPage({ user, team, onLogout, onTeamDeleted }) {
             </div>
           ))}
 
-          <footer className="myteam-footer">
-            <div className="myteam-footer-links">
-              <span>{t('common.privacyPolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
-              <LanguageToggle />
-            </div>
-            <p>
-              {t('common.disclaimer')}
-            </p>
-            <div className="myteam-footer-wordmark">{t('common.wordmark')}</div>
-          </footer>
+          <Footer marginTop="20px" padding="24px 4px 40px" />
 
           {/* [TEST] 테스트 편의용 — 나중에 제거 예정 */}
           <button

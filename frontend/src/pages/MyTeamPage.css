@@ -1,34 +1,24 @@
 .myteam-page {
   min-height: 100vh;
-  background: #0b0b0c;
+  min-height: 100dvh;
+  background: #f8f9fa;
   display: flex;
-  align-items: center;
   justify-content: center;
   font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
   text-align: left;
 }
 
 .myteam-frame {
-  width: 390px;
-  height: 844px;
+  width: 100%;
+  max-width: 390px;
+  height: 100vh;
+  height: 100dvh;
   background: #f8f9fa;
-  border-radius: 44px;
-  border: 1px solid rgba(11, 11, 12, 0.14);
-  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
   text-align: left;
-}
-
-/* header */
-.myteam-header {
-  flex: none;
-  display: flex;
-  align-items: center;
-  padding: 52px 24px 16px;
-  border-bottom: 1px solid rgba(11, 11, 12, 0.08);
 }
 
 /* title / week / countdown */
@@ -253,54 +243,6 @@
   font-weight: 700;
   letter-spacing: 1.5px;
   color: #6a6a6f;
-}
-
-/* footer */
-.myteam-footer {
-  margin-top: 20px;
-  border-top: 1px solid rgba(11, 11, 12, 0.1);
-  padding: 24px 4px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.myteam-footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 20px;
-}
-
-.myteam-footer-links span {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 700;
-  font-size: 11.5px;
-  letter-spacing: 0.4px;
-  color: #0b0b0c;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.myteam-footer p {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.65;
-  color: #9a9a9e;
-  font-weight: 500;
-}
-
-.myteam-footer-wordmark {
-  margin-top: 6px;
-  font-family: 'Archivo', sans-serif;
-  font-weight: 900;
-  font-size: 15px;
-  letter-spacing: -0.4px;
-  color: #0b0b0c;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
 /* fixed CTA */

@@ -1,0 +1,83 @@
+.app-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 65px;
+}
+
+.app-header-logo {
+  padding: 5px 24px 0;
+}
+
+.app-header-back {
+  padding: 5px 20px 0;
+}
+
+.app-header-back-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(11, 11, 12, 0.14);
+  border-radius: 11px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.app-header-back-btn:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+.app-header-back-spacer {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+
+.app-header-title {
+  flex: 1;
+  margin-right: 36px;
+  text-align: center;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #0b0b0c;
+  position: relative;
+  top: 1px;
+}
+
+.lfm-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lfm-logo {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: -1.5px;
+  color: #0b0b0c;
+  text-align: left;
+}
+
+.lfm-logo-line {
+  width: 1px;
+  height: 26px;
+  background: rgba(11, 11, 12, 0.2);
+}
+
+.lfm-brand {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 0.92;
+  letter-spacing: 0.3px;
+  color: #6a6a6f;
+  text-transform: uppercase;
+  text-align: left;
+}

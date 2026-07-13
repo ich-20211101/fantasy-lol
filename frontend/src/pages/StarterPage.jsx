@@ -5,7 +5,8 @@ import './StarterPage.css'
 
 import { getMyTeam, saveStarters } from '../api/teams'
 import BottomNav from '../components/BottomNav'
-import LanguageToggle from '../components/LanguageToggle'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
 
@@ -167,14 +168,7 @@ export default function StarterPage({ user, onLogout, onTeamUpdated }) {
   return (
     <main className="setlineup-page">
       <section className="setlineup-frame">
-        <header className="setlineup-header">
-          <button type="button" className="setlineup-back" onClick={() => navigate('/')}>
-            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
-              <path d="M8 1L1.5 7.5L8 14" stroke="#0b0b0c" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-          </button>
-          <span className="setlineup-header-title">{t('setLineup.headerTitle')}</span>
-        </header>
+        <Header variant="back" title={t('setLineup.headerTitle')} onBack={() => navigate('/')} />
 
         <section className="setlineup-week">
           <div className="setlineup-week-info">
@@ -260,18 +254,7 @@ export default function StarterPage({ user, onLogout, onTeamUpdated }) {
             </div>
           ))}
 
-          <footer className="setlineup-footer">
-            <div>
-              <span>{t('common.privacyPolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.scorePolicy')}</span>
-              <span style={{ color: '#9a9a9e' }}>{t('common.contactUs')}</span>
-              <LanguageToggle />
-            </div>
-            <p>
-              {t('common.disclaimer')}
-            </p>
-            <div className="setlineup-footer-wordmark">{t('common.wordmark')}</div>
-          </footer>
+          <Footer marginTop="18px" padding="24px 4px 40px" />
         </section>
 
         <section className="setlineup-action">
