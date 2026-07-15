@@ -2,6 +2,8 @@
 
 A fantasy esports web application based on the LCK (League of Legends Champions Korea) league. Users build their own fantasy roster from real pro players and compete on weekly and seasonal leaderboards based on actual in-game performance.
 
+https://lolfantasymaker.com
+
 ---
 
 ## Tech Stack
