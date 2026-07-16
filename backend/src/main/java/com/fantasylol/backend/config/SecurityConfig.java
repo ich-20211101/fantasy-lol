@@ -42,6 +42,7 @@ public class SecurityConfig {
                             "/matches/sync",
                             "/matches/players/sync",
                             "/matches/upcoming",
+                            "/matches/starters/lock",
                             "/players"
                     ).permitAll()
                     .anyRequest().authenticated()

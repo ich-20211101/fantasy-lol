@@ -89,6 +89,18 @@ CREATE TABLE IF NOT EXISTS withdrawal_feedbacks (
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS weekly_starters (
+    weekly_starter_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    team_id      BIGINT NOT NULL,
+    player_id    BIGINT NOT NULL,
+    week_number  INT NOT NULL,
+    season_name  VARCHAR(100) NOT NULL,
+    locked_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    FOREIGN KEY (player_id) REFERENCES players(player_id),
+    UNIQUE (team_id, week_number, season_name, player_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_teams_user_id ON teams(user_id);
 CREATE INDEX IF NOT EXISTS idx_team_roster_team_id ON team_roster(team_id);
 CREATE INDEX IF NOT EXISTS idx_player_stats_match_id ON player_stats(match_id);

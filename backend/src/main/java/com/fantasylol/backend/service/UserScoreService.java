@@ -2,10 +2,7 @@ package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.dto.UserScoreDto;
 import com.fantasylol.backend.entity.*;
-import com.fantasylol.backend.repository.PlayerStatRepository;
-import com.fantasylol.backend.repository.TeamRosterRepository;
-import com.fantasylol.backend.repository.UserRepository;
-import com.fantasylol.backend.repository.UserScoreRepository;
+import com.fantasylol.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -26,7 +23,7 @@ import java.util.stream.Collectors;
 public class UserScoreService {
 
     private final UserScoreRepository userScoreRepository;
-    private final TeamRosterRepository teamRosterRepository;
+    private final WeeklyStarterRepository weeklyStarterRepository;
     private final PlayerStatRepository playerStatRepository;
     private final UserRepository userRepository;
 
@@ -39,24 +36,24 @@ public class UserScoreService {
                 .map(s -> s.getPlayer().getPlayerId())
                 .collect(Collectors.toSet());
 
-        List<TeamRoster> starters = teamRosterRepository.findByPlayerPlayerIdInAndIsStarterTrue(playerIds);
-
-        if (starters.isEmpty()) {
-            log.info("No starters found for match: {}", match.getMatchId());
-            return;
-        }
-
         int weekNumber = match.getMatchDate().get(WeekFields.ISO.weekOfWeekBasedYear());
         String seasonName = match.getSeasonName();
+
+        List<WeeklyStarter> starters = weeklyStarterRepository.findByPlayerPlayerIdInAndWeekNumberAndSeasonName(playerIds, weekNumber, seasonName);
+
+        if (starters.isEmpty()) {
+            log.info("No locked starters found for match: {} (week {}, {})", match.getMatchId(), weekNumber, seasonName);
+            return;
+        }
 
         Map<Long, Double> scoreByUser = new HashMap<>();
         Map<Long, User> userMap = new HashMap<>();
 
-        for (TeamRoster roster : starters) {
+        for (WeeklyStarter starter : starters) {
 
-            User user = roster.getTeam().getUser();
+            User user = starter.getTeam().getUser();
             Long userId = user.getUserId();
-            Long playerId = roster.getPlayer().getPlayerId();
+            Long playerId = starter.getPlayer().getPlayerId();
 
             double score = stats.stream()
                     .filter(s -> s.getPlayer().getPlayerId().equals(playerId))

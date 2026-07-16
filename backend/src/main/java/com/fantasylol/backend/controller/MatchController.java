@@ -3,6 +3,7 @@ package com.fantasylol.backend.controller;
 import com.fantasylol.backend.repository.MatchRepository;
 import com.fantasylol.backend.service.MatchSyncService;
 import com.fantasylol.backend.service.PlayerSyncService;
+import com.fantasylol.backend.service.WeeklyStarterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class MatchController {
 
     private final MatchSyncService matchSyncService;
     private final PlayerSyncService playerSyncService;
+    private final WeeklyStarterService weeklyStarterService;
 
     @PostMapping("/sync")
     @Operation(summary = "Sync match data by date")
@@ -65,6 +67,15 @@ public class MatchController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(null);
         }
+
+    }
+
+    @PostMapping("/starters/lock")
+    @Operation(summary = "[TEST] Lock weekly starters (manual trigger, will later be scheduled)")
+    public ResponseEntity<String> lockStarters(@RequestParam Integer weekNumber, @RequestParam String seasonName) {
+
+        int count = weeklyStarterService.lockStartersForWeek(weekNumber, seasonName);
+        return ResponseEntity.ok(count + "개 팀 스타터 락 완료: week " + weekNumber + ", " + seasonName);
 
     }
 
