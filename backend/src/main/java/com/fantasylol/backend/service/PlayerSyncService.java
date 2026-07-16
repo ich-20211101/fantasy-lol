@@ -9,6 +9,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.regex.Pattern;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -17,9 +19,15 @@ public class PlayerSyncService {
     private final LeaguepediaClient leaguepediaClient;
     private final PlayerRepository playerRepository;
 
+    private static final Pattern OVERVIEW_PAGE_PATTERN = Pattern.compile("^LCK( CL)?/\\d{4} Season/.+$");
+
     @CacheEvict(cacheNames = "players", allEntries = true)
     @Transactional
-    public void syncPlayers(String overviewPage) throws Exception {
+    public int syncPlayers(String overviewPage) throws Exception {
+
+        if (!OVERVIEW_PAGE_PATTERN.matcher(overviewPage).matches()) {
+            throw new IllegalArgumentException("overviewPage 형식이 올바르지 않습니다. 예) LCK/2026 Season/Rounds 1-2");
+        }
 
         leaguepediaClient.login();
 
@@ -34,7 +42,7 @@ public class PlayerSyncService {
 
         if (playerList.isEmpty()) {
             log.info("No players found for: {}", overviewPage);
-            return;
+            return 0;
         }
 
         int count = 0;
@@ -58,6 +66,8 @@ public class PlayerSyncService {
         }
 
         log.info("Synced {} players for: {}", count, overviewPage);
+
+        return count;
 
     }
 

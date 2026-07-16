@@ -8,12 +8,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/matches")
@@ -42,10 +41,29 @@ public class MatchController {
     public ResponseEntity<String> syncPlayers(@RequestParam String overviewPage) {
 
         try {
-            playerSyncService.syncPlayers(overviewPage);
-            return ResponseEntity.ok("Player sync completed: " + overviewPage);
+
+            int count = playerSyncService.syncPlayers(overviewPage);
+
+            if (count == 0) {
+                return ResponseEntity.badRequest().body("동기화된 선수가 없습니다. overviewPage 값을 확인하세요: " + overviewPage);
+            }
+
+            return ResponseEntity.ok(count + "명 동기화 완료: " + overviewPage);
+
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Sync failed: " + e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/upcoming")
+    @Operation(summary = "Fetch upcoming matches from Leaguepedia (read-only, no persistence)")
+    public ResponseEntity<List<Map<String, String>>> getUpcomingMatches() {
+
+        try {
+            return ResponseEntity.ok(matchSyncService.fetchUpcomingMatches());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
         }
 
     }

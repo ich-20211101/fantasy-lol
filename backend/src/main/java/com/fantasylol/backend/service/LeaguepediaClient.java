@@ -79,19 +79,26 @@ public class LeaguepediaClient {
     }
 
     public JsonNode cargoQuery(String tables, String fields, String where, int limit) throws Exception {
+        return cargoQuery(tables, fields, where, null, limit);
+    }
 
-        String url = UriComponentsBuilder.fromUriString(BASE_URL)
+    public JsonNode cargoQuery(String tables, String fields, String where, String orderBy, int limit) throws Exception {
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(BASE_URL)
                 .queryParam("action", "cargoquery")
                 .queryParam("tables", tables)
                 .queryParam("fields", fields)
                 .queryParam("where", where)
                 .queryParam("limit", limit)
-                .queryParam("format", "json")
-                .build().
-                toUriString();
+                .queryParam("format", "json");
+
+        if (orderBy != null && !orderBy.isBlank()) {
+            builder.queryParam("order_by", orderBy);
+        }
+
+        String url = builder.build().toUriString();
 
         HttpHeaders headers = new HttpHeaders();
-
         headers.set(HttpHeaders.COOKIE, sessionCookie);
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
