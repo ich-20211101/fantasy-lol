@@ -1,0 +1,120 @@
+.score-policy-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
+  text-align: left;
+}
+
+.score-policy-frame {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: #f8f9fa;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+
+@media (min-width: 600px) {
+  .score-policy-frame {
+    max-width: 390px;
+  }
+}
+
+.score-policy-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 0 22px 0;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+
+.score-policy-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.score-policy-section-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+  color: #0b0b0c;
+}
+
+.score-policy-section-body {
+  margin: 8px 0 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #6a6a6f;
+  font-weight: 500;
+}
+
+.score-policy-formula-box {
+  margin-top: 10px;
+  border: 1.5px solid rgba(11, 11, 12, 0.14);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score-policy-formula-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #6a6a6f;
+}
+
+.score-policy-formula-summary {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #6a6a6f;
+}
+
+.score-policy-note {
+  margin-top: 20px;
+  border-radius: 14px;
+  background: rgba(11, 11, 12, 0.05);
+  padding: 16px;
+}
+
+.score-policy-note p {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #0b0b0c;
+  font-weight: 600;
+}
+
+.score-policy-coming-soon {
+  margin-top: 10px;
+  border: 1.5px dashed rgba(11, 11, 12, 0.24);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+
+.score-policy-coming-soon span {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #9a9a9e;
+}
+
+.score-policy-spacer {
+  flex: 1;
+  min-height: 20px;
+}

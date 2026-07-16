@@ -22,7 +22,7 @@ function BottomNav() {
     {
       key: 'leaderboard',
       label: t('bottomNav.leaderboard'),
-      path: null, // TODO: 리더보드 페이지 생기면 연결
+      path: '/leaderboard',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <rect x="4" y="12" width="4" height="8" rx="1" />
@@ -34,7 +34,7 @@ function BottomNav() {
     {
       key: 'info',
       label: t('bottomNav.info'),
-      path: null, // TODO: 정보 페이지 생기면 연결
+      path: '/info',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="9" />

@@ -11,3 +11,20 @@ export async function getPlayers() {
 
   return response.json()
 }
+
+export async function getPlayerRankings({ position = 'ALL', page = 1, pageSize = 20 } = {}) {
+  const params = new URLSearchParams({ position, page, pageSize })
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/players/rankings?${params.toString()}`, {
+      credentials: 'include',
+    })
+
+    if (!response.ok) return null
+
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch player rankings:', error)
+    return null
+  }
+}

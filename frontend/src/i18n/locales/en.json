@@ -114,5 +114,52 @@
     "warningUnderline": "it cannot be undone.",
     "confirmBtn": "Yes, delete my account :(",
     "errorGeneric": "An error occurred while processing your withdrawal."
+  },
+  "leaderboard": {
+    "loginLink": "Log in",
+    "loginPrompt": " to see your rank",
+    "noHistory": "No participation record for this round",
+    "tallyingTitle": "Rankings aren't open yet",
+    "tallyingDescLine1": "Once all matches in this round",
+    "tallyingDescLine2": "are finished, rankings will be revealed"
+  },
+  "info": {
+    "rankInfoTitle": "What is Player Ranking?",
+    "rankInfoDesc": "Player rankings calculated from real LCK match records.",
+    "rankInfoConfirm": "Got it",
+    "mineOnly": "My roster only",
+    "rowsEmpty": "No players in your roster for this position"
+  },
+  "privacyPolicy": {
+    "headerTitle": "Privacy Policy",
+    "intro": "LFM (the \"Service\") values users' personal information and complies with the Personal Information Protection Act and other relevant laws. This Privacy Policy is written to transparently explain what personal information the Service collects, why it is used, and how long it is retained.",
+    "section1Title": "1. Purpose of Collecting and Using Personal Information",
+    "section1Body": "The Service collects the minimum personal information necessary for member management and service provision. Collected information is not used for any purpose other than the following.",
+    "section1Item1": "Membership registration and identification: creating an account and authenticating login to distinguish users",
+    "section2Title": "2. Personal Information Collected",
+    "section2Body": "The Service collects the following personal information.",
+    "section2Item1": "Required: Email address",
+    "section2Item2": "Automatically collected: service usage records, cookies, and access IP information (for service optimization and fraud prevention)",
+    "section3Title": "3. Retention and Destruction Period",
+    "section3Body": "User personal information is, in principle, retained until account withdrawal and is destroyed without delay once its purpose has been fulfilled.",
+    "section3Item1": "Destruction procedure: upon a withdrawal request, the collected email information is immediately and permanently deleted from the database in an unrecoverable manner.",
+    "section3Item2": "Exceptions: where retention is required by applicable law, the information is securely stored for the period required by that law before being destroyed.",
+    "section4Title": "4. Third-Party Provision and Outsourcing",
+    "section4Body": "The Service does not provide or share users' personal information with external parties. If outsourcing becomes necessary in the future for stable service operations (e.g. an email delivery system), we will provide advance notice through this policy.",
+    "section5Title": "5. User Rights",
+    "section5Body": "Users may check or update their personal information (email) at any time, and may withdraw their consent to the collection and use of personal information by deleting their account.",
+    "noticeDate": "Announced: July 10, 2026",
+    "effectiveDate": "Effective: July 10, 2026"
+  },
+  "scorePolicy": {
+    "headerTitle": "Score Policy",
+    "section1Title": "1. Player Score",
+    "section1Body": "Calculated based on real match records (Player Stats).",
+    "section1Note": "When building your roster, players are priced based on their average score from last season.",
+    "section2Title": "2. Player Pricing",
+    "section2ComingSoon": "Coming soon",
+    "section3Title": "3. User Score",
+    "section3Body": "A user's ranking score is calculated as the average of the actual scores of the 5 players registered as the starting squad.",
+    "section3Formula": "Sum of the 5 starting squad players' scores ÷ 5"
   }
 }

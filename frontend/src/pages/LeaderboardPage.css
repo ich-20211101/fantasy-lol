@@ -1,0 +1,333 @@
+.leaderboard-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
+  text-align: left;
+}
+
+.leaderboard-frame {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: #f8f9fa;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+
+@media (min-width: 600px) {
+  .leaderboard-frame {
+    max-width: 390px;
+  }
+}
+
+/* 라운드/주차 셀렉터 */
+.leaderboard-week-selector {
+  flex: none;
+  padding: 14px 22px 12px;
+  position: relative;
+}
+
+.leaderboard-round-eyebrow {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: #9a9a9e;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.leaderboard-week-toggle {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  width: fit-content;
+}
+
+.leaderboard-week-label {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: -1px;
+  color: #0b0b0c;
+  text-transform: uppercase;
+  line-height: 0.82;
+}
+
+.leaderboard-week-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 22px;
+  right: 22px;
+  margin-top: 6px;
+  background: #f8f9fa;
+  border: 1.5px solid rgba(11, 11, 12, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 22px 50px -16px rgba(0, 0, 0, 0.35);
+  padding: 6px 4px;
+  z-index: 60;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.leaderboard-round-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.leaderboard-round-header-label {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+.leaderboard-round-weeks {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+
+.leaderboard-week-option {
+  padding: 11px 14px 11px 22px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 10px;
+}
+
+.leaderboard-week-option:hover {
+  background: rgba(11, 11, 12, 0.05);
+}
+
+/* 스크롤 영역 */
+.leaderboard-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 0 22px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  position: relative;
+  scrollbar-width: none;
+}
+
+.leaderboard-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* 내 순위 카드 */
+.leaderboard-my-rank-empty {
+  flex: none;
+  box-sizing: border-box;
+  min-height: 68.5px;
+  border: 1.5px dashed rgba(11, 11, 12, 0.24);
+  border-radius: 16px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.leaderboard-my-rank-empty span {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #6a6a6f;
+}
+
+.leaderboard-my-rank-login {
+  color: #0b0b0c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.leaderboard-my-rank-card {
+  flex: none;
+  box-sizing: border-box;
+  border: 1.5px solid #0b0b0c;
+  box-shadow: inset 0 0 0 1px #0b0b0c;
+  border-radius: 16px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #f8f9fa;
+}
+
+.leaderboard-my-rank-score {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #f8f9fa;
+  background: #1b2333;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+/* 랭킹이 아직 오픈되지 않음 */
+.leaderboard-tallying-empty {
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.leaderboard-tallying-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #0b0b0c;
+}
+
+.leaderboard-tallying-desc {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #9a9a9e;
+}
+
+/* 순위 리스트 */
+.leaderboard-row {
+  flex: none;
+  cursor: pointer;
+  border: 1px solid rgba(11, 11, 12, 0.12);
+  border-radius: 16px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #f8f9fa;
+}
+
+.leaderboard-row-rank {
+  flex: none;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  color: #0b0b0c;
+  text-align: center;
+}
+
+.leaderboard-row-rank-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1b2333;
+  color: #f8f9fa;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaderboard-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-row-team {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.3px;
+  color: #0b0b0c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-row-owner {
+  font-size: 11.5px;
+  color: #9a9a9e;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.leaderboard-row-score {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0b0b0c;
+}
+
+/* 무한스크롤 로딩 인디케이터 */
+.leaderboard-loading {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 0 8px;
+}
+
+.leaderboard-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid rgba(11, 11, 12, 0.14);
+  border-top-color: #0b0b0c;
+  animation: leaderboardSpin 0.8s linear infinite;
+}
+
+@keyframes leaderboardSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.leaderboard-spacer {
+  flex: none;
+  height: 8px;
+}
+
+/* 맨 위로 */
+.leaderboard-scroll-to-top {
+  position: absolute;
+  right: 16px;
+  bottom: 88px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #0b0b0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+  z-index: 30;
+}

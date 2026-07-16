@@ -1,0 +1,101 @@
+.privacy-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
+  text-align: left;
+}
+
+.privacy-frame {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: #f8f9fa;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+
+@media (min-width: 600px) {
+  .privacy-frame {
+    max-width: 390px;
+  }
+}
+
+.privacy-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 24px 22px 0;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+
+.privacy-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.privacy-intro {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #6a6a6f;
+  font-weight: 500;
+}
+
+.privacy-section {
+  margin-top: 26px;
+}
+
+.privacy-section-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 15.5px;
+  letter-spacing: -0.2px;
+  color: #0b0b0c;
+}
+
+.privacy-section-body {
+  margin: 8px 0 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #6a6a6f;
+  font-weight: 500;
+}
+
+.privacy-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #6a6a6f;
+  font-weight: 500;
+}
+
+.privacy-dates {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(11, 11, 12, 0.1);
+}
+
+.privacy-dates p {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: #9a9a9e;
+  line-height: 1.8;
+}
+
+.privacy-spacer {
+  flex: 1;
+  min-height: 20px;
+}

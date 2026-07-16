@@ -11,6 +11,10 @@ import RegisterTeamPage from './pages/RegisterTeamPage'
 import ProfilePage from './pages/ProfilePage'
 import WithdrawPage from './pages/WithdrawPage'
 import WithdrawConfirmPage from './pages/WithdrawConfirmPage'
+import LeaderboardPage from './pages/LeaderboardPage'
+import InfoPage from './pages/InfoPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import ScorePolicyPage from './pages/ScorePolicyPage'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -261,6 +265,19 @@ function App() {
             )
           }
         />
+
+        <Route
+          path="/leaderboard"
+          element={<LeaderboardPage user={user} team={team} />}
+        />
+
+        <Route
+          path="/info"
+          element={<InfoPage team={team} />}
+        />
+
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/score-policy" element={<ScorePolicyPage />} />
       </Routes>
     </BrowserRouter>
   )
