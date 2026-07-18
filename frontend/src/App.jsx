@@ -242,11 +242,12 @@ function App() {
         <Route
           path="/profile"
           element={
-            user ? (
-              <ProfilePage user={user} onLogout={handleLogout} onUserUpdated={refreshUser} />
-            ) : (
-              <div>{t('common.loginRequired')}</div>
-            )
+            <ProfilePage
+              user={user}
+              onLogout={handleLogout}
+              onUserUpdated={refreshUser}
+              handleGoogleLogin={handleGoogleLogin}
+            />
           }
         />
 

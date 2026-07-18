@@ -316,26 +316,23 @@
 .info-row {
   flex: none;
   cursor: pointer;
-  border: 1px solid rgba(11, 11, 12, 0.12);
-  border-radius: 16px;
-  padding: 15px 16px;
   display: flex;
   align-items: center;
   gap: 13px;
-  background: #f8f9fa;
-  margin-bottom: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(11, 11, 12, 0.08);
 }
 
 .info-row-rank {
   flex: none;
-  width: 40px;
+  width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
   font-size: 15px;
-  color: #0b0b0c;
+  color: #9a9a9e;
 }
 
 .info-row-info {

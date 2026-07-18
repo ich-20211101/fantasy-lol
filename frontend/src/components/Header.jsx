@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './Header.css'
 
 export default function Header({
@@ -15,13 +16,13 @@ export default function Header({
       style={{ borderBottom: divider ? '1px solid rgba(11, 11, 12, 0.08)' : 'none' }}
     >
       {isLogo ? (
-        <div className="lfm-brand-wrap">
+        <Link to="/" className="lfm-brand-wrap">
           <span className="lfm-logo">LFM</span>
           <span className="lfm-logo-line" />
           <span className="lfm-brand">
             LoL Fantasy<br />Maker
           </span>
-        </div>
+        </Link>
       ) : (
         <>
           {showBackButton ? (

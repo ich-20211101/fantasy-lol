@@ -121,6 +121,53 @@
   min-height: 300px;
 }
 
+/* logged-out state */
+.profile-logged-out-message {
+  flex: 1;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.profile-logged-out-message span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  color: #0b0b0c;
+}
+
+.profile-logged-out-cta {
+  flex: none;
+  padding-bottom: 18px;
+}
+
+.profile-google-btn {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #8e918f;
+  border-radius: 16px;
+  padding: 0 16px;
+  height: 58px;
+  background: #131314;
+  color: #e3e3e3;
+  font-family: 'Roboto', 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.profile-google-btn:hover {
+  background: #1e1f20;
+}
+
 /* nickname change popup */
 .profile-nick-overlay {
   position: absolute;
@@ -210,7 +257,7 @@
   border: none;
   border-radius: 14px;
   padding: 15px;
-  background: #0b0b0c;
+  background: #1b2333;
   color: #f8f9fa;
   font-family: 'Pretendard', sans-serif;
   font-weight: 800;

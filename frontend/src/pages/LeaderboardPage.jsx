@@ -45,6 +45,10 @@ const ROUNDS = [
 
 const PAGE_SIZE = 20
 
+function rankFontSize(rank) {
+  return String(rank).replace(/,/g, '').length >= 4 ? '11px' : '15px'
+}
+
 export default function LeaderboardPage({ user, team }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -236,12 +240,14 @@ export default function LeaderboardPage({ user, team }) {
 
           {!tallying && myRankActive && (
             <div className="leaderboard-my-rank-card">
-              <span className="leaderboard-row-rank">{myScore?.rank ?? '-'}</span>
+              <span className="leaderboard-row-rank" style={{ fontSize: rankFontSize(myScore?.rank ?? '') }}>
+                {myScore?.rank ?? '-'}
+              </span>
               <div className="leaderboard-row-info">
                 <div className="leaderboard-row-team">{team?.teamName}</div>
                 <div className="leaderboard-row-owner">{user?.username}</div>
               </div>
-              <span className="leaderboard-my-rank-score">{myScore?.weeklyScore?.toLocaleString()}P</span>
+              <span className="leaderboard-row-score">{myScore?.weeklyScore?.toLocaleString()}P</span>
             </div>
           )}
 
@@ -260,9 +266,13 @@ export default function LeaderboardPage({ user, team }) {
                 const isTop3 = row.rank <= 3
 
                 return (
-                  <div key={row.rank} className="leaderboard-row" style={isTop3 ? { border: '1.5px solid #0b0b0c', boxShadow: 'inset 0 0 0 1px #0b0b0c' } : undefined}>
+                  <div key={row.rank} className="leaderboard-row">
                     <span className="leaderboard-row-rank">
-                      {isTop3 ? <span className="leaderboard-row-rank-badge">{row.rank}</span> : row.rank}
+                      {isTop3 ? (
+                        <span className="leaderboard-row-rank-badge">{row.rank}</span>
+                      ) : (
+                        <span style={{ fontSize: rankFontSize(row.rank) }}>{row.rank}</span>
+                      )}
                     </span>
                     <div className="leaderboard-row-info">
                       <div className="leaderboard-row-team">{row.team}</div>
