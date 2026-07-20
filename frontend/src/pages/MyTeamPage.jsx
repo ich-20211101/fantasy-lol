@@ -260,11 +260,13 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
           </button>
         </div>
 
-        <div className="myteam-cta-area">
-          <button type="button" className="myteam-cta" onClick={() => navigate('/starters')}>
-            {t('myTeam.ctaLabel')}
-          </button>
-        </div>
+        {!team.starterLocked && (
+          <div className="myteam-cta-area">
+            <button type="button" className="myteam-cta" onClick={() => navigate('/starters')}>
+              {t('myTeam.ctaLabel')}
+            </button>
+          </div>
+        )}
 
         <BottomNav />
       </section>

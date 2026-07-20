@@ -31,6 +31,7 @@ public class MatchSyncService {
     private final PlayerRepository playerRepository;
     private final PlayerStatRepository playerStatRepository;
     private final ScoreCalculator scoreCalculator;
+    private final SeasonWeekService seasonWeekService;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final UserScoreService userScoreService;
@@ -165,6 +166,7 @@ public class MatchSyncService {
         log.info("Synced match: {} vs {} | Winner: {}", team1, team2, winnerTeam);
 
         userScoreService.updateScoresForMatch(match);
+        seasonWeekService.checkAndFinalizeWeek(match);
 
     }
 
@@ -235,52 +237,6 @@ public class MatchSyncService {
         } catch (Exception e) {
             return 1;
         }
-
-    }
-
-    public List<Map<String, String>> fetchUpcomingMatches() throws Exception {
-
-        leaguepediaClient.login();
-
-        String now = LocalDateTime.now().format(FORMATTER);
-
-        JsonNode matchSchedules = leaguepediaClient.cargoQuery(
-                "MatchSchedule",
-                "Team1,Team2,DateTime_UTC,BestOf,OverviewPage",
-                "DateTime_UTC >= '" + now + "' AND OverviewPage LIKE 'LCK/%' AND (Winner IS NULL OR Winner = '')",
-                "DateTime_UTC",
-                50
-        );
-
-        List<Map<String, String>> allUpcoming = new ArrayList<>();
-
-        for (JsonNode node : matchSchedules.path("cargoquery")) {
-
-            JsonNode t = node.path("title");
-
-            allUpcoming.add(Map.of(
-                    "team1", t.path("Team1").asText(),
-                    "team2", t.path("Team2").asText(),
-                    "dateTimeUtc", t.path("DateTime UTC").asText(),
-                    "bestOf", t.path("BestOf").asText(),
-                    "overviewPage", t.path("OverviewPage").asText()
-            ));
-
-        }
-
-        if (allUpcoming.isEmpty()) {
-            return allUpcoming;
-        }
-
-        String nextMatchDate = allUpcoming.get(0).get("dateTimeUtc").substring(0, 10);
-
-        List<Map<String, String>> upcoming = allUpcoming.stream()
-                .takeWhile(m -> m.get("dateTimeUtc").startsWith(nextMatchDate))
-                .toList();
-
-        log.info("Found {} upcoming matches on {}", upcoming.size(), nextMatchDate);
-
-        return upcoming;
 
     }
 

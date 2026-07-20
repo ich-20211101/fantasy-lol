@@ -1,47 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { getLeaderboard, getMyScores } from '../api/scores'
+import { getLeaderboard, getLeaderboardRounds, getMyScores } from '../api/scores'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import BottomNav from '../components/BottomNav'
 import './LeaderboardPage.css'
-
-const CURRENT_SEASON_NAME = 'LCK/2026 Season/Rounds 3-4'
-
-const ROUNDS = [
-  {
-    key: 'r3',
-    label: '2026 LCK ROUND3',
-    weeks: [
-      { key: 'overall', label: 'Overall', weekNumber: null },
-      { key: 'w12', label: 'WEEK 12', weekNumber: 12 },
-      { key: 'w11', label: 'WEEK 11', weekNumber: 11 },
-      { key: 'w10', label: 'WEEK 10', weekNumber: 10 },
-    ],
-  },
-  {
-    key: 'r2',
-    label: '2026 LCK ROUND2',
-    weeks: [
-      { key: 'w9', label: 'WEEK 9', weekNumber: 9 },
-      { key: 'w8', label: 'WEEK 8', weekNumber: 8 },
-    ],
-  },
-  {
-    key: 'r1',
-    label: '2026 LCK ROUND1',
-    weeks: [
-      { key: 'w4', label: 'WEEK 4', weekNumber: 4 },
-      { key: 'w3', label: 'WEEK 3', weekNumber: 3 },
-    ],
-  },
-  {
-    key: 'cup',
-    label: '2026 LCK CUP',
-    weeks: [{ key: 'cupf', label: 'Final', weekNumber: null }],
-  },
-]
 
 const PAGE_SIZE = 20
 
@@ -56,9 +20,9 @@ export default function LeaderboardPage({ user, team }) {
 
   const [myScore, setMyScore] = useState(null)
   const [weekSelectOpen, setWeekSelectOpen] = useState(false)
-  const [expandedRoundKey, setExpandedRoundKey] = useState('r3')
-  const [selectedRoundKey, setSelectedRoundKey] = useState('r3')
-  const [selectedWeekKey, setSelectedWeekKey] = useState('overall')
+  const [rounds, setRounds] = useState([])
+  const [expandedSeasonName, setExpandedSeasonName] = useState(null)
+  const [selection, setSelection] = useState({ seasonName: null, weekNumber: null })
 
   const [rows, setRows] = useState([])
   const [page, setPage] = useState(1)
@@ -66,21 +30,25 @@ export default function LeaderboardPage({ user, team }) {
   const [loadingMore, setLoadingMore] = useState(false)
   const [tallying, setTallying] = useState(false)
   const [showToTop, setShowToTop] = useState(false)
+  const [resolvedWeekNumber, setResolvedWeekNumber] = useState(null)
+  const [resolvedSeasonLabel, setResolvedSeasonLabel] = useState(null)
 
-  const selectedRound = useMemo(
-    () => ROUNDS.find((r) => r.key === selectedRoundKey) ?? ROUNDS[0],
-    [selectedRoundKey],
-  )
-  const selectedWeek = useMemo(
-    () => selectedRound.weeks.find((w) => w.key === selectedWeekKey) ?? selectedRound.weeks[0],
-    [selectedRound, selectedWeekKey],
-  )
+  const isOverall = selection.weekNumber == null
 
-  const loadPage = useCallback(async (pageToLoad, weekNumber) => {
+  useEffect(() => {
+    getLeaderboardRounds().then((data) => {
+      if (data && data.length) {
+        setRounds(data)
+        setExpandedSeasonName(data[0].seasonName)
+      }
+    })
+  }, [])
+
+  const loadPage = useCallback(async (pageToLoad, weekNumber, seasonName) => {
     setLoadingMore(true)
 
     try {
-      const data = await getLeaderboard(weekNumber, CURRENT_SEASON_NAME, { page: pageToLoad, pageSize: PAGE_SIZE })
+      const data = await getLeaderboard(weekNumber, seasonName, { page: pageToLoad, pageSize: PAGE_SIZE })
 
       if (!data) {
         setHasMore(false)
@@ -90,6 +58,8 @@ export default function LeaderboardPage({ user, team }) {
       setTallying(Boolean(data.tallying))
       setRows((prev) => (pageToLoad === 1 ? (data.rows ?? []) : [...prev, ...(data.rows ?? [])]))
       setHasMore(Boolean(data.hasMore))
+      setResolvedWeekNumber(data.weekNumber ?? null)
+      setResolvedSeasonLabel(data.seasonLabel ?? null)
     } finally {
       setLoadingMore(false)
     }
@@ -98,8 +68,8 @@ export default function LeaderboardPage({ user, team }) {
   useEffect(() => {
     setPage(1)
     setHasMore(true)
-    loadPage(1, selectedWeek.weekNumber)
-  }, [selectedWeek, loadPage])
+    loadPage(1, selection.weekNumber, selection.seasonName)
+  }, [selection, loadPage])
 
   useEffect(() => {
     if (!user) {
@@ -107,8 +77,8 @@ export default function LeaderboardPage({ user, team }) {
       return
     }
 
-    getMyScores().then(setMyScore)
-  }, [user])
+    getMyScores(selection.weekNumber, selection.seasonName).then(setMyScore)
+  }, [user, selection])
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current
@@ -121,9 +91,9 @@ export default function LeaderboardPage({ user, team }) {
     if (nearBottom && !loadingMore && hasMore) {
       const nextPage = page + 1
       setPage(nextPage)
-      loadPage(nextPage, selectedWeek.weekNumber)
+      loadPage(nextPage, selection.weekNumber, selection.seasonName)
     }
-  }, [loadingMore, hasMore, page, loadPage, selectedWeek])
+  }, [loadingMore, hasMore, page, loadPage, selection])
 
   const scrollToTop = () => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
@@ -131,24 +101,39 @@ export default function LeaderboardPage({ user, team }) {
 
   const toggleWeekSelect = () => setWeekSelectOpen((prev) => !prev)
 
-  const toggleRoundExpand = (key) => {
-    setExpandedRoundKey((prev) => (prev === key ? null : key))
+  const toggleRoundExpand = (seasonName) => {
+    setExpandedSeasonName((prev) => (prev === seasonName ? null : seasonName))
   }
 
-  const pickWeek = (roundKey, weekKey) => {
-    setSelectedRoundKey(roundKey)
-    setSelectedWeekKey(weekKey)
+  const pickOverall = () => {
+    setSelection({ seasonName: null, weekNumber: null })
+    setWeekSelectOpen(false)
+    scrollToTop()
+  }
+
+  const pickWeek = (seasonName, weekNumber) => {
+    setSelection({ seasonName, weekNumber })
     setWeekSelectOpen(false)
     scrollToTop()
   }
 
   const goToGoogleLogin = () => navigate('/')
 
-  const hasScoreHistory = Boolean(myScore) && Boolean(team) && (myScore.weeklyScore > 0 || myScore.seasonalScore > 0)
+  const hasScoreHistory = Boolean(myScore) && Boolean(team) && myScore.score > 0
 
   const myRankLoggedOut = !user
   const myRankNoHistory = Boolean(user) && !hasScoreHistory
   const myRankActive = Boolean(user) && hasScoreHistory
+
+  const mostRecentRound = rounds[0]
+  const selectedRound = isOverall ? mostRecentRound : rounds.find((r) => r.seasonName === selection.seasonName)
+
+  const headerRoundLabel = isOverall
+    ? (resolvedSeasonLabel ?? selectedRound?.seasonLabel ?? '')
+    : (selectedRound?.seasonLabel ?? '')
+  const headerWeekLabel = isOverall
+    ? (resolvedWeekNumber != null ? `WEEK ${resolvedWeekNumber}` : 'Overall')
+    : `WEEK ${selection.weekNumber}`
 
   return (
     <main className="leaderboard-page">
@@ -156,10 +141,10 @@ export default function LeaderboardPage({ user, team }) {
         <Header variant="logo" />
 
         <div className="leaderboard-week-selector">
-          <span className="leaderboard-round-eyebrow">{selectedRound.label}</span>
+          <span className="leaderboard-round-eyebrow">{headerRoundLabel}</span>
 
           <div className="leaderboard-week-toggle" onClick={toggleWeekSelect}>
-            <span className="leaderboard-week-label">{selectedWeek.label}</span>
+            <span className="leaderboard-week-label">{headerWeekLabel}</span>
             <svg
               width="15"
               height="9"
@@ -173,49 +158,63 @@ export default function LeaderboardPage({ user, team }) {
 
           {weekSelectOpen && (
             <div className="leaderboard-week-dropdown">
-              {ROUNDS.map((round) => (
-                <div key={round.key}>
-                  <div className="leaderboard-round-header" onClick={() => toggleRoundExpand(round.key)}>
-                    <span
-                      className="leaderboard-round-header-label"
-                      style={{ color: round.key === selectedRoundKey ? '#0b0b0c' : '#9a9a9e' }}
-                    >
-                      {round.label}
-                    </span>
-                    <svg
-                      width="11"
-                      height="7"
-                      viewBox="0 0 11 7"
-                      fill="none"
-                      style={{
-                        transform: expandedRoundKey === round.key ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform .16s ease',
-                      }}
-                    >
-                      <path d="M1 1l4.5 4.5L10 1" stroke="#6a6a6f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
+              {rounds.map((round, roundIndex) => {
+                const isMostRecent = roundIndex === 0
+                const isRoundSelected = isMostRecent ? true : selection.seasonName === round.seasonName
 
-                  {expandedRoundKey === round.key && (
-                    <div className="leaderboard-round-weeks">
-                      {round.weeks.map((week) => {
-                        const isSelected = round.key === selectedRoundKey && week.key === selectedWeekKey
-
-                        return (
-                          <div
-                            key={week.key}
-                            className="leaderboard-week-option"
-                            style={{ fontWeight: isSelected ? 700 : 500, color: isSelected ? '#0b0b0c' : '#6a6a6f' }}
-                            onClick={() => pickWeek(round.key, week.key)}
-                          >
-                            {week.label}
-                          </div>
-                        )
-                      })}
+                return (
+                  <div key={round.seasonName}>
+                    <div className="leaderboard-round-header" onClick={() => toggleRoundExpand(round.seasonName)}>
+                      <span
+                        className="leaderboard-round-header-label"
+                        style={{ color: isRoundSelected ? '#0b0b0c' : '#9a9a9e' }}
+                      >
+                        {round.seasonLabel}
+                      </span>
+                      <svg
+                        width="11"
+                        height="7"
+                        viewBox="0 0 11 7"
+                        fill="none"
+                        style={{
+                          transform: expandedSeasonName === round.seasonName ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform .16s ease',
+                        }}
+                      >
+                        <path d="M1 1l4.5 4.5L10 1" stroke="#6a6a6f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {expandedSeasonName === round.seasonName && (
+                      <div className="leaderboard-round-weeks">
+                        {isMostRecent && (
+                          <div
+                            className="leaderboard-week-option"
+                            style={{ fontWeight: isOverall ? 700 : 500, color: isOverall ? '#0b0b0c' : '#6a6a6f' }}
+                            onClick={pickOverall}
+                          >
+                            Overall
+                          </div>
+                        )}
+                        {round.weeks.map((weekNumber) => {
+                          const isSelected = !isOverall && selection.seasonName === round.seasonName && selection.weekNumber === weekNumber
+
+                          return (
+                            <div
+                              key={weekNumber}
+                              className="leaderboard-week-option"
+                              style={{ fontWeight: isSelected ? 700 : 500, color: isSelected ? '#0b0b0c' : '#6a6a6f' }}
+                              onClick={() => pickWeek(round.seasonName, weekNumber)}
+                            >
+                              WEEK {weekNumber}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -247,7 +246,7 @@ export default function LeaderboardPage({ user, team }) {
                 <div className="leaderboard-row-team">{team?.teamName}</div>
                 <div className="leaderboard-row-owner">{user?.username}</div>
               </div>
-              <span className="leaderboard-row-score">{myScore?.weeklyScore?.toLocaleString()}P</span>
+              <span className="leaderboard-row-score">{myScore?.score?.toLocaleString()}P</span>
             </div>
           )}
 

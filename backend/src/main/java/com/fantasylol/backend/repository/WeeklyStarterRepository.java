@@ -2,8 +2,10 @@ package com.fantasylol.backend.repository;
 
 import com.fantasylol.backend.entity.WeeklyStarter;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface WeeklyStarterRepository extends JpaRepository<WeeklyStarter, Long> {
@@ -17,5 +19,11 @@ public interface WeeklyStarterRepository extends JpaRepository<WeeklyStarter, Lo
 
     // 나중에 "내 라인업 히스토리 보기" 같은 기능에 바로 쓸 수 있음
     List<WeeklyStarter> findByTeamTeamIdOrderByWeekNumberDesc(Long teamId);
+
+    Optional<WeeklyStarter> findTopByOrderByLockedAtDesc();
+
+    @Query("SELECT DISTINCT ws.seasonName as seasonName, ws.weekNumber as weekNumber " +
+            "FROM WeeklyStarter ws ORDER BY ws.weekNumber DESC")
+    List<SeasonWeekView> findDistinctSeasonWeeks();
 
 }

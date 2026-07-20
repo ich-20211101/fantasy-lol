@@ -15,9 +15,12 @@ import LeaderboardPage from './pages/LeaderboardPage'
 import InfoPage from './pages/InfoPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import ScorePolicyPage from './pages/ScorePolicyPage'
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 import BottomNav from './components/BottomNav'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import LoggedOutState from './components/LoggedOutState'
 
 import { getMe, loginWithGoogle, logout } from './api/users'
 import { getMyTeam } from './api/teams'
@@ -215,17 +218,17 @@ function App() {
 
         <Route
           path="/roster"
-          element={user ? <RosterPage /> : <div>{t('common.loginRequired')}</div>}
+          element={user ? <RosterPage /> : <LoggedOutState />}
         />
 
         <Route
           path="/roster/mine"
-          element={user ? <MyRosterPage /> : <div>{t('common.loginRequired')}</div>}
+          element={user ? <MyRosterPage /> : <LoggedOutState />}
         />
 
         <Route
           path="/roster/register"
-          element={user ? <RegisterTeamPage user={user} onTeamCreated={refreshTeam} /> : <div>{t('common.loginRequired')}</div>}
+          element={user ? <RegisterTeamPage user={user} onTeamCreated={refreshTeam} /> : <LoggedOutState />}
         />
 
         <Route
@@ -234,7 +237,7 @@ function App() {
             user ? (
               <StarterPage onTeamUpdated={refreshTeam} />
             ) : (
-              <div>{t('common.loginRequired')}</div>
+              <LoggedOutState />
             )
           }
         />
@@ -246,14 +249,13 @@ function App() {
               user={user}
               onLogout={handleLogout}
               onUserUpdated={refreshUser}
-              handleGoogleLogin={handleGoogleLogin}
             />
           }
         />
 
         <Route
           path="/withdraw"
-          element={user ? <WithdrawPage /> : <div>{t('common.loginRequired')}</div>}
+          element={user ? <WithdrawPage /> : <LoggedOutState />}
         />
 
         <Route
@@ -262,7 +264,7 @@ function App() {
             user ? (
               <WithdrawConfirmPage user={user} onWithdrawn={handleWithdrawn} />
             ) : (
-              <div>{t('common.loginRequired')}</div>
+              <LoggedOutState />
             )
           }
         />
@@ -279,6 +281,8 @@ function App() {
 
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/score-policy" element={<ScorePolicyPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminDashboardPage />} />
       </Routes>
     </BrowserRouter>
   )

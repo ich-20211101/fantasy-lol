@@ -16,7 +16,7 @@ public class ScoreCalculator {
                 + winBonus * 5.0
                 + stat.getCs() * 0.01
                 + stat.getDamageToChampions() * 0.001
-                + stat.getVisionScore() * 0.02;
+                + stat.getVisionScore() * 0.2;
 
     }
 

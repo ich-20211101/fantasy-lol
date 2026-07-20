@@ -2,11 +2,9 @@ package com.fantasylol.backend.controller;
 
 import com.fantasylol.backend.dto.UserDto;
 import com.fantasylol.backend.dto.UserScoreDto;
-import com.fantasylol.backend.repository.UserRepository;
 import com.fantasylol.backend.service.LeaguepediaClient;
 import com.fantasylol.backend.service.UserScoreService;
 import com.fantasylol.backend.service.UserService;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final LeaguepediaClient leaguepediaClient;
     private final UserScoreService userScoreService;
 
     @PostMapping
@@ -65,8 +62,11 @@ public class UserController {
     }
 
     @GetMapping("/me/scores")
-    public ResponseEntity<UserScoreDto.Response> getMyScores(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        return ResponseEntity.ok(userScoreService.getMyScores(oAuth2User));
+    public ResponseEntity<UserScoreDto.Response> getMyScores(
+            @AuthenticationPrincipal OAuth2User oAuth2User,
+            @RequestParam(required = false) Integer weekNumber,
+            @RequestParam(required = false) String seasonName) {
+        return ResponseEntity.ok(userScoreService.getMyScores(oAuth2User, weekNumber, seasonName));
     }
 
     @PatchMapping("/me/nickname")

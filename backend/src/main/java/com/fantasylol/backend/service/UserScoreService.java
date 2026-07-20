@@ -9,12 +9,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.temporal.WeekFields;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,6 +22,7 @@ public class UserScoreService {
     private final WeeklyStarterRepository weeklyStarterRepository;
     private final PlayerStatRepository playerStatRepository;
     private final UserRepository userRepository;
+    private final SeasonService seasonService;
 
     @Transactional
     public void updateScoresForMatch(Match match) {
@@ -36,8 +33,8 @@ public class UserScoreService {
                 .map(s -> s.getPlayer().getPlayerId())
                 .collect(Collectors.toSet());
 
-        int weekNumber = match.getMatchDate().get(WeekFields.ISO.weekOfWeekBasedYear());
         String seasonName = match.getSeasonName();
+        int weekNumber = seasonService.resolveWeekNumber(seasonName, match.getMatchDate().toLocalDate());
 
         List<WeeklyStarter> starters = weeklyStarterRepository.findByPlayerPlayerIdInAndWeekNumberAndSeasonName(playerIds, weekNumber, seasonName);
 
@@ -92,29 +89,56 @@ public class UserScoreService {
     }
 
     @Transactional(readOnly = true)
-    public UserScoreDto.Response getMyScores(OAuth2User oAuth2User) {
+    public UserScoreDto.Response getMyScores(OAuth2User oAuth2User, Integer weekNumber, String seasonName) {
 
         String email = oAuth2User.getAttribute("email");
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        UserScore latest = userScoreRepository.findTopByUserUserIdOrderByUpdatedAtDesc(user.getUserId())
-                .orElse(null);
+        String resolvedSeasonName = seasonName;
 
-        if (latest == null) {
-            return UserScoreDto.Response.builder()
-                    .weeklyScore(0.0)
-                    .seasonalScore(0.0)
-                    .build();
+        if (resolvedSeasonName == null) {
+            Optional<WeeklyStarter> latest = weeklyStarterRepository.findTopByOrderByLockedAtDesc();
+            if (latest.isEmpty()) {
+                return UserScoreDto.Response.builder().rank(null).score(0.0).build();
+            }
+            resolvedSeasonName = latest.get().getSeasonName();
         }
 
-        int currentWeek = LocalDateTime.now().get(WeekFields.ISO.weekOfWeekBasedYear());
+        if (weekNumber == null) {
 
-        double weeklyScore = latest.getWeekNumber() == currentWeek ? latest.getWeeklyScore() : 0.0;
+            UserScore latest = userScoreRepository
+                    .findTopByUserUserIdAndSeasonNameOrderByWeekNumberDesc(user.getUserId(), resolvedSeasonName)
+                    .orElse(null);
+
+            if (latest == null) {
+                return UserScoreDto.Response.builder().rank(null).score(0.0).build();
+            }
+
+            long higherCount = userScoreRepository
+                    .countLatestPerUserBySeasonNameAndSeasonalScoreGreaterThan(resolvedSeasonName, latest.getSeasonalScore());
+
+            return UserScoreDto.Response.builder()
+                    .rank((int) higherCount + 1)
+                    .score(latest.getSeasonalScore())
+                    .build();
+
+        }
+
+        UserScore weekScore = userScoreRepository
+                .findByUserUserIdAndWeekNumberAndSeasonName(user.getUserId(), weekNumber, resolvedSeasonName)
+                .orElse(null);
+
+        if (weekScore == null) {
+            return UserScoreDto.Response.builder().rank(null).score(0.0).build();
+        }
+
+        long higherCount = userScoreRepository
+                .countByWeekNumberAndSeasonNameAndWeeklyScoreGreaterThan(weekNumber, resolvedSeasonName, weekScore.getWeeklyScore());
 
         return UserScoreDto.Response.builder()
-                .weeklyScore(weeklyScore)
-                .seasonalScore(latest.getSeasonalScore())
+                .rank((int) higherCount + 1)
+                .score(weekScore.getWeeklyScore())
                 .build();
 
     }

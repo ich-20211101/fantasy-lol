@@ -1,0 +1,577 @@
+.admin-dash-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Pretendard', sans-serif;
+  color: #6a6a6f;
+}
+
+.admin-dash {
+  height: 100vh;
+  height: 100dvh;
+  background: #f8f9fa;
+  display: flex;
+  font-family: 'Pretendard', sans-serif;
+  overflow: hidden;
+}
+
+/* 사이드바 */
+
+.admin-dash-sidebar {
+  flex: none;
+  width: 232px;
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid rgba(11, 11, 12, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 26px 18px;
+  box-sizing: border-box;
+}
+
+.admin-dash-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 26px;
+}
+
+.admin-dash-logo-text {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -1px;
+  color: #0b0b0c;
+}
+
+.admin-dash-logo-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(11, 11, 12, 0.2);
+}
+
+.admin-dash-logo-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: #9a9a9e;
+  text-transform: uppercase;
+}
+
+.admin-dash-nav-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #c0c0c4;
+  text-transform: uppercase;
+  padding: 8px 10px 6px;
+}
+
+.admin-dash-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  font-size: 14px;
+  color: #6a6a6f;
+}
+
+.admin-dash-nav-item:hover {
+  background: rgba(11, 11, 12, 0.05);
+}
+
+.admin-dash-nav-item.active {
+  background: rgba(11, 11, 12, 0.06);
+  font-weight: 700;
+  color: #0b0b0c;
+}
+
+.admin-dash-sidebar-spacer {
+  flex: 1;
+}
+
+.admin-dash-account {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(11, 11, 12, 0.08);
+  margin-top: 12px;
+}
+
+.admin-dash-account-label {
+  font-weight: 700;
+  font-size: 13px;
+  color: #0b0b0c;
+}
+
+.admin-dash-account-email {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #9a9a9e;
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.admin-dash-logout {
+  margin-top: 12px;
+  width: 100%;
+  border: 1px solid rgba(11, 11, 12, 0.16);
+  background: transparent;
+  border-radius: 9px;
+  padding: 9px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #0b0b0c;
+  cursor: pointer;
+}
+
+.admin-dash-logout:hover {
+  background: rgba(11, 11, 12, 0.05);
+}
+
+/* 본문 */
+
+.admin-dash-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.admin-dash-title {
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  color: #0b0b0c;
+}
+
+.admin-dash-subtitle {
+  margin: 6px 0 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  color: #6a6a6f;
+  font-weight: 500;
+}
+
+/* 필터 */
+
+.admin-dash-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-dash-search {
+  border: 1px solid rgba(11, 11, 12, 0.16);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  color: #0b0b0c;
+  outline: none;
+  width: 220px;
+}
+
+.admin-dash-chip {
+  border: 1px solid rgba(11, 11, 12, 0.16);
+  background: transparent;
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 12px;
+  color: #6a6a6f;
+}
+
+.admin-dash-chip.active {
+  border-color: #0b0b0c;
+  background: #0b0b0c;
+  color: #f8f9fa;
+}
+
+/* 테이블 */
+
+.admin-dash-table {
+  flex-shrink: 0;
+  border: 1px solid rgba(11, 11, 12, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.admin-dash-table-header {
+  padding: 12px 18px;
+  background: rgba(11, 11, 12, 0.03);
+  border-bottom: 1px solid rgba(11, 11, 12, 0.1);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #9a9a9e;
+}
+
+.admin-dash-table-row {
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(11, 11, 12, 0.06);
+}
+
+.admin-dash-table-row:last-child {
+  border-bottom: none;
+}
+
+.admin-dash-teams-grid,
+.admin-dash-table-header.admin-dash-teams-grid {
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr 110px 140px;
+}
+
+.admin-dash-players-grid,
+.admin-dash-table-header.admin-dash-players-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 90px 110px 140px;
+}
+
+.admin-dash-idx {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: #9a9a9e;
+}
+
+.admin-dash-cell-strong {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0b0b0c;
+}
+
+.admin-dash-cell-muted {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #6a6a6f;
+}
+
+.admin-dash-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #6a6a6f;
+}
+
+.admin-dash-status {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.admin-dash-status.current {
+  color: #1f9d55;
+}
+
+.admin-dash-status.previous {
+  color: #9a9a9e;
+}
+
+.admin-dash-status.fail {
+  color: #e11d2e;
+}
+
+.admin-dash-col-right {
+  text-align: right;
+}
+
+.admin-dash-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.admin-dash-table-row input,
+.admin-dash-table-row select {
+  border: 1px solid rgba(11, 11, 12, 0.3);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #0b0b0c;
+  background: #f8f9fa;
+  outline: none;
+  width: 85%;
+}
+
+.admin-dash-empty {
+  padding: 40px 0;
+  text-align: center;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #9a9a9e;
+}
+
+/* 버튼 */
+
+.admin-dash-btn {
+  border: 1px solid rgba(11, 11, 12, 0.18);
+  background: transparent;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #0b0b0c;
+  cursor: pointer;
+}
+
+.admin-dash-btn:hover {
+  background: rgba(11, 11, 12, 0.05);
+}
+
+.admin-dash-btn-dark {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  background: #0b0b0c;
+  color: #f8f9fa;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.admin-dash-btn-dark:hover {
+  opacity: 0.88;
+}
+
+.admin-dash-btn-danger {
+  border: 1px solid rgba(225, 29, 46, 0.3);
+  background: transparent;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #e11d2e;
+  cursor: pointer;
+}
+
+.admin-dash-btn-danger:hover {
+  background: rgba(225, 29, 46, 0.06);
+}
+
+.admin-dash-btn-danger-solid {
+  flex: 1;
+  border: none;
+  background: #e11d2e;
+  border-radius: 10px;
+  padding: 11px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #f8f9fa;
+  cursor: pointer;
+}
+
+.admin-dash-btn-danger-solid:hover {
+  opacity: 0.9;
+}
+
+/* 삭제 확인 팝업 */
+
+.admin-dash-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 11, 12, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.admin-dash-confirm {
+  width: 360px;
+  background: #f8f9fa;
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.5);
+}
+
+.admin-dash-confirm-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: #0b0b0c;
+}
+
+.admin-dash-confirm-desc {
+  margin: 10px 0 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #6a6a6f;
+}
+
+.admin-dash-confirm-desc b {
+  color: #0b0b0c;
+}
+
+.admin-dash-confirm-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.admin-dash-confirm-actions .admin-dash-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
+.admin-dash-page-info {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: #9a9a9e;
+}
+
+/* 동기화 탭 */
+
+.admin-dash-sync-card {
+  border: 1px solid rgba(11, 11, 12, 0.14);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.admin-dash-sync-info {
+  display: flex;
+  gap: 32px;
+}
+
+.admin-dash-sync-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #9a9a9e;
+}
+
+.admin-dash-sync-value {
+  margin-top: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #0b0b0c;
+}
+
+.admin-dash-sync-input-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-dash-sync-input {
+  margin-top: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-dash-sync-message {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 2px 2px 0;
+}
+
+.admin-dash-sync-message.success {
+  color: #1f9d55;
+}
+
+.admin-dash-sync-message.error {
+  color: #e11d2e;
+}
+
+.admin-dash-sync-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 22px;
+  background: #0b0b0c;
+  color: #f8f9fa;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 14.5px;
+  cursor: pointer;
+}
+
+.admin-dash-sync-btn:disabled {
+  background: #6a6a6f;
+  cursor: default;
+}
+
+.admin-dash-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(248, 249, 250, 0.35);
+  border-top-color: #f8f9fa;
+  animation: admin-dash-spin 0.8s linear infinite;
+}
+
+@keyframes admin-dash-spin {
+  to { transform: rotate(360deg); }
+}
+
+.admin-dash-log-title {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #0b0b0c;
+  margin-bottom: 10px;
+}
+
+.admin-dash-detect-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-dash-detect-chip {
+  border: 1px solid rgba(11, 11, 12, 0.16);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 12px;
+  color: #0b0b0c;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-dash-detect-chip:hover {
+  background: rgba(11, 11, 12, 0.05);
+  border-color: #0b0b0c;
+}

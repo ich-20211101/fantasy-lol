@@ -32,6 +32,8 @@ public class TeamService {
     private final TeamRosterRepository teamRosterRepository;
     private final PlayerRepository playerRepository;
     private final UserRepository userRepository;
+    private final SeasonService seasonService;
+    private final SeasonWeekService seasonWeekService;
 
     @Transactional
     public TeamDto.Response submitRoster(OAuth2User oAuth2User, TeamDto.RosterSubmitRequest request) {
@@ -41,11 +43,12 @@ public class TeamService {
         Team team = teamRepository.findByUserUserId(user.getUserId())
                 .orElseGet(() -> Team.builder().user(user).build());
 
-        if (Boolean.TRUE.equals(team.getRosterLocked())) {
-            throw new IllegalStateException("시즌이 시작되어 로스터를 수정할 수 없습니다");
+        if (isRosterLockedForActiveSeason(team)) {
+            throw new IllegalStateException("이미 이번 시즌 로스터를 제출했습니다. 다음 시즌부터 변경할 수 있습니다");
         }
 
         team.setTeamName(request.getTeamName());
+        seasonService.getActiveSeason().ifPresent(season -> team.setCurrentSeasonName(season.getSeasonName()));
         Team savedTeam = teamRepository.save(team);
 
         replaceRoster(savedTeam, players);
@@ -61,6 +64,11 @@ public class TeamService {
 
         User user = getUser(oAuth2User);
         Team team = getOwnedTeam(teamId, user);
+
+        if (seasonWeekService.isCurrentWeekLocked()) {
+            throw new IllegalStateException("이번 주 스타터가 이미 확정되어 변경할 수 없습니다");
+        }
+
         List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(teamId);
 
         if (roster.isEmpty()) {
@@ -68,6 +76,10 @@ public class TeamService {
         }
 
         Set<Long> starterIds = validateStarterSelection(request.getPlayerIds(), roster);
+
+        if (seasonWeekService.isCurrentWeekLocked()) {
+            throw new IllegalStateException("이번 주 스타터가 이미 확정되어 변경할 수 없습니다");
+        }
 
         roster.forEach(r -> r.setIsStarter(starterIds.contains(r.getPlayer().getPlayerId())));
         teamRosterRepository.saveAll(roster);
@@ -220,6 +232,14 @@ public class TeamService {
 
     }
 
+    private boolean isRosterLockedForActiveSeason(Team team) {
+
+        return seasonService.getActiveSeason()
+                .map(season -> season.getSeasonName().equals(team.getCurrentSeasonName()))
+                .orElse(false);
+
+    }
+
     private TeamDto.Response toResponse(Team team, List<TeamRoster> roster) {
 
         List<TeamDto.RosterPlayerResponse> rosterResponses = roster.stream()
@@ -236,7 +256,8 @@ public class TeamService {
         return TeamDto.Response.builder()
                 .teamId(team.getTeamId())
                 .teamName(team.getTeamName())
-                .rosterLocked(Boolean.TRUE.equals(team.getRosterLocked()))
+                .rosterLocked(isRosterLockedForActiveSeason(team))
+                .starterLocked(seasonWeekService.isCurrentWeekLocked())
                 .roster(rosterResponses)
                 .build();
 

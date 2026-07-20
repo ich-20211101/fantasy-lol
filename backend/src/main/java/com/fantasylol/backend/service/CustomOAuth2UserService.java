@@ -4,11 +4,16 @@ import com.fantasylol.backend.entity.User;
 import com.fantasylol.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,7 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
 
-        userRepository.findByEmail(email).orElseGet(() ->
+        User user = userRepository.findByEmail(email).orElseGet(() ->
                 userRepository.save(User.builder()
                         .googleId(googleId)
                         .email(email)
@@ -37,7 +42,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         .build())
         );
 
-        return oAuth2User;
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+
+        return new DefaultOAuth2User(authorities, oAuth2User.getAttributes(), "sub");
 
     }
 

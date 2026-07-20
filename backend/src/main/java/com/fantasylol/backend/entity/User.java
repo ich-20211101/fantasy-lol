@@ -34,6 +34,8 @@ public class User {
     @Builder.Default
     private String role = "USER";
 
+    private String password;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

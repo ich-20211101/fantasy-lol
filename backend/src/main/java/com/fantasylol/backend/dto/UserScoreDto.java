@@ -10,8 +10,8 @@ public class UserScoreDto {
     @AllArgsConstructor
     @Builder
     public static class Response {
-        private Double weeklyScore;
-        private Double seasonalScore;
+        private Integer rank;
+        private Double score;
     }
 
 }

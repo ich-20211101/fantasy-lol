@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     google_id   VARCHAR(255) UNIQUE,        -- 추가: Google OAuth 식별자
     profile_image_url VARCHAR(500),         -- 추가: 구글 프로필 사진
     role        VARCHAR(20) DEFAULT 'USER', -- 추가: 권한관리
+    password VARCHAR(255),
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS teams (
     user_id     BIGINT NOT NULL,
     team_name   VARCHAR(100) NOT NULL,
     roster_locked BOOLEAN DEFAULT FALSE,
+    current_season_name VARCHAR(100),
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -99,6 +101,28 @@ CREATE TABLE IF NOT EXISTS weekly_starters (
     FOREIGN KEY (team_id) REFERENCES teams(team_id),
     FOREIGN KEY (player_id) REFERENCES players(player_id),
     UNIQUE (team_id, week_number, season_name, player_id)
+);
+
+CREATE TABLE IF NOT EXISTS seasons (
+    season_id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    season_name  VARCHAR(100) NOT NULL UNIQUE,
+    start_date   DATE NOT NULL,
+    end_date     DATE,
+    status       VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS season_weeks (
+    season_week_id     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    season_id          BIGINT NOT NULL,
+    week_number         INT NOT NULL,
+    week_start_date     DATE NOT NULL,
+    week_end_date       DATE NOT NULL,
+    starter_locked_at   TIMESTAMP,
+    finalized_at        TIMESTAMP,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (season_id) REFERENCES seasons(season_id),
+    UNIQUE (season_id, week_number)
 );
 
 CREATE INDEX IF NOT EXISTS idx_teams_user_id ON teams(user_id);

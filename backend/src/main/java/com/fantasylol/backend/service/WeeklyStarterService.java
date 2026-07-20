@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -21,9 +22,15 @@ public class WeeklyStarterService {
     private final TeamRepository teamRepository;
     private final TeamRosterRepository teamRosterRepository;
     private final WeeklyStarterRepository weeklyStarterRepository;
+    private final SeasonService seasonService;
 
     @Transactional
-    public int lockStartersForWeek(Integer weekNumber, String seasonName) {
+    public int lockStartersForDate(LocalDate date, String seasonName) {
+        int weekNumber = seasonService.resolveWeekNumber(seasonName, date);
+        return lockStartersForWeek(weekNumber, seasonName);
+    }
+
+    private int lockStartersForWeek(Integer weekNumber, String seasonName) {
 
         List<Team> teams = teamRepository.findAll();
         int lockedCount = 0;

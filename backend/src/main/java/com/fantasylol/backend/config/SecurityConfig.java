@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -37,14 +39,21 @@ public class SecurityConfig {
                             "/api-docs/**",
                             "/v3/api-docs/**",
                             "/actuator/**",
-                            "/users/test-login",
-                            "/users/test-players",
+                            "/matches/upcoming",
+                            "/admin/login",
+                            "/players",
+                            "/leaderboard",
+                            "/leaderboard/rounds"
+                    ).permitAll()
+                    .requestMatchers(
                             "/matches/sync",
                             "/matches/players/sync",
-                            "/matches/upcoming",
                             "/matches/starters/lock",
-                            "/players"
-                    ).permitAll()
+                            "/seasons",
+                            "/seasons/detect-new",
+                            "/admin/me",
+                            "/admin/me/password"
+                    ).hasAuthority("ROLE_ADMIN")
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
@@ -71,6 +80,11 @@ public class SecurityConfig {
 
         return source;
 
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
 }
