@@ -34,10 +34,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/",
-                            "/swagger-ui.html",
-                            "/swagger-ui/**",
-                            "/api-docs/**",
-                            "/v3/api-docs/**",
                             "/actuator/**",
                             "/matches/upcoming",
                             "/admin/login",
@@ -55,6 +51,10 @@ public class SecurityConfig {
                             "/seasons/activate-due",
                             "/seasons/end",
                             "/seasons/weeks/lock",
+                            "/swagger-ui.html",
+                            "/swagger-ui/**",
+                            "/api-docs/**",
+                            "/v3/api-docs/**",
                             "/admin/me",
                             "/admin/me/password",
                             "/pro-teams/*"
