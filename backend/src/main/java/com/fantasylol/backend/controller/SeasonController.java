@@ -54,4 +54,18 @@ public class SeasonController {
         return ResponseEntity.ok("Week " + week.getWeekNumber() + " 락 완료 (locked at " + week.getStarterLockedAt() + ")");
     }
 
+    @PostMapping("/activate-due")
+    @Operation(summary = "[TEST] Manually trigger season activation check — starts due DRAFT seasons only, does not end the current one (normally runs daily at 1am)")
+    public ResponseEntity<String> activateDueSeasons() {
+        seasonService.activateDueSeasons();
+        return ResponseEntity.ok("시즌 활성화 체크 완료");
+    }
+
+    @PostMapping("/end")
+    @Operation(summary = "[ADMIN] Manually end an ACTIVE season and settle final rankings")
+    public ResponseEntity<String> endSeason(@RequestParam String seasonName) {
+        seasonService.endSeason(seasonName);
+        return ResponseEntity.ok("시즌 종료 완료: " + seasonName);
+    }
+
 }

@@ -13,4 +13,5 @@ public interface SeasonRepository extends JpaRepository<Season, Long> {
     boolean existsBySeasonName(String seasonName);
     List<Season> findByStatusAndStartDateLessThanEqual(SeasonStatus status, LocalDate date);
     List<Season> findByStatus(SeasonStatus status);
+    List<Season> findByStatusInOrderByStartDateDesc(List<SeasonStatus> statuses);
 }

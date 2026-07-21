@@ -3,17 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
+import { POSITIONS, POS_LABEL } from '../constants/positions'
 import './MyRosterPage.css'
-
-const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
-
-const POS_LABEL = {
-  Top: 'TOP',
-  Jungle: 'JUG',
-  Mid: 'MID',
-  Bot: 'ADC',
-  Support: 'SPT',
-}
 
 const MAX_ROSTER_SIZE = 8
 const PLAYER_POINT = 10
@@ -23,6 +15,7 @@ export default function MyRosterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
+  const teamAbbreviations = useProTeamAbbreviations()
   const initialPlayers = location.state?.selectedPlayers
 
   const [selectedPlayers, setSelectedPlayers] = useState(initialPlayers ?? [])
@@ -108,7 +101,7 @@ export default function MyRosterPage() {
                       </span>
                     </div>
                     <p>
-                      {player.teamName} | {POS_LABEL[player.position]}
+                      {abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}
                     </p>
                   </div>
 

@@ -25,10 +25,13 @@ import LoggedOutState from './components/LoggedOutState'
 import { getMe, loginWithGoogle, logout } from './api/users'
 import { getMyTeam } from './api/teams'
 import { getPlayers } from './api/players'
+import { useProTeamAbbreviations, abbreviateTeam } from './hooks/useProTeamAbbreviations'
+import { POS_LABEL } from './constants/positions'
 
 function Home({ user, players, handleGoogleLogin }) {
   const { t } = useTranslation()
   const marqueeRef = useRef(null)
+  const teamAbbreviations = useProTeamAbbreviations()
 
   const rows = useMemo(() => {
     const rowSize = 8
@@ -103,7 +106,7 @@ function Home({ user, players, handleGoogleLogin }) {
                           {player.playerName}
                         </div>
                         <div className="lfm-player-sub">
-                          {player.teamName} | {player.position}
+                          {abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position] || player.position}
                         </div>
                       </div>
                     ))}

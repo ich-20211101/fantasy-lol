@@ -28,6 +28,7 @@ public class SeasonWeekService {
     private final SeasonService seasonService;
     private final MatchScheduleService matchScheduleService;
     private final WeeklyStarterService weeklyStarterService;
+    private final SettlementService settlementService;
 
     @Transactional(readOnly = true)
     public boolean isCurrentWeekLocked() {
@@ -99,6 +100,7 @@ public class SeasonWeekService {
 
         seasonWeek.setFinalizedAt(LocalDateTime.now());
         seasonWeekRepository.save(seasonWeek);
+        settlementService.settleWeek(match.getSeasonName(), weekNumber);
 
         log.info("Finalized week {} ({}) — all matches scored", weekNumber, match.getSeasonName());
 

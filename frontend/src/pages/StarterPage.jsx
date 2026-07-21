@@ -7,16 +7,8 @@ import { getMyTeam, saveStarters } from '../api/teams'
 import BottomNav from '../components/BottomNav'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-
-const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
-
-const POS_LABEL = {
-  Top: 'TOP',
-  Jungle: 'JUG',
-  Mid: 'MID',
-  Bot: 'ADC',
-  Support: 'SPT',
-}
+import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
+import { POSITIONS, POS_LABEL } from '../constants/positions'
 
 function getIsoWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -42,6 +34,7 @@ function scoreValue(player) {
 export default function StarterPage({ onTeamUpdated }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const teamAbbreviations = useProTeamAbbreviations()
 
   const [team, setTeam] = useState(null)
   const [starterIds, setStarterIds] = useState(new Set())
@@ -197,7 +190,7 @@ export default function StarterPage({ onTeamUpdated }) {
                       {slot.player.lastSeasonScore ?? '0,321'}
                     </span>
                   </div>
-                  <p>{slot.player.teamName} | {POS_LABEL[slot.player.position]}</p>
+                  <p>{abbreviateTeam(teamAbbreviations, slot.player.teamName)} | {POS_LABEL[slot.player.position]}</p>
                 </div>
                 <strong className="setlineup-point">10P</strong>
                 <button
@@ -238,7 +231,7 @@ export default function StarterPage({ onTeamUpdated }) {
                     {player.lastSeasonScore ?? '0,321'}
                   </span>
                 </div>
-                <p>{player.teamName} | {POS_LABEL[player.position]}</p>
+                <p>{abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}</p>
               </div>
               <strong className="setlineup-point">10P</strong>
               <button

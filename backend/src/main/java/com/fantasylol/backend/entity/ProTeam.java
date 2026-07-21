@@ -1,0 +1,45 @@
+package com.fantasylol.backend.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "pro_teams")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ProTeam {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long proTeamId;
+
+    @Column(nullable = false, unique = true)
+    private String fullName;
+
+    @Column(nullable = false, length = 20)
+    private String shortName;
+
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String status = "CURRENT";
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+}

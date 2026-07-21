@@ -42,6 +42,7 @@ public class SecurityConfig {
                             "/matches/upcoming",
                             "/admin/login",
                             "/players",
+                            "/pro-teams",
                             "/leaderboard",
                             "/leaderboard/rounds"
                     ).permitAll()
@@ -51,8 +52,12 @@ public class SecurityConfig {
                             "/matches/starters/lock",
                             "/seasons",
                             "/seasons/detect-new",
+                            "/seasons/activate-due",
+                            "/seasons/end",
+                            "/seasons/weeks/lock",
                             "/admin/me",
-                            "/admin/me/password"
+                            "/admin/me/password",
+                            "/pro-teams/*"
                     ).hasAuthority("ROLE_ADMIN")
                     .anyRequest().authenticated()
             )

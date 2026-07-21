@@ -105,8 +105,8 @@ export default function LeaderboardPage({ user, team }) {
     setExpandedSeasonName((prev) => (prev === seasonName ? null : seasonName))
   }
 
-  const pickOverall = () => {
-    setSelection({ seasonName: null, weekNumber: null })
+  const pickOverall = (seasonName) => {
+    setSelection({ seasonName, weekNumber: null })
     setWeekSelectOpen(false)
     scrollToTop()
   }
@@ -126,7 +126,9 @@ export default function LeaderboardPage({ user, team }) {
   const myRankActive = Boolean(user) && hasScoreHistory
 
   const mostRecentRound = rounds[0]
-  const selectedRound = isOverall ? mostRecentRound : rounds.find((r) => r.seasonName === selection.seasonName)
+  const selectedRound = selection.seasonName
+    ? rounds.find((r) => r.seasonName === selection.seasonName)
+    : mostRecentRound
 
   const headerRoundLabel = isOverall
     ? (resolvedSeasonLabel ?? selectedRound?.seasonLabel ?? '')
@@ -187,15 +189,20 @@ export default function LeaderboardPage({ user, team }) {
 
                     {expandedSeasonName === round.seasonName && (
                       <div className="leaderboard-round-weeks">
-                        {isMostRecent && (
-                          <div
-                            className="leaderboard-week-option"
-                            style={{ fontWeight: isOverall ? 700 : 500, color: isOverall ? '#0b0b0c' : '#6a6a6f' }}
-                            onClick={pickOverall}
-                          >
-                            Overall
-                          </div>
-                        )}
+                        {(() => {
+                          const isOverallSelected = isOverall
+                            && (selection.seasonName ? selection.seasonName === round.seasonName : isMostRecent)
+
+                          return (
+                            <div
+                              className="leaderboard-week-option"
+                              style={{ fontWeight: isOverallSelected ? 700 : 500, color: isOverallSelected ? '#0b0b0c' : '#6a6a6f' }}
+                              onClick={() => pickOverall(round.seasonName)}
+                            >
+                              Overall
+                            </div>
+                          )
+                        })()}
                         {round.weeks.map((weekNumber) => {
                           const isSelected = !isOverall && selection.seasonName === round.seasonName && selection.weekNumber === weekNumber
 

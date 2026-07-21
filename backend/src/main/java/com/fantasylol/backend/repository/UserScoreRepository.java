@@ -40,6 +40,18 @@ public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
 
     Optional<UserScore>
     findTopByUserUserIdAndSeasonNameOrderByWeekNumberDesc(Long userId, String seasonName);
+
+    @Query("""
+        SELECT us FROM UserScore us
+        WHERE us.seasonName = :seasonName
+        AND us.weekNumber = (
+            SELECT MAX(us2.weekNumber) FROM UserScore us2
+            WHERE us2.user = us.user AND us2.seasonName = :seasonName
+        )
+        ORDER BY us.seasonalScore DESC
+        """)
+    List<UserScore> findLatestPerUserBySeasonName(@Param("seasonName") String seasonName);
+
     @Query("""
         SELECT COUNT(us) FROM UserScore us
         WHERE us.seasonName = :seasonName

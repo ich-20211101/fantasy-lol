@@ -2,6 +2,7 @@ package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.entity.Player;
 import com.fantasylol.backend.repository.PlayerRepository;
+import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,7 @@ public class PlayerSyncService {
         for (JsonNode node : playerList) {
 
             JsonNode p = node.path("title");
-            String playerName = p.path("Player").asText();
+            String playerName = PlayerNameSanitizer.sanitize(p.path("Player").asText());
             String teamName = p.path("Team").asText();
             String role = p.path("Role").asText();
 

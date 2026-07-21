@@ -7,16 +7,8 @@ import BottomNav from '../components/BottomNav'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { deleteMyTeam } from '../api/teams'
-
-const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
-
-const POS_LABEL = {
-  Top: 'TOP',
-  Jungle: 'JUG',
-  Mid: 'MID',
-  Bot: 'ADC',
-  Support: 'SPT',
-}
+import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
+import { POSITIONS, POS_LABEL } from '../constants/positions'
 
 function getIsoWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -50,6 +42,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
+  const teamAbbreviations = useProTeamAbbreviations()
 
   const [rankPopupOpen, setRankPopupOpen] = useState(() => !isRankPopupSuppressed())
   const [rankDontShow, setRankDontShow] = useState(false)
@@ -201,7 +194,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
                       {player.lastSeasonScore ?? '0,321'}
                     </span>
                   </div>
-                  <p>{player.teamName} | {POS_LABEL[player.position]}</p>
+                  <p>{abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}</p>
                 </div>
                 <span className="myteam-point">10P</span>
               </div>
@@ -230,7 +223,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
                     {player.lastSeasonScore ?? '0,321'}
                   </span>
                 </div>
-                <p>{player.teamName} | {POS_LABEL[player.position]}</p>
+                <p>{abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}</p>
               </div>
               <span className="myteam-point">10P</span>
             </div>

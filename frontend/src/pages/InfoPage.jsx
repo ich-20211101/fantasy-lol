@@ -5,6 +5,7 @@ import { getUpcomingMatches } from '../api/matches'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import BottomNav from '../components/BottomNav'
+import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
 import './InfoPage.css'
 
 const POSITIONS = ['ALL', 'TOP', 'JUG', 'MID', 'ADC', 'SPT']
@@ -23,6 +24,7 @@ function toKst(dateTimeUtc) {
 export default function InfoPage({ team }) {
   const { t } = useTranslation()
   const scrollRef = useRef(null)
+  const teamAbbreviations = useProTeamAbbreviations()
 
   const [rankInfoOpen, setRankInfoOpen] = useState(false)
   const [mineOnly, setMineOnly] = useState(false)
@@ -192,7 +194,7 @@ export default function InfoPage({ team }) {
                   <span className="info-row-rank">{i + 1}</span>
                   <div className="info-row-info">
                     <div className="info-row-name">{row.name}</div>
-                    <div className="info-row-sub">{row.team} | {row.pos}</div>
+                    <div className="info-row-sub">{abbreviateTeam(teamAbbreviations, row.team)} | {row.pos}</div>
                   </div>
                   <span className="info-row-score">{row.score?.toLocaleString()}</span>
                 </div>

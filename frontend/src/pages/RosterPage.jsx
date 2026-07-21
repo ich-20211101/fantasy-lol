@@ -6,16 +6,8 @@ import './RosterPage.css'
 import { getPlayers } from '../api/players'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-
-const POSITIONS = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
-
-const POS_LABEL = {
-  Top: 'TOP',
-  Jungle: 'JUG',
-  Mid: 'MID',
-  Bot: 'ADC',
-  Support: 'SPT',
-}
+import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
+import { POSITIONS, POS_LABEL } from '../constants/positions'
 
 const MAX_ROSTER_SIZE = 8
 const PLAYER_POINT = 10
@@ -25,6 +17,7 @@ export default function RosterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
+  const teamAbbreviations = useProTeamAbbreviations()
 
   const [players, setPlayers] = useState([])
   const [selectedIds, setSelectedIds] = useState(() => {
@@ -171,7 +164,7 @@ export default function RosterPage() {
                 className="build-dropdown-trigger"
                 onClick={() => setTeamOpen(prev => !prev)}
               >
-                <span>{teamFilter}</span>
+                <span>{abbreviateTeam(teamAbbreviations, teamFilter)}</span>
                 <svg width="11" height="7" viewBox="0 0 11 7" fill="none">
                   <path
                     d="M1 1L5.5 5.5L10 1"
@@ -197,7 +190,7 @@ export default function RosterPage() {
                           setTeamOpen(false)
                         }}
                       >
-                        <span>{team}</span>
+                        <span>{abbreviateTeam(teamAbbreviations, team)}</span>
                         {active && (
                           <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
                             <path
@@ -241,7 +234,7 @@ export default function RosterPage() {
                       </span>
                     </div>
                     <p>
-                      {player.teamName} | {POS_LABEL[player.position]}
+                      {abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}
                     </p>
                   </div>
 

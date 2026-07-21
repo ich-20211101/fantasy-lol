@@ -27,6 +27,7 @@ public class SeasonService {
 
     private final SeasonRepository seasonRepository;
     private final LeaguepediaClient leaguepediaClient;
+    private final SettlementService settlementService;
 
     @Transactional(readOnly = true)
     public Optional<Season> getActiveSeason() {
@@ -122,6 +123,24 @@ public class SeasonService {
             seasonRepository.save(season);
             log.info("Activated season: {} (startDate {})", season.getSeasonName(), season.getStartDate());
         }
+
+    }
+
+    @Transactional
+    public void endSeason(String seasonName) {
+
+        Season season = seasonRepository.findBySeasonName(seasonName)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다: " + seasonName));
+
+        if (season.getStatus() != SeasonStatus.ACTIVE) {
+            throw new IllegalArgumentException("ACTIVE 상태의 시즌만 종료할 수 있습니다. 현재 상태: " + season.getStatus());
+        }
+
+        season.setStatus(SeasonStatus.ENDED);
+        season.setEndDate(LocalDate.now());
+        seasonRepository.save(season);
+        settlementService.settleSeason(season.getSeasonName());
+        log.info("Ended season (manual): {} (endDate {})", season.getSeasonName(), season.getEndDate());
 
     }
 

@@ -1,13 +1,8 @@
 package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.dto.LeaderboardDto;
-import com.fantasylol.backend.entity.Team;
-import com.fantasylol.backend.entity.UserScore;
-import com.fantasylol.backend.entity.WeeklyStarter;
-import com.fantasylol.backend.repository.SeasonWeekView;
-import com.fantasylol.backend.repository.TeamRepository;
-import com.fantasylol.backend.repository.UserScoreRepository;
-import com.fantasylol.backend.repository.WeeklyStarterRepository;
+import com.fantasylol.backend.entity.*;
+import com.fantasylol.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +24,8 @@ public class LeaderboardService {
     private final UserScoreRepository userScoreRepository;
     private final TeamRepository teamRepository;
     private final WeeklyStarterRepository weeklyStarterRepository;
+    private final SeasonRepository seasonRepository;
+    private final SeasonWeekRepository seasonWeekRepository;
 
     @Transactional(readOnly = true)
     public LeaderboardDto.Response getLeaderboard(Integer weekNumber, String seasonName, int page, int pageSize) {
@@ -118,19 +115,24 @@ public class LeaderboardService {
     @Transactional(readOnly = true)
     public List<LeaderboardDto.Round> getAvailableRounds() {
 
-        List<SeasonWeekView> pairs = weeklyStarterRepository.findDistinctSeasonWeeks();
-        Map<String, List<Integer>> weeksBySeason = new LinkedHashMap<>();
+        List<Season> seasons = seasonRepository.findByStatusInOrderByStartDateDesc(
+                List.of(SeasonStatus.ACTIVE, SeasonStatus.ENDED));
 
-        for (SeasonWeekView p : pairs) {
-            weeksBySeason.computeIfAbsent(p.getSeasonName(), k -> new ArrayList<>()).add(p.getWeekNumber());
-        }
+        return seasons.stream()
+                .map(season -> {
+                    List<Integer> weeks = seasonWeekRepository
+                            .findBySeasonSeasonIdOrderByWeekNumberDesc(season.getSeasonId())
+                            .stream()
+                            .filter(w -> w.getStarterLockedAt() != null)
+                            .map(SeasonWeek::getWeekNumber)
+                            .toList();
 
-        return weeksBySeason.entrySet().stream()
-                .map(e -> LeaderboardDto.Round.builder()
-                        .seasonName(e.getKey())
-                        .seasonLabel(formatSeasonLabel(e.getKey()))
-                        .weeks(e.getValue())
-                        .build())
+                    return LeaderboardDto.Round.builder()
+                            .seasonName(season.getSeasonName())
+                            .seasonLabel(formatSeasonLabel(season.getSeasonName()))
+                            .weeks(weeks)
+                            .build();
+                })
                 .toList();
 
     }

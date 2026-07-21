@@ -36,6 +36,9 @@ spring:
 app:
   oauth2:
     success-redirect-url: /
+  admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8080}

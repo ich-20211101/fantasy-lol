@@ -30,7 +30,7 @@ public class LeaderboardController {
             @RequestParam(defaultValue = "20") int pageSize
     ) {
 
-        if ((weekNumber == null) != (seasonName == null)) {
+        if (weekNumber != null && seasonName == null) {
             return ResponseEntity.badRequest().build();
         }
 

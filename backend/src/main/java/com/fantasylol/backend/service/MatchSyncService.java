@@ -6,6 +6,7 @@ import com.fantasylol.backend.entity.PlayerStat;
 import com.fantasylol.backend.repository.MatchRepository;
 import com.fantasylol.backend.repository.PlayerRepository;
 import com.fantasylol.backend.repository.PlayerStatRepository;
+import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -178,7 +179,7 @@ public class MatchSyncService {
 
             JsonNode s = stat.path("title");
             String rawName = s.path("Name").asText();
-            String playerName = sanitizePlayerName(rawName);
+            String playerName = PlayerNameSanitizer.sanitize(rawName);
             String teamName = s.path("Team").asText();
             String leaguepediaGameId = gameId + "-" + rawName;
 
@@ -217,16 +218,6 @@ public class MatchSyncService {
         }
 
         log.info("Synced game {}", gameId);
-
-    }
-
-    private String sanitizePlayerName(String name) {
-
-        if (name.contains("(")) {
-            return name.substring(0, name.indexOf("(")).trim();
-        }
-
-        return name;
 
     }
 

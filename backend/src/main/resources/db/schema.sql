@@ -10,6 +10,15 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS pro_teams (
+    pro_team_id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    full_name    VARCHAR(100) NOT NULL UNIQUE,
+    short_name   VARCHAR(20) NOT NULL,
+    status       VARCHAR(20) NOT NULL DEFAULT 'CURRENT',
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS players (
     player_id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     player_name VARCHAR(100) NOT NULL,
@@ -123,6 +132,29 @@ CREATE TABLE IF NOT EXISTS season_weeks (
     created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (season_id) REFERENCES seasons(season_id),
     UNIQUE (season_id, week_number)
+);
+
+CREATE TABLE IF NOT EXISTS weekly_settlements (
+    weekly_settlement_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id       BIGINT NOT NULL,
+    season_name   VARCHAR(100) NOT NULL,
+    week_number   INT NOT NULL,
+    total_score   DOUBLE PRECISION NOT NULL,
+    rank          INT NOT NULL,
+    settled_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    UNIQUE (user_id, season_name, week_number)
+);
+
+CREATE TABLE IF NOT EXISTS season_settlements (
+    season_settlement_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id       BIGINT NOT NULL,
+    season_name   VARCHAR(100) NOT NULL,
+    total_score   DOUBLE PRECISION NOT NULL,
+    rank          INT NOT NULL,
+    settled_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    UNIQUE (user_id, season_name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_teams_user_id ON teams(user_id);
