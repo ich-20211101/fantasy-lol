@@ -11,6 +11,10 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     Optional<Player> findByPlayerNameAndTeamName(String playerName, String teamName);
 
+    Optional<Player> findByPlayerName(String playerName);
+
+    List<Player> findByCurrentSeasonName(String currentSeasonName);
+
     @Query("SELECT DISTINCT p.teamName FROM Player p")
     List<String> findDistinctTeamNames();
 

@@ -100,45 +100,46 @@
 .info-upcoming-header {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.info-upcoming-label-group {
+  flex: none;
 }
 
 .info-upcoming-label {
+  display: block;
   font-size: 12px;
   font-weight: 600;
   color: #9a9a9e;
 }
 
 .info-upcoming-date {
+  display: block;
+  margin-top: 2px;
   font-size: 12.5px;
   font-weight: 700;
   color: #6a6a6f;
 }
 
 .info-upcoming-matches {
-  margin-top: 8px;
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 22px;
 }
 
 .info-upcoming-match {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  text-align: center;
 }
 
 .info-upcoming-teams {
-  flex: 1;
-  min-width: 0;
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
   font-size: 15px;
   letter-spacing: -0.2px;
   color: #0b0b0c;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -149,7 +150,7 @@
 }
 
 .info-upcoming-time {
-  flex: none;
+  margin-top: 3px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: #9a9a9e;

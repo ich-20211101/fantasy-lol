@@ -15,10 +15,19 @@ import java.util.List;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
+    private final SeasonService seasonService;
 
     @Cacheable(cacheNames = "players")
-    public List<Player> getAllPlayers() {
-        return playerRepository.findAll();
+    public List<Player> getAllPlayers(boolean activeOnly) {
+
+        if (!activeOnly) {
+            return playerRepository.findAll();
+        }
+
+        return seasonService.getActiveSeason()
+                .map(season -> playerRepository.findByCurrentSeasonName(season.getSeasonName()))
+                .orElse(List.of());
+
     }
 
 }

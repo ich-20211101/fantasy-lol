@@ -2,6 +2,7 @@ package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.entity.Player;
 import com.fantasylol.backend.repository.PlayerRepository;
+import com.fantasylol.backend.repository.SeasonRepository;
 import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +11,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.regex.Pattern;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -19,15 +18,14 @@ public class PlayerSyncService {
 
     private final LeaguepediaClient leaguepediaClient;
     private final PlayerRepository playerRepository;
-
-    private static final Pattern OVERVIEW_PAGE_PATTERN = Pattern.compile("^LCK( CL)?/\\d{4} Season/.+$");
+    private final SeasonRepository seasonRepository;
 
     @CacheEvict(cacheNames = "players", allEntries = true)
     @Transactional
     public int syncPlayers(String overviewPage) throws Exception {
 
-        if (!OVERVIEW_PAGE_PATTERN.matcher(overviewPage).matches()) {
-            throw new IllegalArgumentException("overviewPage 형식이 올바르지 않습니다. 예) LCK/2026 Season/Rounds 1-2");
+        if (!seasonRepository.existsBySeasonName(overviewPage)) {
+            throw new IllegalArgumentException("등록되지 않은 시즌입니다. 먼저 시즌을 등록해주세요: " + overviewPage);
         }
 
         leaguepediaClient.login();
@@ -55,12 +53,21 @@ public class PlayerSyncService {
             String teamName = p.path("Team").asText();
             String role = p.path("Role").asText();
 
-            playerRepository.findByPlayerNameAndTeamName(playerName, teamName)
-                    .orElseGet(() -> playerRepository.save(Player.builder()
+            Player player = playerRepository.findByPlayerName(playerName)
+                    .map(existing -> {
+                        existing.setTeamName(teamName);
+                        existing.setPosition(role);
+                        existing.setCurrentSeasonName(overviewPage);
+                        return existing;
+                    })
+                    .orElseGet(() -> Player.builder()
                             .playerName(playerName)
                             .teamName(teamName)
                             .position(role)
-                            .build()));
+                            .currentSeasonName(overviewPage)
+                            .build());
+
+            playerRepository.save(player);
 
             count ++;
 

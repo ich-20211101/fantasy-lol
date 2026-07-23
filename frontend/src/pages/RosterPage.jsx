@@ -30,7 +30,7 @@ export default function RosterPage() {
   const [showLimitPopup, setShowLimitPopup] = useState(false)
 
   useEffect(() => {
-    getPlayers()
+    getPlayers({ activeOnly: true })
       .then(setPlayers)
       .catch(error => {
         console.error(error)

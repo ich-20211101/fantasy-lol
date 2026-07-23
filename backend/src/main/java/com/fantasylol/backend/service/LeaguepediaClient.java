@@ -79,11 +79,14 @@ public class LeaguepediaClient {
     }
 
     public JsonNode cargoQuery(String tables, String fields, String where, int limit) throws Exception {
-        return cargoQuery(tables, fields, where, null, limit);
+        return cargoQuery(tables, fields, where, null, null, limit);
     }
 
     public JsonNode cargoQuery(String tables, String fields, String where, String orderBy, int limit) throws Exception {
+        return cargoQuery(tables, fields, where, orderBy, null, limit);
+    }
 
+    public JsonNode cargoQuery(String tables, String fields, String where, String orderBy, String groupBy, int limit) throws Exception {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(BASE_URL)
                 .queryParam("action", "cargoquery")
                 .queryParam("tables", tables)
@@ -94,6 +97,10 @@ public class LeaguepediaClient {
 
         if (orderBy != null && !orderBy.isBlank()) {
             builder.queryParam("order_by", orderBy);
+        }
+
+        if (groupBy != null && !groupBy.isBlank()) {
+            builder.queryParam("group_by", groupBy);
         }
 
         String url = builder.build().toUriString();

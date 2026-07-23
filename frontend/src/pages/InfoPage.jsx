@@ -122,22 +122,24 @@ export default function InfoPage({ team }) {
           {upcomingMatches.length > 0 && (
             <div className="info-upcoming">
               <div className="info-upcoming-header">
-                <span className="info-upcoming-label">Upcoming</span>
-                <span className="info-upcoming-date">{upcomingDate}</span>
-              </div>
-              <div className="info-upcoming-matches">
-                {upcomingMatches.map((m, i) => {
-                  const { time } = toKst(m.dateTimeUtc)
+                <div className="info-upcoming-label-group">
+                  <span className="info-upcoming-label">Upcoming</span>
+                  <span className="info-upcoming-date">{upcomingDate}</span>
+                </div>
+                <div className="info-upcoming-matches">
+                  {upcomingMatches.map((m, i) => {
+                    const { time } = toKst(m.dateTimeUtc)
 
-                  return (
-                    <div className="info-upcoming-match" key={i}>
-                      <div className="info-upcoming-teams">
-                        {m.team1} <span className="info-upcoming-vs">vs</span> {m.team2}
+                    return (
+                      <div className="info-upcoming-match" key={i}>
+                        <div className="info-upcoming-teams">
+                          {abbreviateTeam(teamAbbreviations, m.team1)} <span className="info-upcoming-vs">vs</span> {abbreviateTeam(teamAbbreviations, m.team2)}
+                        </div>
+                        <div className="info-upcoming-time">{time}</div>
                       </div>
-                      <div className="info-upcoming-time">{time}</div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
               <div className="info-upcoming-divider" />
             </div>

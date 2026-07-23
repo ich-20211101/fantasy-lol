@@ -6,6 +6,7 @@ import com.fantasylol.backend.entity.PlayerStat;
 import com.fantasylol.backend.repository.MatchRepository;
 import com.fantasylol.backend.repository.PlayerRepository;
 import com.fantasylol.backend.repository.PlayerStatRepository;
+import com.fantasylol.backend.repository.SeasonRepository;
 import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class MatchSyncService {
     private final PlayerStatRepository playerStatRepository;
     private final ScoreCalculator scoreCalculator;
     private final SeasonWeekService seasonWeekService;
+    private final SeasonRepository seasonRepository;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final UserScoreService userScoreService;
@@ -49,7 +51,7 @@ public class MatchSyncService {
         JsonNode matchSchedules = leaguepediaClient.cargoQuery(
                 "MatchSchedule",
                 "Team1,Team2,Winner,OverviewPage,DateTime_UTC",
-                "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "' AND OverviewPage LIKE 'LCK/%'",
+                "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'",
                 50
         );
 
@@ -66,7 +68,7 @@ public class MatchSyncService {
         JsonNode gamesResponse = leaguepediaClient.cargoQuery(
                 "ScoreboardGames",
                 "GameId,Team1,Team2,DateTime_UTC,OverviewPage",
-                "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "' AND OverviewPage LIKE 'LCK/%'",
+                "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'",
                 50
         );
 
@@ -136,6 +138,10 @@ public class MatchSyncService {
         String overviewPage = t.path("OverviewPage").asText();
         String dateTimeStr = t.path("DateTime UTC").asText();
 
+        if (!seasonRepository.existsBySeasonName(overviewPage)) {
+            return;
+        }
+
         List<JsonNode> gameList = gamesByMatchup.get(matchupKey(overviewPage, team1, team2));
 
         if (gameList == null || gameList.isEmpty()) {
@@ -187,12 +193,21 @@ public class MatchSyncService {
                 continue;
             }
 
-            Player player = playerRepository.findByPlayerNameAndTeamName(playerName, teamName)
-                    .orElseGet(() -> playerRepository.save(Player.builder()
+            Player player = playerRepository.findByPlayerName(playerName)
+                    .map(existing -> {
+                        existing.setTeamName(teamName);
+                        existing.setPosition(s.path("Role").asText());
+                        existing.setCurrentSeasonName(match.getSeasonName());
+                        return existing;
+                    })
+                    .orElseGet(() -> Player.builder()
                             .playerName(playerName)
                             .teamName(teamName)
                             .position(s.path("Role").asText())
-                            .build()));
+                            .currentSeasonName(match.getSeasonName())
+                            .build());
+
+            player = playerRepository.save(player);
 
             PlayerStat playerStat = PlayerStat.builder()
                     .match(match)

@@ -22,17 +22,28 @@ public class MatchScheduleService {
     private final LeaguepediaClient leaguepediaClient;
 
     public List<Map<String, String>> fetchUpcomingMatches() throws Exception {
+        return fetchUpcomingMatches(null);
+    }
+
+    public List<Map<String, String>> fetchUpcomingMatches(String overviewPage) throws Exception {
 
         leaguepediaClient.login();
 
         String now = LocalDateTime.now().format(FORMATTER);
+        String whereClause = "DateTime_UTC >= '" + now + "' AND (Winner IS NULL OR Winner = '')";
+
+        if (overviewPage != null) {
+            whereClause += " AND OverviewPage = '" + overviewPage + "'";
+        }
+
+        int limit = overviewPage == null ? 500 : 50;
 
         JsonNode matchSchedules = leaguepediaClient.cargoQuery(
                 "MatchSchedule",
                 "Team1,Team2,DateTime_UTC,BestOf,OverviewPage",
-                "DateTime_UTC >= '" + now + "' AND OverviewPage LIKE 'LCK/%' AND (Winner IS NULL OR Winner = '')",
+                whereClause,
                 "DateTime_UTC",
-                50
+                limit
         );
 
         List<Map<String, String>> allUpcoming = new ArrayList<>();
@@ -51,7 +62,7 @@ public class MatchScheduleService {
 
         }
 
-        if (allUpcoming.isEmpty()) {
+        if (overviewPage == null || allUpcoming.isEmpty()) {
             return allUpcoming;
         }
 

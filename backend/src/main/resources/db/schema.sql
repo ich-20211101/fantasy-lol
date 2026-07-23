@@ -20,10 +20,11 @@ CREATE TABLE IF NOT EXISTS pro_teams (
 );
 
 CREATE TABLE IF NOT EXISTS players (
-    player_id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    player_name VARCHAR(100) NOT NULL,
-    position    VARCHAR(20) NOT NULL,
-    team_name   VARCHAR(100) NOT NULL
+    player_id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_name          VARCHAR(100) NOT NULL,
+    position             VARCHAR(20) NOT NULL,
+    team_name            VARCHAR(100) NOT NULL,
+    current_season_name  VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS teams (

@@ -1,7 +1,9 @@
 package com.fantasylol.backend.service;
 
+import com.fantasylol.backend.entity.ProTeam;
 import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.entity.SeasonStatus;
+import com.fantasylol.backend.repository.ProTeamRepository;
 import com.fantasylol.backend.repository.SeasonRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class SeasonService {
     private final SeasonRepository seasonRepository;
     private final LeaguepediaClient leaguepediaClient;
     private final SettlementService settlementService;
+    private final ProTeamRepository proTeamRepository;
 
     @Transactional(readOnly = true)
     public Optional<Season> getActiveSeason() {
@@ -84,11 +87,18 @@ public class SeasonService {
     @Transactional(readOnly = true)
     public List<String> filterUnregisteredSeasonNames(List<Map<String, String>> upcomingMatches) {
 
+        Set<String> knownTeams = proTeamRepository.findAllByOrderByFullNameAsc().stream()
+                .map(ProTeam::getFullName)
+                .collect(Collectors.toSet());
+
         Set<String> registeredNames = seasonRepository.findAll().stream()
                 .map(Season::getSeasonName)
                 .collect(Collectors.toSet());
 
+        boolean canFilterByTeam = !knownTeams.isEmpty();
+
         return upcomingMatches.stream()
+                .filter(m -> !canFilterByTeam || knownTeams.contains(m.get("team1")) || knownTeams.contains(m.get("team2")))
                 .map(m -> m.get("overviewPage"))
                 .filter(name -> name != null && !registeredNames.contains(name))
                 .distinct()

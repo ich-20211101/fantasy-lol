@@ -54,7 +54,7 @@ public class SeasonWeekService {
             return;
         }
 
-        List<Map<String, String>> upcoming = matchScheduleService.fetchUpcomingMatches();
+        List<Map<String, String>> upcoming = matchScheduleService.fetchUpcomingMatches(activeSeason.getSeasonName());
 
         if (upcoming.isEmpty()) {
             log.info("예정된 경기 없음, 스킵");
@@ -63,8 +63,6 @@ public class SeasonWeekService {
 
         Map<String, String> earliestMatch = upcoming.get(0);
         String seasonName = earliestMatch.get("overviewPage");
-
-        if (!seasonName.equals(activeSeason.getSeasonName())) return;
 
         LocalDateTime matchTime = LocalDateTime.parse(earliestMatch.get("dateTimeUtc"), FORMATTER);
         LocalDate matchDate = matchTime.toLocalDate();

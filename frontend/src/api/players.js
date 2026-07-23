@@ -1,7 +1,9 @@
 import { API_BASE_URL } from './config'
 
-export async function getPlayers() {
-  const response = await fetch(`${API_BASE_URL}/players`, {
+export async function getPlayers({ activeOnly = false } = {}) {
+  const params = activeOnly ? '?activeOnly=true' : ''
+
+  const response = await fetch(`${API_BASE_URL}/players${params}`, {
     credentials: 'include',
   })
 
