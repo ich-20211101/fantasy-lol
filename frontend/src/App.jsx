@@ -279,7 +279,7 @@ function App() {
 
         <Route
           path="/info"
-          element={<InfoPage team={team} />}
+          element={<InfoPage user={user} team={team} />}
         />
 
         <Route path="/privacy" element={<PrivacyPolicyPage />} />

@@ -38,6 +38,7 @@ public class SecurityConfig {
                             "/matches/upcoming",
                             "/admin/login",
                             "/players",
+                            "/players/rankings",
                             "/pro-teams",
                             "/leaderboard",
                             "/leaderboard/rounds"

@@ -9,7 +9,15 @@ import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbr
 import './InfoPage.css'
 
 const POSITIONS = ['ALL', 'TOP', 'JUG', 'MID', 'ADC', 'SPT']
-const SEASON_LABEL = '2026 Round 3 Week8'
+
+const POSITION_TO_API_VALUE = {
+  ALL: 'ALL',
+  TOP: 'Top',
+  JUG: 'Jungle',
+  MID: 'Mid',
+  ADC: 'Bot',
+  SPT: 'Support',
+}
 
 function toKst(dateTimeUtc) {
   const parsed = new Date(dateTimeUtc.replace(' ', 'T') + 'Z')
@@ -21,7 +29,7 @@ function toKst(dateTimeUtc) {
   }
 }
 
-export default function InfoPage({ team }) {
+export default function InfoPage({ user, team }) {
   const { t } = useTranslation()
   const scrollRef = useRef(null)
   const teamAbbreviations = useProTeamAbbreviations()
@@ -31,6 +39,7 @@ export default function InfoPage({ team }) {
   const [activeTab, setActiveTab] = useState('ALL')
 
   const [rows, setRows] = useState([])
+  const [seasonLabel, setSeasonLabel] = useState(null)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -49,7 +58,7 @@ export default function InfoPage({ team }) {
     setLoadingMore(true)
 
     try {
-      const data = await getPlayerRankings({ position, page: pageToLoad })
+      const data = await getPlayerRankings({ position: POSITION_TO_API_VALUE[position], page: pageToLoad })
 
       if (!data) {
         setHasMore(false)
@@ -59,6 +68,7 @@ export default function InfoPage({ team }) {
       setTallying(Boolean(data.tallying))
       setRows((prev) => (pageToLoad === 1 ? (data.rows ?? []) : [...prev, ...(data.rows ?? [])]))
       setHasMore(Boolean(data.hasMore))
+      setSeasonLabel(data.seasonLabel ?? null)
     } finally {
       setLoadingMore(false)
     }
@@ -145,7 +155,7 @@ export default function InfoPage({ team }) {
             </div>
           )}
 
-          <div className="info-season-label">{SEASON_LABEL}</div>
+          {seasonLabel && <div className="info-season-label">{seasonLabel}</div>}
 
           <div className="info-toolbar">
             <div className="info-ranking-title-group">
@@ -158,14 +168,16 @@ export default function InfoPage({ team }) {
               </button>
             </div>
 
-            <div className="info-mine-toggle" onClick={() => setMineOnly((prev) => !prev)}>
-              <span className={`info-mine-checkbox ${mineOnly ? 'checked' : ''}`}>
-                <svg width="10" height="8" viewBox="0 0 11 9" fill="none" style={{ display: mineOnly ? 'block' : 'none' }}>
-                  <path d="M1 4.5L4 7.5L10 1.2" stroke="#f8f9fa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-              <span className="info-mine-label">{t('info.mineOnly')}</span>
-            </div>
+            {user && (
+              <div className="info-mine-toggle" onClick={() => setMineOnly((prev) => !prev)}>
+                <span className={`info-mine-checkbox ${mineOnly ? 'checked' : ''}`}>
+                  <svg width="10" height="8" viewBox="0 0 11 9" fill="none" style={{ display: mineOnly ? 'block' : 'none' }}>
+                    <path d="M1 4.5L4 7.5L10 1.2" stroke="#f8f9fa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="info-mine-label">{t('info.mineOnly')}</span>
+              </div>
+            )}
           </div>
 
           <div className="info-tabs">
