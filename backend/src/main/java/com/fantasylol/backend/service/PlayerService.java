@@ -45,9 +45,9 @@ public class PlayerService {
     @Transactional(readOnly = true)
     public PlayerRankingDto.Response getPlayerRankings(String position, int page, int pageSize) {
 
-        Optional<Season> activeSeason = seasonService.getActiveSeason();
+        Optional<Season> rankingSeason = seasonService.getRankingSeason();
 
-        if (activeSeason.isEmpty()) {
+        if (rankingSeason.isEmpty()) {
             return PlayerRankingDto.Response.builder()
                     .rows(List.of())
                     .hasMore(false)
@@ -56,7 +56,7 @@ public class PlayerService {
                     .build();
         }
 
-        String seasonName = activeSeason.get().getSeasonName();
+        String seasonName = rankingSeason.get().getSeasonName();
 
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);

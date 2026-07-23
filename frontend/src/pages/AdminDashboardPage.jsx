@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getAdminMe, adminLogout } from '../api/admin'
 import { getPlayers } from '../api/players'
 import { syncMatches, syncPlayers } from '../api/matches'
-import { detectNewSeasons, registerSeason, lockWeek, activateDueSeasons, endSeason } from '../api/seasons'
+import { detectNewSeasons, registerSeason, lockWeek, activateDueSeasons, endSeason, listSeasons, featureSeason } from '../api/seasons'
 import { getProTeams, syncProTeamsFromPlayers, updateProTeam, deleteProTeam } from '../api/proTeams'
 import { POS_LABEL } from '../constants/positions'
 import './AdminDashboardPage.css'
@@ -89,6 +89,11 @@ export default function AdminDashboardPage() {
   const [endSeasonName, setEndSeasonName] = useState('')
   const [ending, setEnding] = useState(false)
   const [endMessage, setEndMessage] = useState(null)
+
+  const [seasonList, setSeasonList] = useState(null)
+  const [loadingSeasonList, setLoadingSeasonList] = useState(false)
+  const [seasonListMessage, setSeasonListMessage] = useState(null)
+  const [featuringSeasonName, setFeaturingSeasonName] = useState(null)
 
   useEffect(() => {
     getAdminMe().then((me) => {
@@ -315,6 +320,39 @@ export default function AdminDashboardPage() {
       setEndMessage({ type: 'error', text: error.message })
     } finally {
       setEnding(false)
+    }
+  }
+
+  const runListSeasons = async () => {
+    if (loadingSeasonList) return
+
+    setLoadingSeasonList(true)
+    setSeasonListMessage(null)
+
+    try {
+      const result = await listSeasons()
+      setSeasonList(result)
+    } catch (error) {
+      setSeasonListMessage({ type: 'error', text: error.message })
+    } finally {
+      setLoadingSeasonList(false)
+    }
+  }
+
+  const runFeatureSeason = async (seasonName) => {
+    if (featuringSeasonName) return
+
+    setFeaturingSeasonName(seasonName)
+    setSeasonListMessage(null)
+
+    try {
+      const result = await featureSeason(seasonName)
+      setSeasonListMessage({ type: 'success', text: result })
+      setSeasonList((prev) => (prev || []).map((s) => ({ ...s, featured: s.seasonName === seasonName })))
+    } catch (error) {
+      setSeasonListMessage({ type: 'error', text: error.message })
+    } finally {
+      setFeaturingSeasonName(null)
     }
   }
 
@@ -793,6 +831,43 @@ export default function AdminDashboardPage() {
 
               {endMessage && (
                 <div className={`admin-dash-sync-message ${endMessage.type}`}>{endMessage.text}</div>
+              )}
+            </div>
+
+            {/* 7. 선수 랭킹 노출 시즌 */}
+            <div>
+              <div className="admin-dash-log-title">7. 선수 랭킹 노출 시즌</div>
+              <div className="admin-dash-sync-card">
+                <div className="admin-dash-sync-info">
+                  <div className="admin-dash-sync-value">GET /seasons (인포 페이지에 어떤 시즌 랭킹을 보여줄지 선택)</div>
+                </div>
+                <button
+                  type="button"
+                  className="admin-dash-sync-btn"
+                  disabled={loadingSeasonList}
+                  onClick={runListSeasons}
+                >
+                  {loadingSeasonList && <span className="admin-dash-spinner" />}
+                  <span>{loadingSeasonList ? '불러오는 중…' : '시즌 목록 불러오기'}</span>
+                </button>
+              </div>
+
+              {seasonListMessage && (
+                <div className={`admin-dash-sync-message ${seasonListMessage.type}`}>{seasonListMessage.text}</div>
+              )}
+
+              {seasonList && seasonList.length > 0 && (
+                <div className="admin-dash-detect-list">
+                  {seasonList.map((season) => (
+                    <div
+                      key={season.seasonName}
+                      className={`admin-dash-detect-chip ${season.featured ? 'featured' : ''}`}
+                      onClick={() => runFeatureSeason(season.seasonName)}
+                    >
+                      {season.featured && '★ '}{season.seasonName} ({season.status})
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </>

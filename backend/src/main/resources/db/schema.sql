@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS seasons (
     start_date   DATE NOT NULL,
     end_date     DATE,
     status       VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
+    featured     BOOLEAN NOT NULL DEFAULT FALSE,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

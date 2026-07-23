@@ -57,6 +57,33 @@ export async function endSeason(seasonName) {
   return text
 }
 
+export async function listSeasons() {
+  const response = await fetch(`${API_BASE_URL}/seasons`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to list seasons')
+  }
+
+  return response.json()
+}
+
+export async function featureSeason(seasonName) {
+  const response = await fetch(`${API_BASE_URL}/seasons/feature?seasonName=${encodeURIComponent(seasonName)}`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  const text = await response.text().catch(() => '')
+
+  if (!response.ok) {
+    throw new Error(text || 'Failed to feature season')
+  }
+
+  return text
+}
+
 export async function lockWeek(date, seasonName) {
   const response = await fetch(`${API_BASE_URL}/seasons/weeks/lock?date=${date}&seasonName=${encodeURIComponent(seasonName)}`, {
     method: 'POST',

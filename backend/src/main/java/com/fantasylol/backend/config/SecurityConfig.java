@@ -48,6 +48,7 @@ public class SecurityConfig {
                             "/matches/players/sync",
                             "/matches/starters/lock",
                             "/seasons",
+                            "/seasons/feature",
                             "/seasons/detect-new",
                             "/seasons/activate-due",
                             "/seasons/end",

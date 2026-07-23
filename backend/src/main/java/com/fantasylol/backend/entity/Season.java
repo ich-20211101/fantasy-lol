@@ -32,6 +32,9 @@ public class Season {
     @Builder.Default
     private SeasonStatus status = SeasonStatus.DRAFT;
 
+    @Builder.Default
+    private Boolean featured = false;
+
     private LocalDateTime createdAt;
 
     @PrePersist

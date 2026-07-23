@@ -25,6 +25,19 @@ public class SeasonController {
     private final MatchScheduleService matchScheduleService;
     private final SeasonWeekService seasonWeekService;
 
+    @GetMapping
+    @Operation(summary = "[ADMIN] List all registered seasons")
+    public ResponseEntity<List<Season>> listSeasons() {
+        return ResponseEntity.ok(seasonService.getAllSeasons());
+    }
+
+    @PostMapping("/feature")
+    @Operation(summary = "[ADMIN] Mark a season as the one featured in the Info page player rankings")
+    public ResponseEntity<String> featureSeason(@RequestParam String seasonName) {
+        seasonService.setFeaturedSeason(seasonName);
+        return ResponseEntity.ok("랭킹 노출 시즌 설정 완료: " + seasonName);
+    }
+
     @PostMapping
     @Operation(summary = "[TEST] Register a season (start date auto-derived from its first scheduled match)")
     public ResponseEntity<String> registerSeason(@RequestParam String seasonName) throws Exception {

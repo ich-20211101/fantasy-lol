@@ -37,6 +37,36 @@ public class SeasonService {
                 .max(Comparator.comparing(Season::getStartDate));
     }
 
+    @Transactional(readOnly = true)
+    public List<Season> getAllSeasons() {
+        return seasonRepository.findAll().stream()
+                .sorted(Comparator.comparing(Season::getStartDate).reversed())
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Season> getRankingSeason() {
+        return seasonRepository.findByFeaturedTrue().or(this::getActiveSeason);
+    }
+
+    @Transactional
+    public void setFeaturedSeason(String seasonName) {
+
+        Season target = seasonRepository.findBySeasonName(seasonName)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다: " + seasonName));
+
+        seasonRepository.findByFeaturedTrue().ifPresent(current -> {
+            current.setFeatured(false);
+            seasonRepository.save(current);
+        });
+
+        target.setFeatured(true);
+        seasonRepository.save(target);
+
+        log.info("Featured season set: {}", seasonName);
+
+    }
+
     @Transactional
     public Season registerSeason(String seasonName) throws Exception {
 

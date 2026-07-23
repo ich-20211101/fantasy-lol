@@ -9,9 +9,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SeasonRepository extends JpaRepository<Season, Long> {
+
     Optional<Season> findBySeasonName(String seasonName);
+
     boolean existsBySeasonName(String seasonName);
+
     List<Season> findByStatusAndStartDateLessThanEqual(SeasonStatus status, LocalDate date);
+
     List<Season> findByStatus(SeasonStatus status);
+
     List<Season> findByStatusInOrderByStartDateDesc(List<SeasonStatus> statuses);
+
+    Optional<Season> findByFeaturedTrue();
+
 }
