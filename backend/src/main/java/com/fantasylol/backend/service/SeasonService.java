@@ -38,6 +38,11 @@ public class SeasonService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<Season> getBySeasonName(String seasonName) {
+        return seasonRepository.findBySeasonName(seasonName);
+    }
+
+    @Transactional(readOnly = true)
     public List<Season> getAllSeasons() {
         return seasonRepository.findAll().stream()
                 .sorted(Comparator.comparing(Season::getStartDate).reversed())

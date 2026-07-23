@@ -2,6 +2,7 @@ package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.entity.Match;
 import com.fantasylol.backend.entity.Season;
+import com.fantasylol.backend.entity.SeasonStatus;
 import com.fantasylol.backend.entity.SeasonWeek;
 import com.fantasylol.backend.repository.SeasonWeekRepository;
 import com.fantasylol.backend.util.KstTime;
@@ -83,14 +84,14 @@ public class SeasonWeekService {
     @Transactional
     public void checkAndFinalizeWeek(Match match) throws Exception {
 
-        Season activeSeason = seasonService.getActiveSeason().orElse(null);
-        if (activeSeason == null) return;
+        Season matchSeason = seasonService.getBySeasonName(match.getSeasonName()).orElse(null);
+        if (matchSeason == null) return;
 
         LocalDate matchDate = KstTime.toKstDate(match.getMatchDate());
         int weekNumber = seasonService.resolveWeekNumber(match.getSeasonName(), matchDate);
 
         SeasonWeek seasonWeek = seasonWeekRepository
-                .findBySeasonSeasonIdAndWeekNumber(activeSeason.getSeasonId(), weekNumber)
+                .findBySeasonSeasonIdAndWeekNumber(matchSeason.getSeasonId(), weekNumber)
                 .orElse(null);
         if (seasonWeek == null || seasonWeek.getFinalizedAt() != null) return;
 
@@ -108,8 +109,8 @@ public class SeasonWeekService {
     @Transactional
     public SeasonWeek ensureWeekLocked(LocalDate date, String seasonName) {
 
-        Season activeSeason = seasonService.getActiveSeason()
-                .filter(s -> s.getSeasonName().equals(seasonName))
+        Season activeSeason = seasonService.getBySeasonName(seasonName)
+                .filter(s -> s.getStatus() == SeasonStatus.ACTIVE)
                 .orElseThrow(() -> new IllegalStateException("활성 시즌이 아닙니다: " + seasonName));
 
         int weekNumber = seasonService.resolveWeekNumber(seasonName, date);
