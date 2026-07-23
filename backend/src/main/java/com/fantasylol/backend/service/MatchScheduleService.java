@@ -1,5 +1,6 @@
 package com.fantasylol.backend.service;
 
+import com.fantasylol.backend.util.KstTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class MatchScheduleService {
 
         leaguepediaClient.login();
 
-        String now = LocalDateTime.now().format(FORMATTER);
+        String now = KstTime.nowUtc().format(FORMATTER);
         String whereClause = "DateTime_UTC >= '" + now + "' AND (Winner IS NULL OR Winner = '')";
 
         if (overviewPage != null) {

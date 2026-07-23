@@ -3,13 +3,13 @@ package com.fantasylol.backend.service;
 import com.fantasylol.backend.dto.UserScoreDto;
 import com.fantasylol.backend.entity.*;
 import com.fantasylol.backend.repository.*;
+import com.fantasylol.backend.util.KstTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +34,7 @@ public class UserScoreService {
                 .collect(Collectors.toSet());
 
         String seasonName = match.getSeasonName();
-        int weekNumber = seasonService.resolveWeekNumber(seasonName, match.getMatchDate().toLocalDate());
+        int weekNumber = seasonService.resolveWeekNumber(seasonName, KstTime.toKstDate(match.getMatchDate()));
 
         List<WeeklyStarter> starters = weeklyStarterRepository.findByPlayerPlayerIdInAndWeekNumberAndSeasonName(playerIds, weekNumber, seasonName);
 

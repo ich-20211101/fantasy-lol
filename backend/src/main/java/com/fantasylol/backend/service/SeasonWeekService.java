@@ -4,6 +4,7 @@ import com.fantasylol.backend.entity.Match;
 import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.entity.SeasonWeek;
 import com.fantasylol.backend.repository.SeasonWeekRepository;
+import com.fantasylol.backend.util.KstTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class SeasonWeekService {
         Season activeSeason = seasonService.getActiveSeason().orElse(null);
         if (activeSeason == null) return false;
 
-        int currentWeek = seasonService.resolveWeekNumber(activeSeason.getSeasonName(), LocalDate.now());
+        int currentWeek = seasonService.resolveWeekNumber(activeSeason.getSeasonName(), KstTime.nowKstDate());
 
         return seasonWeekRepository.findBySeasonSeasonIdAndWeekNumber(activeSeason.getSeasonId(), currentWeek)
                 .map(week -> week.getStarterLockedAt() != null)
@@ -65,13 +66,13 @@ public class SeasonWeekService {
         String seasonName = earliestMatch.get("overviewPage");
 
         LocalDateTime matchTime = LocalDateTime.parse(earliestMatch.get("dateTimeUtc"), FORMATTER);
-        LocalDate matchDate = matchTime.toLocalDate();
+        LocalDate matchDate = KstTime.toKstDate(matchTime);
         int weekNumber = seasonService.resolveWeekNumber(seasonName, matchDate);
 
         SeasonWeek existing = seasonWeekRepository.findBySeasonSeasonIdAndWeekNumber(activeSeason.getSeasonId(), weekNumber).orElse(null);
 
         if (existing != null && existing.getStarterLockedAt() != null) return;
-        if (LocalDateTime.now().isBefore(matchTime.minusHours(1))) return;
+        if (KstTime.nowUtc().isBefore(matchTime.minusHours(1))) return;
 
         ensureWeekLocked(matchDate, seasonName);
 
@@ -85,7 +86,7 @@ public class SeasonWeekService {
         Season activeSeason = seasonService.getActiveSeason().orElse(null);
         if (activeSeason == null) return;
 
-        LocalDate matchDate = match.getMatchDate().toLocalDate();
+        LocalDate matchDate = KstTime.toKstDate(match.getMatchDate());
         int weekNumber = seasonService.resolveWeekNumber(match.getSeasonName(), matchDate);
 
         SeasonWeek seasonWeek = seasonWeekRepository

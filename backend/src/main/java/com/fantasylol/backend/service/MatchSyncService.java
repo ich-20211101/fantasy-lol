@@ -1,5 +1,6 @@
 package com.fantasylol.backend.service;
 
+import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.entity.Match;
 import com.fantasylol.backend.entity.Player;
 import com.fantasylol.backend.entity.PlayerStat;
@@ -7,6 +8,7 @@ import com.fantasylol.backend.repository.MatchRepository;
 import com.fantasylol.backend.repository.PlayerRepository;
 import com.fantasylol.backend.repository.PlayerStatRepository;
 import com.fantasylol.backend.repository.SeasonRepository;
+import com.fantasylol.backend.util.KstTime;
 import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,18 +45,40 @@ public class MatchSyncService {
 
         leaguepediaClient.login();
 
-        String from = date + " 00:00:00";
-        String to = date + " 23:59:59";
+        ZonedDateTime fromKst = date.atStartOfDay(KstTime.KST);
+        ZonedDateTime toKst = date.plusDays(1).atStartOfDay(KstTime.KST).minusSeconds(1);
+
+        String from = fromKst.withZoneSameInstant(ZoneOffset.UTC).format(FORMATTER);
+        String to = toKst.withZoneSameInstant(ZoneOffset.UTC).format(FORMATTER);
+
+        List<String> registeredSeasonNames = seasonRepository.findAll().stream()
+                .map(Season::getSeasonName)
+                .toList();
+
+        if (registeredSeasonNames.isEmpty()) {
+            log.info("등록된 시즌이 없어 동기화 스킵: {}", date);
+            return;
+        }
+
+        String overviewPageFilter = registeredSeasonNames.stream()
+                .map(name -> "'" + name + "'")
+                .collect(Collectors.joining(","));
+
+        String whereClause = "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'" + " AND OverviewPage IN (" + overviewPageFilter + ")";
+
+
 
         // 1. 그날 매치 목록 조회
         JsonNode matchSchedules = leaguepediaClient.cargoQuery(
                 "MatchSchedule",
                 "Team1,Team2,Winner,OverviewPage,DateTime_UTC",
-                "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'",
+                whereClause,
                 50
         );
 
         JsonNode matchList = matchSchedules.path("cargoquery");
+
+        log.info("### Raw MatchSchedule: {}", matchList);
 
         if (matchList.isEmpty()) {
             log.info("No matches found: {}", date);
@@ -66,7 +89,7 @@ public class MatchSyncService {
         JsonNode gamesResponse = leaguepediaClient.cargoQuery(
                 "ScoreboardGames",
                 "GameId,Team1,Team2,DateTime_UTC,OverviewPage",
-                "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'",
+                whereClause,
                 50
         );
 
@@ -122,7 +145,9 @@ public class MatchSyncService {
     }
 
     private String matchupKey(String overviewPage, String team1, String team2) {
-        return overviewPage + "|" + team1 + "|" + team2;
+        String[] teams = {team1, team2};
+        Arrays.sort(teams);
+        return overviewPage + "|" + teams[0] + "|" + teams[1];
     }
 
     private void syncMatch(JsonNode matchNode, Map<String, List<JsonNode>> gamesByMatchup, Map<String, List<JsonNode>> statsByGameId) throws Exception {

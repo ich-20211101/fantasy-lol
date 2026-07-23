@@ -3,6 +3,7 @@ package com.fantasylol.backend.service;
 import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.entity.SeasonStatus;
 import com.fantasylol.backend.repository.SeasonRepository;
+import com.fantasylol.backend.util.KstTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +79,7 @@ public class SeasonService {
 
         String dateTimeStr = matchList.get(0).path("title").path("DateTime UTC").asText();
 
-        return LocalDateTime.parse(dateTimeStr, FORMATTER).toLocalDate();
+        return KstTime.toKstDate(LocalDateTime.parse(dateTimeStr, FORMATTER));
 
     }
 
@@ -122,7 +123,7 @@ public class SeasonService {
     @Transactional
     public void activateDueSeasons() {
 
-        List<Season> dueSeasons = seasonRepository.findByStatusAndStartDateLessThanEqual(SeasonStatus.DRAFT, LocalDate.now());
+        List<Season> dueSeasons = seasonRepository.findByStatusAndStartDateLessThanEqual(SeasonStatus.DRAFT, KstTime.nowKstDate());
 
         for (Season season : dueSeasons) {
             season.setStatus(SeasonStatus.ACTIVE);
@@ -143,7 +144,7 @@ public class SeasonService {
         }
 
         season.setStatus(SeasonStatus.ENDED);
-        season.setEndDate(LocalDate.now());
+        season.setEndDate(KstTime.nowKstDate());
         seasonRepository.save(season);
         settlementService.settleSeason(season.getSeasonName());
         log.info("Ended season (manual): {} (endDate {})", season.getSeasonName(), season.getEndDate());
