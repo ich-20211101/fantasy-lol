@@ -1,9 +1,7 @@
 package com.fantasylol.backend.service;
 
-import com.fantasylol.backend.entity.ProTeam;
 import com.fantasylol.backend.entity.Player;
 import com.fantasylol.backend.repository.PlayerRepository;
-import com.fantasylol.backend.repository.ProTeamRepository;
 import com.fantasylol.backend.repository.SeasonRepository;
 import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,7 +21,7 @@ public class PlayerSyncService {
     private final LeaguepediaClient leaguepediaClient;
     private final PlayerRepository playerRepository;
     private final SeasonRepository seasonRepository;
-    private final ProTeamRepository proTeamRepository;
+    private final ProTeamService proTeamService;
 
     @CacheEvict(cacheNames = "players", allEntries = true)
     @Transactional
@@ -50,9 +47,7 @@ public class PlayerSyncService {
             return 0;
         }
 
-        Set<String> knownTeams = proTeamRepository.findAllByOrderByFullNameAsc().stream()
-                .map(ProTeam::getFullName)
-                .collect(Collectors.toSet());
+        Set<String> knownTeams = proTeamService.getKnownTeamNames();
 
         boolean filterByKnownTeam = !knownTeams.isEmpty();
 

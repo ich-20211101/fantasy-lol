@@ -62,8 +62,6 @@ public class MatchSyncService {
             return;
         }
 
-        log.info("### Raw MatchSchedule: {}", matchList);
-
         // 2. 그날 전체 게임을 한 번에 조회 (매치별 반복 호출 제거)
         JsonNode gamesResponse = leaguepediaClient.cargoQuery(
                 "ScoreboardGames",

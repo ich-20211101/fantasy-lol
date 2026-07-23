@@ -1,6 +1,5 @@
 package com.fantasylol.backend.controller;
 
-import com.fantasylol.backend.repository.MatchRepository;
 import com.fantasylol.backend.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,7 @@ public class MatchController {
     private final PlayerSyncService playerSyncService;
     private final WeeklyStarterService weeklyStarterService;
     private final MatchScheduleService matchScheduleService;
-    private final SeasonService seasonService;
+    private final ProTeamService proTeamService;
 
     @PostMapping("/sync")
     @Operation(summary = "Sync match data by date")
@@ -63,11 +62,7 @@ public class MatchController {
     public ResponseEntity<List<Map<String, String>>> getUpcomingMatches() {
 
         try {
-            String activeSeasonName = seasonService.getActiveSeason()
-                    .map(season -> season.getSeasonName())
-                    .orElse(null);
-
-            return ResponseEntity.ok(matchScheduleService.fetchUpcomingMatches(activeSeasonName));
+            return ResponseEntity.ok(matchScheduleService.fetchUpcomingMatchesForTeams(proTeamService.getKnownTeamNames()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(null);
         }

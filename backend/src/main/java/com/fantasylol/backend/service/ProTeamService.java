@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -18,6 +20,13 @@ public class ProTeamService {
 
     private final ProTeamRepository proTeamRepository;
     private final PlayerRepository playerRepository;
+
+    @Transactional(readOnly = true)
+    public Set<String> getKnownTeamNames() {
+        return proTeamRepository.findAllByOrderByFullNameAsc().stream()
+                .map(ProTeam::getFullName)
+                .collect(Collectors.toSet());
+    }
 
     @Transactional(readOnly = true)
     public List<ProTeamDto.Response> getAllProTeams() {

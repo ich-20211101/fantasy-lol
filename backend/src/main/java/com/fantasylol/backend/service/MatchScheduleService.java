@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -103,6 +104,26 @@ public class MatchScheduleService {
         }
 
         return true;
+
+    }
+
+    public List<Map<String, String>> fetchUpcomingMatchesForTeams(Set<String> teamNames) throws Exception {
+
+        List<Map<String, String>> allUpcoming = fetchUpcomingMatches(null);
+
+        List<Map<String, String>> relevant = allUpcoming.stream()
+                .filter(m -> teamNames.contains(m.get("team1")) || teamNames.contains(m.get("team2")))
+                .toList();
+
+        if (relevant.isEmpty()) {
+            return relevant;
+        }
+
+        String nextMatchDate = relevant.get(0).get("dateTimeUtc").substring(0, 10);
+
+        return relevant.stream()
+                .takeWhile(m -> m.get("dateTimeUtc").startsWith(nextMatchDate))
+                .toList();
 
     }
 
