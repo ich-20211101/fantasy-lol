@@ -19,17 +19,39 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStat, Long> {
 
     interface PlayerRankingRow {
         Player getPlayer();
-        Double getTotalScore();
+        Double getAvgScore();
+        Long getGamesPlayed();
+        Boolean getQualified();
     }
 
     @Query("""
-        SELECT ps.player AS player, SUM(ps.actualScore) AS totalScore
+        SELECT ps.player AS player,
+            AVG(ps.actualScore) AS avgScore,
+            COUNT(ps) AS gamesPlayed,
+            CASE WHEN COUNT(ps) >= :minGames THEN true ELSE false END AS qualified
         FROM PlayerStat ps
         WHERE ps.match.seasonName = :seasonName
         AND (:position = 'ALL' OR ps.player.position = :position)
         GROUP BY ps.player
-        ORDER BY SUM(ps.actualScore) DESC
+        ORDER BY CASE WHEN COUNT(ps) >= :minGames THEN 0 ELSE 1 END, AVG(ps.actualScore) DESC
         """)
-    Page<PlayerRankingRow> findPlayerRankings(@Param("seasonName") String seasonName, @Param("position") String position, Pageable pageable);
+    Page<PlayerRankingRow> findPlayerRankings(@Param("seasonName") String seasonName,
+                                              @Param("position") String position,
+                                              @Param("minGames") long minGames,
+                                              Pageable pageable);
+
+    interface PlayerSeasonAggregate {
+        Player getPlayer();
+        Double getAvgScore();
+        Long getGamesPlayed();
+    }
+
+    @Query("""
+        SELECT ps.player AS player, AVG(ps.actualScore) AS avgScore, COUNT(ps) AS gamesPlayed
+        FROM PlayerStat ps
+        WHERE ps.match.seasonName = :seasonName
+        GROUP BY ps.player
+    """)
+    List<PlayerSeasonAggregate> findSeasonAggregates(@Param("seasonName") String seasonName);
 
 }

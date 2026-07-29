@@ -53,7 +53,7 @@ public class LeaderboardService {
                         .build();
             }
 
-            resolvedSeasonName = latest.get().getSeasonName();
+            resolvedSeasonName = latest.get().getSeason().getSeasonName();
 
             if (!isOverall) {
                 resolvedWeekNumber = latest.get().getWeekNumber();

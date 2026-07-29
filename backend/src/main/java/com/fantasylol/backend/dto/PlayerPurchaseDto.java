@@ -4,7 +4,7 @@ import lombok.*;
 
 import java.util.List;
 
-public class PlayerRankingDto {
+public class PlayerPurchaseDto {
 
     @Getter
     @Setter
@@ -12,14 +12,13 @@ public class PlayerRankingDto {
     @AllArgsConstructor
     @Builder
     public static class Row {
-        private int rank;
         private Long playerId;
         private String name;
         private String team;
         private String pos;
+        private Double price;
+        private Boolean priceInsufficientData;
         private Double score;
-        private Long gamesPlayed;
-        private Boolean qualified;
     }
 
     @Getter
@@ -29,9 +28,8 @@ public class PlayerRankingDto {
     @Builder
     public static class Response {
         private List<Row> rows;
-        private boolean hasMore;
-        private boolean tallying;
-        private String seasonLabel;
+        private String sourceSeasonName;
     }
+
 
 }

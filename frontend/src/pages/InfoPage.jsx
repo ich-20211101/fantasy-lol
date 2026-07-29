@@ -87,7 +87,15 @@ export default function InfoPage({ user, team }) {
 
   const visibleRows = useMemo(() => {
     const withMine = rows.map((r) => ({ ...r, mine: rosterPlayerIds.has(r.playerId) }))
-    return mineOnly ? withMine.filter((r) => r.mine) : withMine
+    const filtered = mineOnly ? withMine.filter((r) => r.mine) : withMine
+
+    let qualifiedRank = 0
+
+    return filtered.map((r) => {
+      const isQualified = r.qualified !== false
+      if (isQualified) qualifiedRank += 1
+      return { ...r, displayRank: isQualified ? qualifiedRank : null }
+    })
   }, [rows, mineOnly, rosterPlayerIds])
 
   const handleScroll = useCallback(() => {
@@ -204,13 +212,16 @@ export default function InfoPage({ user, team }) {
           ) : (
             <div className="info-rows">
               {visibleRows.map((row, i) => (
-                <div key={`${row.playerId}-${i}`} className="info-row">
-                  <span className="info-row-rank">{i + 1}</span>
+                <div key={`${row.playerId}-${i}`} className={`info-row ${row.displayRank === null ? 'info-row-unqualified' : ''}`}>
+                  <span className="info-row-rank">{row.displayRank ?? '-'}</span>
                   <div className="info-row-info">
                     <div className="info-row-name">{row.name}</div>
-                    <div className="info-row-sub">{abbreviateTeam(teamAbbreviations, row.team)} | {row.pos}</div>
+                    <div className="info-row-sub">
+                      {abbreviateTeam(teamAbbreviations, row.team)} | {row.pos} · {row.gamesPlayed}경기
+                      {row.displayRank === null && ' · 경기수 부족'}
+                    </div>
                   </div>
-                  <span className="info-row-score">{row.score?.toLocaleString()}</span>
+                  <span className="info-row-score">{row.score?.toFixed(1)}</span>
                 </div>
               ))}
 

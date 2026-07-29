@@ -14,6 +14,33 @@ export async function getPlayers({ activeOnly = false } = {}) {
   return response.json()
 }
 
+export async function getPurchaseList() {
+  const response = await fetch(`${API_BASE_URL}/players/purchase-list`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch purchase list')
+  }
+
+  return response.json()
+}
+
+export async function updatePlayerStatus(playerId, status) {
+  const response = await fetch(`${API_BASE_URL}/players/${playerId}/status?status=${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  })
+
+  const text = await response.text().catch(() => '')
+
+  if (!response.ok) {
+    throw new Error(text || 'Failed to update player status')
+  }
+
+  return text
+}
+
 export async function getPlayerRankings({ position = 'ALL', page = 1, pageSize = 20 } = {}) {
   const params = new URLSearchParams({ position, page, pageSize })
 

@@ -22,4 +22,6 @@ public interface SeasonRepository extends JpaRepository<Season, Long> {
 
     Optional<Season> findByFeaturedTrue();
 
+    Optional<Season> findByRosterSourceSeasonTrue();
+
 }

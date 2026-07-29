@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAdminMe, adminLogout } from '../api/admin'
-import { getPlayers } from '../api/players'
-import { syncMatches, syncPlayers } from '../api/matches'
-import { detectNewSeasons, registerSeason, lockWeek, activateDueSeasons, endSeason, listSeasons, featureSeason } from '../api/seasons'
+import { getPlayers, updatePlayerStatus } from '../api/players'
+import { syncMatches, syncPlayers, syncSeason } from '../api/matches'
+import { detectNewSeasons, registerSeason, lockWeek, activateDueSeasons, endSeason, listSeasons, featureSeason, setMinGamesForRanking, setRosterSourceSeason } from '../api/seasons'
 import { getProTeams, syncProTeamsFromPlayers, updateProTeam, deleteProTeam } from '../api/proTeams'
 import { POS_LABEL } from '../constants/positions'
 import './AdminDashboardPage.css'
@@ -29,7 +29,7 @@ function mapApiPlayers(data) {
     team: p.teamName,
     pos: POS_LABEL[p.position] || p.position,
     nickname: p.playerName,
-    status: 'current',
+    status: p.status || 'CURRENT',
   }))
 }
 
@@ -83,6 +83,10 @@ export default function AdminDashboardPage() {
   const [syncRunning, setSyncRunning] = useState(false)
   const [syncMessage, setSyncMessage] = useState(null)
 
+  const [syncSeasonName, setSyncSeasonName] = useState('')
+  const [syncSeasonRunning, setSyncSeasonRunning] = useState(false)
+  const [syncSeasonMessage, setSyncSeasonMessage] = useState(null)
+
   const [activating, setActivating] = useState(false)
   const [activateMessage, setActivateMessage] = useState(null)
 
@@ -94,6 +98,11 @@ export default function AdminDashboardPage() {
   const [loadingSeasonList, setLoadingSeasonList] = useState(false)
   const [seasonListMessage, setSeasonListMessage] = useState(null)
   const [featuringSeasonName, setFeaturingSeasonName] = useState(null)
+
+  const [minGamesInput, setMinGamesInput] = useState('3')
+  const [settingMinGames, setSettingMinGames] = useState(false)
+
+  const [settingRosterSourceName, setSettingRosterSourceName] = useState(null)
 
   useEffect(() => {
     getAdminMe().then((me) => {
@@ -192,7 +201,7 @@ export default function AdminDashboardPage() {
     let list = players
       .map((p, i) => ({ ...p, origIndex: i }))
       .sort((a, b) => {
-        if (a.status !== b.status) return a.status === 'current' ? -1 : 1
+        if (a.status !== b.status) return a.status === 'CURRENT' ? -1 : 1
         return a.name.localeCompare(b.name)
       })
 
@@ -211,7 +220,14 @@ export default function AdminDashboardPage() {
     setPlayers((prev) => prev.map((p, idx) => (idx === i ? { ...p, [key]: value } : p)))
   }
 
-  const savePlayer = () => setEditingPlayerIndex(null)
+  const savePlayer = async (player) => {
+    try {
+      await updatePlayerStatus(player.id, player.status)
+    } catch (error) {
+      console.error('Failed to update player status:', error)
+    }
+    setEditingPlayerIndex(null)
+  }
 
   const confirmDeletePlayer = () => {
     setPlayers((prev) => prev.filter((_, idx) => idx !== playerDeleteConfirmIndex))
@@ -356,6 +372,41 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const runSetRosterSource = async (seasonName) => {
+    if (settingRosterSourceName) return
+
+    setSettingRosterSourceName(seasonName)
+    setSeasonListMessage(null)
+
+    try {
+      const result = await setRosterSourceSeason(seasonName)
+      setSeasonListMessage({ type: 'success', text: result })
+      setSeasonList((prev) => (prev || []).map((s) => ({ ...s, rosterSourceSeason: s.seasonName === seasonName })))
+    } catch (error) {
+      setSeasonListMessage({ type: 'error', text: error.message })
+    } finally {
+      setSettingRosterSourceName(null)
+    }
+  }
+
+  const runSetMinGames = async (seasonName) => {
+    const minGames = Number(minGamesInput)
+    if (settingMinGames || !seasonName || !Number.isInteger(minGames) || minGames < 1) return
+
+    setSettingMinGames(true)
+    setSeasonListMessage(null)
+
+    try {
+      const result = await setMinGamesForRanking(seasonName, minGames)
+      setSeasonListMessage({ type: 'success', text: result })
+      setSeasonList((prev) => (prev || []).map((s) => (s.seasonName === seasonName ? { ...s, minGamesForRanking: minGames } : s)))
+    } catch (error) {
+      setSeasonListMessage({ type: 'error', text: error.message })
+    } finally {
+      setSettingMinGames(false)
+    }
+  }
+
   const runSync = async () => {
     if (syncRunning || !syncDate) return
 
@@ -369,6 +420,22 @@ export default function AdminDashboardPage() {
       setSyncMessage({ type: 'error', text: error.message })
     } finally {
       setSyncRunning(false)
+    }
+  }
+
+  const runSyncSeason = async () => {
+    if (syncSeasonRunning || !syncSeasonName.trim()) return
+
+    setSyncSeasonRunning(true)
+    setSyncSeasonMessage(null)
+
+    try {
+      const result = await syncSeason(syncSeasonName.trim())
+      setSyncSeasonMessage({ type: 'success', text: result })
+    } catch (error) {
+      setSyncSeasonMessage({ type: 'error', text: error.message })
+    } finally {
+      setSyncSeasonRunning(false)
     }
   }
 
@@ -594,12 +661,12 @@ export default function AdminDashboardPage() {
                       value={p.status}
                       onChange={(e) => setPlayerField(p.origIndex, 'status', e.target.value)}
                     >
-                      <option value="current">Current</option>
-                      <option value="previous">Previous</option>
+                      <option value="CURRENT">Current</option>
+                      <option value="DEPARTED">Departed</option>
                     </select>
                   ) : (
-                    <span className={`admin-dash-status ${p.status}`}>
-                      {p.status === 'current' ? 'Current' : 'Previous'}
+                    <span className={`admin-dash-status ${p.status.toLowerCase()}`}>
+                      {p.status === 'CURRENT' ? 'Current' : 'Departed'}
                     </span>
                   )}
 
@@ -607,7 +674,7 @@ export default function AdminDashboardPage() {
                     {editingPlayerIndex === p.origIndex ? (
                       <>
                         <button type="button" className="admin-dash-btn" onClick={() => setEditingPlayerIndex(null)}>취소</button>
-                        <button type="button" className="admin-dash-btn-dark" onClick={savePlayer}>저장</button>
+                        <button type="button" className="admin-dash-btn-dark" onClick={() => savePlayer(p)}>저장</button>
                       </>
                     ) : (
                       <>
@@ -857,17 +924,90 @@ export default function AdminDashboardPage() {
               )}
 
               {seasonList && seasonList.length > 0 && (
-                <div className="admin-dash-detect-list">
+                <div className="admin-dash-season-list">
                   {seasonList.map((season) => (
-                    <div
-                      key={season.seasonName}
-                      className={`admin-dash-detect-chip ${season.featured ? 'featured' : ''}`}
-                      onClick={() => runFeatureSeason(season.seasonName)}
-                    >
-                      {season.featured && '★ '}{season.seasonName} ({season.status})
+                    <div key={season.seasonName} className="admin-dash-season-row">
+                      <span className={`admin-dash-detect-chip ${season.featured ? 'featured' : ''} ${season.rosterSourceSeason ? 'roster-source' : ''}`}>
+                        {season.featured && '★ '}{season.rosterSourceSeason && '[구매기준] '}{season.seasonName} ({season.status}, 최소 {season.minGamesForRanking ?? 3}경기)
+                      </span>
+                      <button
+                        type="button"
+                        className="admin-dash-btn"
+                        disabled={featuringSeasonName === season.seasonName}
+                        onClick={() => runFeatureSeason(season.seasonName)}
+                      >
+                        랭킹 노출로 설정
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-dash-btn"
+                        disabled={settingRosterSourceName === season.seasonName}
+                        onClick={() => runSetRosterSource(season.seasonName)}
+                      >
+                        구매 기준으로 설정
+                      </button>
                     </div>
                   ))}
                 </div>
+              )}
+
+              {seasonList && seasonList.some((s) => s.featured) && (
+                <div className="admin-dash-sync-card" style={{ marginTop: 10 }}>
+                  <div className="admin-dash-sync-input-group">
+                    <div className="admin-dash-sync-label">
+                      MIN GAMES ({seasonList.find((s) => s.featured)?.seasonName})
+                    </div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={minGamesInput}
+                      onChange={(e) => setMinGamesInput(e.target.value)}
+                      className="admin-dash-search admin-dash-sync-input"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-dash-sync-btn"
+                    disabled={settingMinGames}
+                    onClick={() => runSetMinGames(seasonList.find((s) => s.featured)?.seasonName)}
+                  >
+                    {settingMinGames && <span className="admin-dash-spinner" />}
+                    <span>{settingMinGames ? '적용 중…' : '최소 경기수 적용'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 8. 시즌 전체 동기화 (매치+선수스탯+가격) */}
+            <div>
+              <div className="admin-dash-log-title">8. 시즌 전체 동기화 [TEST/INIT]</div>
+              <div className="admin-dash-sync-card">
+                <div className="admin-dash-sync-input-group">
+                  <div className="admin-dash-sync-label">SEASON NAME</div>
+                  <input
+                    type="text"
+                    value={syncSeasonName}
+                    onChange={(e) => setSyncSeasonName(e.target.value)}
+                    placeholder="LCK/2026 Season/Road to MSI"
+                    className="admin-dash-search admin-dash-sync-input"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="admin-dash-sync-btn"
+                  disabled={syncSeasonRunning || !syncSeasonName.trim()}
+                  onClick={runSyncSeason}
+                >
+                  {syncSeasonRunning && <span className="admin-dash-spinner" />}
+                  <span>{syncSeasonRunning ? '동기화 중…' : '시즌 전체 동기화'}</span>
+                </button>
+              </div>
+              <div className="admin-dash-sync-message">
+                POST /matches/sync-season — 시즌 등록 → 액티브 → 선수 불러오기 → 팀 싱크 이후에 실행. 매치·선수스탯 동기화 후 그 시즌 기준 선수 가격까지 자동 산정됨
+              </div>
+
+              {syncSeasonMessage && (
+                <div className={`admin-dash-sync-message ${syncSeasonMessage.type}`}>{syncSeasonMessage.text}</div>
               )}
             </div>
           </>

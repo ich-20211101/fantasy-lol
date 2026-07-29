@@ -35,6 +35,11 @@ public class Season {
     @Builder.Default
     private Boolean featured = false;
 
+    private Integer minGamesForRanking;
+
+    @Builder.Default
+    private Boolean rosterSourceSeason = false;
+
     private LocalDateTime createdAt;
 
     @PrePersist

@@ -33,7 +33,7 @@ public class TeamService {
     private final PlayerRepository playerRepository;
     private final UserRepository userRepository;
     private final SeasonService seasonService;
-    private final SeasonWeekService seasonWeekService;
+    private final WeeklyStarterService weeklyStarterService;
 
     @Transactional
     public TeamDto.Response submitRoster(OAuth2User oAuth2User, TeamDto.RosterSubmitRequest request) {
@@ -65,7 +65,7 @@ public class TeamService {
         User user = getUser(oAuth2User);
         Team team = getOwnedTeam(teamId, user);
 
-        if (seasonWeekService.isCurrentWeekLocked()) {
+        if (weeklyStarterService.isCurrentWeekLockedForTeam(team)) {
             throw new IllegalStateException("이번 주 스타터가 이미 확정되어 변경할 수 없습니다");
         }
 
@@ -77,7 +77,7 @@ public class TeamService {
 
         Set<Long> starterIds = validateStarterSelection(request.getPlayerIds(), roster);
 
-        if (seasonWeekService.isCurrentWeekLocked()) {
+        if (weeklyStarterService.isCurrentWeekLockedForTeam(team)) {
             throw new IllegalStateException("이번 주 스타터가 이미 확정되어 변경할 수 없습니다");
         }
 
@@ -257,7 +257,7 @@ public class TeamService {
                 .teamId(team.getTeamId())
                 .teamName(team.getTeamName())
                 .rosterLocked(isRosterLockedForActiveSeason(team))
-                .starterLocked(seasonWeekService.isCurrentWeekLocked())
+                .starterLocked(weeklyStarterService.isCurrentWeekLockedForTeam(team))
                 .roster(rosterResponses)
                 .build();
 

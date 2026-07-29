@@ -288,6 +288,10 @@
   color: #9a9a9e;
 }
 
+.admin-dash-status.departed {
+  color: #9a9a9e;
+}
+
 .admin-dash-status.fail {
   color: #e11d2e;
 }
@@ -559,6 +563,24 @@
   margin-top: 10px;
 }
 
+.admin-dash-season-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-dash-season-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-dash-season-row .admin-dash-detect-chip {
+  cursor: default;
+}
+
 .admin-dash-detect-chip {
   border: 1px solid rgba(11, 11, 12, 0.16);
   border-radius: 10px;
@@ -580,4 +602,9 @@
   background: #0b0b0c;
   border-color: #0b0b0c;
   color: #f8f9fa;
+}
+
+.admin-dash-detect-chip.roster-source {
+  border-color: #1f9d55;
+  color: #1f9d55;
 }

@@ -368,6 +368,10 @@
   color: #0b0b0c;
 }
 
+.info-row-unqualified {
+  opacity: 0.5;
+}
+
 .info-rows-empty {
   padding: 40px 0;
   text-align: center;

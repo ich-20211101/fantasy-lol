@@ -39,16 +39,22 @@ public class SecurityConfig {
                             "/admin/login",
                             "/players",
                             "/players/rankings",
+                            "/players/purchase-list",
                             "/pro-teams",
                             "/leaderboard",
                             "/leaderboard/rounds"
                     ).permitAll()
                     .requestMatchers(
                             "/matches/sync",
+                            "/matches/sync-season",
                             "/matches/players/sync",
                             "/matches/starters/lock",
                             "/seasons",
                             "/seasons/feature",
+                            "/seasons/ranking-min-games",
+                            "/seasons/roster-source",
+                            "/players/pricing/calculate",
+                            "/players/*/status",
                             "/seasons/detect-new",
                             "/seasons/activate-due",
                             "/seasons/end",

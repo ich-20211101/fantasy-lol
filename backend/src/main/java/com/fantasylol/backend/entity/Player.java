@@ -27,4 +27,13 @@ public class Player {
 
     private String currentSeasonName;
 
+    private Double price;
+
+    @Builder.Default
+    private Boolean priceInsufficientData = false;
+
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String status = "CURRENT";
+
 }

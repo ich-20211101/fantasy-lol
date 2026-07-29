@@ -2,6 +2,7 @@ package com.fantasylol.backend.controller;
 
 import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.service.MatchScheduleService;
+import com.fantasylol.backend.service.PlayerService;
 import com.fantasylol.backend.service.SeasonService;
 import com.fantasylol.backend.service.SeasonWeekService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +25,7 @@ public class SeasonController {
     private final SeasonService seasonService;
     private final MatchScheduleService matchScheduleService;
     private final SeasonWeekService seasonWeekService;
+    private final PlayerService playerService;
 
     @GetMapping
     @Operation(summary = "[ADMIN] List all registered seasons")
@@ -36,6 +38,21 @@ public class SeasonController {
     public ResponseEntity<String> featureSeason(@RequestParam String seasonName) {
         seasonService.setFeaturedSeason(seasonName);
         return ResponseEntity.ok("랭킹 노출 시즌 설정 완료: " + seasonName);
+    }
+
+    @PostMapping("/ranking-min-games")
+    @Operation(summary = "[ADMIN] Set the minimum games-played threshold to qualify for that season's player ranking")
+    public ResponseEntity<String> setMinGamesForRanking(@RequestParam String seasonName, @RequestParam int minGames) {
+        seasonService.setMinGamesForRanking(seasonName, minGames);
+        return ResponseEntity.ok("최소 경기수 설정 완료: " + seasonName + " (" + minGames + "경기 이상)");
+    }
+
+    @PostMapping("/roster-source")
+    @Operation(summary = "[ADMIN] Set which season's participants form the player purchase pool — anyone not in it is auto-marked DEPARTED")
+    public ResponseEntity<String> setRosterSourceSeason(@RequestParam String seasonName) {
+        playerService.syncStatusForRosterSourceSeason(seasonName);
+        seasonService.setRosterSourceSeason(seasonName);
+        return ResponseEntity.ok("로스터 구매 기준 시즌 설정 완료: " + seasonName);
     }
 
     @PostMapping

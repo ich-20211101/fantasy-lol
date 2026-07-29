@@ -221,6 +221,7 @@ public class MatchSyncService {
                         existing.setTeamName(teamName);
                         existing.setPosition(s.path("Role").asText());
                         existing.setCurrentSeasonName(match.getSeasonName());
+                        existing.setStatus("CURRENT");
                         return existing;
                     })
                     .orElseGet(() -> Player.builder()
@@ -266,6 +267,81 @@ public class MatchSyncService {
         } catch (Exception e) {
             return 1;
         }
+
+    }
+
+    // [TEST/INIT] 시즌 이름 하나로 그 시즌 전체 매치+선수스탯을 한 번에 동기화
+    // 날짜별로 쪼개서 도는 syncByDate()와 달리 OverviewPage만으로 조회해서 요청 수를 최소화함
+    @Transactional
+    public void syncBySeasonName(String seasonName) throws Exception {
+
+        if (!seasonRepository.existsBySeasonName(seasonName)) {
+            log.info("등록되지 않은 시즌이라 동기화 스킵: {}", seasonName);
+            return;
+        }
+
+        leaguepediaClient.login();
+
+        String whereClause = "OverviewPage = '" + seasonName + "'";
+
+        List<JsonNode> matchList = leaguepediaClient.cargoQueryAll("MatchSchedule", "Team1,Team2,Winner,OverviewPage,DateTime_UTC", whereClause, "DateTime_UTC", 500);
+
+        if (matchList.isEmpty()) {
+            log.info("해당 시즌의 매치를 찾을 수 없습니다: {}", seasonName);
+            return;
+        }
+
+        Thread.sleep(3000);
+
+        List<JsonNode> gameList = leaguepediaClient.cargoQueryAll("ScoreboardGames", "GameId,Team1,Team2,DateTime_UTC,OverviewPage", whereClause, "DateTime_UTC", 500);
+
+        Map<String, List<JsonNode>> gamesByMatchup = new HashMap<>();
+        List<String> allGameIds = new ArrayList<>();
+
+        for (JsonNode gameNode : gameList) {
+            JsonNode g = gameNode.path("title");
+            String key = matchupKey(g.path("OverviewPage").asText(), g.path("Team1").asText(), g.path("Team2").asText());
+            gamesByMatchup.computeIfAbsent(key, k -> new ArrayList<>()).add(gameNode);
+            allGameIds.add(g.path("GameId").asText());
+        }
+
+        Map<String, List<JsonNode>> statsByGameId = new HashMap<>();
+
+        if (!allGameIds.isEmpty()) {
+
+            int chunkSize = 50;
+
+            for (int i = 0; i < allGameIds.size(); i += chunkSize) {
+                List<String> chunk = allGameIds.subList(i, Math.min(i + chunkSize, allGameIds.size()));
+
+                String gameIdList = chunk.stream()
+                        .map(id -> "'" + id + "'")
+                        .collect(Collectors.joining(","));
+
+                Thread.sleep(3000);
+
+                List<JsonNode> statNodes = leaguepediaClient.cargoQueryAll("ScoreboardPlayers", "GameId,Name,Team,Role,Champion,Kills,Deaths,Assists,Gold,CS,DamageToChampions,VisionScore,PlayerWin", "GameId IN (" + gameIdList + ")", null, 500);
+
+                for (JsonNode statNode : statNodes) {
+                    String gameId = statNode.path("title").path("GameId").asText();
+                    statsByGameId.computeIfAbsent(gameId, k -> new ArrayList<>()).add(statNode);
+                }
+            }
+
+        }
+
+        int synced = 0;
+
+        for (JsonNode matchNode : matchList) {
+            try {
+                syncMatch(matchNode, gamesByMatchup, statsByGameId);
+                synced++;
+            } catch (Exception e) {
+                log.error("Failed to sync match: {}", matchNode, e);
+            }
+        }
+
+        log.info("Season sync completed: {} ({} matches processed)", seasonName, synced);
 
     }
 

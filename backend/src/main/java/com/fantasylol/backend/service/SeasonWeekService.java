@@ -32,20 +32,6 @@ public class SeasonWeekService {
     private final WeeklyStarterService weeklyStarterService;
     private final SettlementService settlementService;
 
-    @Transactional(readOnly = true)
-    public boolean isCurrentWeekLocked() {
-
-        Season activeSeason = seasonService.getActiveSeason().orElse(null);
-        if (activeSeason == null) return false;
-
-        int currentWeek = seasonService.resolveWeekNumber(activeSeason.getSeasonName(), KstTime.nowKstDate());
-
-        return seasonWeekRepository.findBySeasonSeasonIdAndWeekNumber(activeSeason.getSeasonId(), currentWeek)
-                .map(week -> week.getStarterLockedAt() != null)
-                .orElse(false);
-
-    }
-
     @Transactional
     public void lockUpcomingWeekIfDue() throws Exception {
 

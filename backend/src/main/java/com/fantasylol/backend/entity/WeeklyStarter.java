@@ -29,8 +29,9 @@ public class WeeklyStarter {
     @Column(nullable = false)
     private Integer weekNumber;
 
-    @Column(nullable = false)
-    private String seasonName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id", nullable = false)
+    private Season season;
 
     private LocalDateTime lockedAt;
 

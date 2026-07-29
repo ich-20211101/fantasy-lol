@@ -69,6 +69,7 @@ public class PlayerSyncService {
                         existing.setTeamName(teamName);
                         existing.setPosition(role);
                         existing.setCurrentSeasonName(overviewPage);
+                        existing.setStatus("CURRENT");
                         return existing;
                     })
                     .orElseGet(() -> Player.builder()

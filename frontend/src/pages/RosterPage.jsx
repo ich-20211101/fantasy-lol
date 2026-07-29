@@ -3,15 +3,26 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import './RosterPage.css'
 
-import { getPlayers } from '../api/players'
+import { getPurchaseList } from '../api/players'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
 import { POSITIONS, POS_LABEL } from '../constants/positions'
 
 const MAX_ROSTER_SIZE = 8
-const PLAYER_POINT = 10
-const TOTAL_POINT = 80
+const TOTAL_POINT = 100
+
+function mapPurchaseRow(row) {
+  return {
+    playerId: row.playerId,
+    playerName: row.name,
+    teamName: row.team,
+    position: row.pos,
+    price: row.price ?? 5.0,
+    priceInsufficientData: row.priceInsufficientData,
+    score: row.score,
+  }
+}
 
 export default function RosterPage() {
   const { t } = useTranslation()
@@ -30,8 +41,8 @@ export default function RosterPage() {
   const [showLimitPopup, setShowLimitPopup] = useState(false)
 
   useEffect(() => {
-    getPlayers({ activeOnly: true })
-      .then(setPlayers)
+    getPurchaseList()
+      .then(data => setPlayers((data?.rows ?? []).map(mapPurchaseRow)))
       .catch(error => {
         console.error(error)
         setPlayers([])
@@ -58,9 +69,15 @@ export default function RosterPage() {
   }, [players, selectedIds])
 
   const selectedCount = selectedIds.size
-  const remainingPoint = TOTAL_POINT - selectedCount * PLAYER_POINT
+  const selectedTotal = useMemo(() => (
+    players.filter(player => selectedIds.has(player.playerId)).reduce((sum, player) => sum + player.price, 0)
+  ), [players, selectedIds])
+  const remainingPoint = TOTAL_POINT - selectedTotal
 
   const togglePlayer = (playerId) => {
+    const player = players.find(p => p.playerId === playerId)
+    if (!player) return
+
     setSelectedIds(prev => {
       const next = new Set(prev)
 
@@ -69,7 +86,7 @@ export default function RosterPage() {
         return next
       }
 
-      if (next.size >= MAX_ROSTER_SIZE) {
+      if (next.size >= MAX_ROSTER_SIZE || remainingPoint - player.price < 0) {
         setShowLimitPopup(true)
         return next
       }
@@ -118,7 +135,7 @@ export default function RosterPage() {
 
         <section className="build-round">
           <span>{t('common.round')}</span>
-          <strong>{remainingPoint} P</strong>
+          <strong>{remainingPoint.toFixed(1)} P</strong>
         </section>
 
         <nav className="build-tabs">
@@ -230,7 +247,7 @@ export default function RosterPage() {
                     <div className="build-player-title">
                       <span>{player.playerName}</span>
                       <span className="build-player-score">
-                        {player.lastSeasonScore ?? '0,321'}
+                        {player.score != null ? player.score.toFixed(1) : '-'}
                       </span>
                     </div>
                     <p>
@@ -238,7 +255,9 @@ export default function RosterPage() {
                     </p>
                   </div>
 
-                  <strong className="build-point">{PLAYER_POINT}P</strong>
+                  <strong className="build-point">
+                    {player.price.toFixed(1)}P{player.priceInsufficientData && '*'}
+                  </strong>
 
                   <button
                     type="button"

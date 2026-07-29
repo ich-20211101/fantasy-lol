@@ -23,6 +23,7 @@ public class MatchController {
     private final WeeklyStarterService weeklyStarterService;
     private final MatchScheduleService matchScheduleService;
     private final ProTeamService proTeamService;
+    private final PlayerPricingService playerPricingService;
 
     @PostMapping("/sync")
     @Operation(summary = "Sync match data by date")
@@ -37,7 +38,21 @@ public class MatchController {
 
     }
 
-    @PostMapping("/players/sync")
+    @PostMapping("/sync-season")
+    @Operation(summary = "[TEST/INIT] Bulk sync an entire season's matches + player stats, then recalculate player prices from it")
+    public ResponseEntity<String> syncSeason(@RequestParam String seasonName) {
+
+        try {
+            matchSyncService.syncBySeasonName(seasonName);
+            playerPricingService.calculatePricesForSeason(seasonName);
+            return ResponseEntity.ok("시즌 전체 동기화 + 가격 산정 완료: " + seasonName);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Sync failed: " + e.getMessage());
+        }
+
+    }
+
+        @PostMapping("/players/sync")
     @Operation(summary = "Sync players from Leaguepedia")
     public ResponseEntity<String> syncPlayers(@RequestParam String overviewPage) {
 

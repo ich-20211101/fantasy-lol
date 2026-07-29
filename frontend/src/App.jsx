@@ -207,7 +207,7 @@ function App() {
         <Route
           path="/"
           element={
-            user && team ? (
+            user && team && team.rosterLocked ? (
               <MyTeamPage team={team} onTeamDeleted={refreshTeam} />
             ) : (
               <Home

@@ -84,6 +84,36 @@ export async function featureSeason(seasonName) {
   return text
 }
 
+export async function setRosterSourceSeason(seasonName) {
+  const response = await fetch(`${API_BASE_URL}/seasons/roster-source?seasonName=${encodeURIComponent(seasonName)}`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  const text = await response.text().catch(() => '')
+
+  if (!response.ok) {
+    throw new Error(text || 'Failed to set roster source season')
+  }
+
+  return text
+}
+
+export async function setMinGamesForRanking(seasonName, minGames) {
+  const response = await fetch(`${API_BASE_URL}/seasons/ranking-min-games?seasonName=${encodeURIComponent(seasonName)}&minGames=${minGames}`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  const text = await response.text().catch(() => '')
+
+  if (!response.ok) {
+    throw new Error(text || 'Failed to set min games for ranking')
+  }
+
+  return text
+}
+
 export async function lockWeek(date, seasonName) {
   const response = await fetch(`${API_BASE_URL}/seasons/weeks/lock?date=${date}&seasonName=${encodeURIComponent(seasonName)}`, {
     method: 'POST',

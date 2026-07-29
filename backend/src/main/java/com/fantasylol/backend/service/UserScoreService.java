@@ -36,7 +36,11 @@ public class UserScoreService {
         String seasonName = match.getSeasonName();
         int weekNumber = seasonService.resolveWeekNumber(seasonName, KstTime.toKstDate(match.getMatchDate()));
 
-        List<WeeklyStarter> starters = weeklyStarterRepository.findByPlayerPlayerIdInAndWeekNumberAndSeasonName(playerIds, weekNumber, seasonName);
+        Long seasonId = seasonService.getBySeasonName(seasonName).map(Season::getSeasonId).orElse(null);
+
+        if (seasonId == null) return;
+
+        List<WeeklyStarter> starters = weeklyStarterRepository.findByPlayerPlayerIdInAndWeekNumberAndSeasonSeasonId(playerIds, weekNumber, seasonId);
 
         if (starters.isEmpty()) {
             log.info("No locked starters found for match: {} (week {}, {})", match.getMatchId(), weekNumber, seasonName);
@@ -102,7 +106,7 @@ public class UserScoreService {
             if (latest.isEmpty()) {
                 return UserScoreDto.Response.builder().rank(null).score(0.0).build();
             }
-            resolvedSeasonName = latest.get().getSeasonName();
+            resolvedSeasonName = latest.get().getSeason().getSeasonName();
         }
 
         if (weekNumber == null) {

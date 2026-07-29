@@ -15,6 +15,21 @@ export async function syncMatches(date) {
   return text
 }
 
+export async function syncSeason(seasonName) {
+  const response = await fetch(`${API_BASE_URL}/matches/sync-season?seasonName=${encodeURIComponent(seasonName)}`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  const text = await response.text().catch(() => '')
+
+  if (!response.ok) {
+    throw new Error(text || 'Season sync failed')
+  }
+
+  return text
+}
+
 export async function syncPlayers(overviewPage) {
   const response = await fetch(`${API_BASE_URL}/matches/players/sync?overviewPage=${encodeURIComponent(overviewPage)}`, {
     method: 'POST',

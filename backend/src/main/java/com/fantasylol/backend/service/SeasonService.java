@@ -30,6 +30,7 @@ public class SeasonService {
     private final LeaguepediaClient leaguepediaClient;
     private final SettlementService settlementService;
     private final ProTeamService proTeamService;
+    private final PlayerPricingService playerPricingService;
 
     @Transactional(readOnly = true)
     public Optional<Season> getActiveSeason() {
@@ -69,6 +70,42 @@ public class SeasonService {
         seasonRepository.save(target);
 
         log.info("Featured season set: {}", seasonName);
+
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Season> getRosterSourceSeason() {
+        return seasonRepository.findByRosterSourceSeasonTrue();
+    }
+
+    @Transactional
+    public void setRosterSourceSeason(String seasonName) {
+
+        Season target = seasonRepository.findBySeasonName(seasonName)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다: " + seasonName));
+
+        seasonRepository.findByRosterSourceSeasonTrue().ifPresent(current -> {
+            current.setRosterSourceSeason(false);
+            seasonRepository.save(current);
+        });
+
+        target.setRosterSourceSeason(true);
+        seasonRepository.save(target);
+
+        log.info("Roster source season set: {}", seasonName);
+
+    }
+
+    @Transactional
+    public void setMinGamesForRanking(String seasonName, int minGames) {
+
+        Season season = seasonRepository.findBySeasonName(seasonName)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다: " + seasonName));
+
+        season.setMinGamesForRanking(minGames);
+        seasonRepository.save(season);
+
+        log.info("Min games for ranking set: {} -> {}", seasonName, minGames);
 
     }
 
@@ -182,6 +219,7 @@ public class SeasonService {
         season.setEndDate(KstTime.nowKstDate());
         seasonRepository.save(season);
         settlementService.settleSeason(season.getSeasonName());
+        playerPricingService.calculatePricesForSeason(season.getSeasonName());
         log.info("Ended season (manual): {} (endDate {})", season.getSeasonName(), season.getEndDate());
 
     }

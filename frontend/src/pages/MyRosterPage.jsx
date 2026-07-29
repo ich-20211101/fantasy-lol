@@ -8,8 +8,7 @@ import { POSITIONS, POS_LABEL } from '../constants/positions'
 import './MyRosterPage.css'
 
 const MAX_ROSTER_SIZE = 8
-const PLAYER_POINT = 10
-const TOTAL_POINT = 80
+const TOTAL_POINT = 100
 
 export default function MyRosterPage() {
   const { t } = useTranslation()
@@ -28,7 +27,8 @@ export default function MyRosterPage() {
   }, [selectedPlayers])
 
   const selectedCount = selectedPlayers.length
-  const remainingPoint = TOTAL_POINT - selectedCount * PLAYER_POINT
+  const selectedTotal = selectedPlayers.reduce((sum, player) => sum + (player.price ?? 0), 0)
+  const remainingPoint = TOTAL_POINT - selectedTotal
   const isComplete = selectedCount === MAX_ROSTER_SIZE
 
   if (!initialPlayers) {
@@ -75,7 +75,7 @@ export default function MyRosterPage() {
             <div className="myroster-dashboard-cell right">
               <div className="myroster-dashboard-label">{t('myRoster.remaining')}</div>
               <div className="myroster-dashboard-value">
-                {remainingPoint} <span>P</span>
+                {remainingPoint.toFixed(1)} <span>P</span>
               </div>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function MyRosterPage() {
                     <div className="myroster-player-title">
                       <span>{player.playerName}</span>
                       <span className="myroster-player-score">
-                        {player.lastSeasonScore ?? '0,321'}
+                        {player.score != null ? player.score.toFixed(1) : '-'}
                       </span>
                     </div>
                     <p>
@@ -105,7 +105,9 @@ export default function MyRosterPage() {
                     </p>
                   </div>
 
-                  <strong className="myroster-point">{PLAYER_POINT}P</strong>
+                  <strong className="myroster-point">
+                    {player.price?.toFixed(1)}P{player.priceInsufficientData && '*'}
+                  </strong>
 
                   <button
                     type="button"
@@ -144,7 +146,7 @@ export default function MyRosterPage() {
             disabled={!isComplete}
             onClick={handleBuyRoster}
           >
-            {t('myRoster.buyRoster', { point: PLAYER_POINT })}
+            {t('myRoster.buyRoster', { point: selectedTotal.toFixed(1) })}
           </button>
         </section>
       </section>

@@ -9,9 +9,11 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -87,12 +89,22 @@ public class LeaguepediaClient {
     }
 
     public JsonNode cargoQuery(String tables, String fields, String where, String orderBy, String groupBy, int limit) throws Exception {
+        return cargoQuery(tables, fields, where, orderBy, groupBy, limit, 0);
+    }
+
+    public JsonNode cargoQuery(String tables, String fields, String where, String orderBy, int limit, int offset) throws Exception {
+        return cargoQuery(tables, fields, where, orderBy, null, limit, offset);
+    }
+
+    public JsonNode cargoQuery(String tables, String fields, String where, String orderBy, String groupBy, int limit, int offset) throws Exception {
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(BASE_URL)
                 .queryParam("action", "cargoquery")
                 .queryParam("tables", tables)
                 .queryParam("fields", fields)
                 .queryParam("where", where)
                 .queryParam("limit", limit)
+                .queryParam("offset", offset)
                 .queryParam("format", "json");
 
         if (orderBy != null && !orderBy.isBlank()) {
@@ -112,6 +124,60 @@ public class LeaguepediaClient {
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
 
         return objectMapper.readTree(response.getBody());
+
+    }
+
+    // 날짜 제한 없이 시즌 전체처럼 큰 범위를 조회할 때 사용 — limit(보통 500) 넘는 결과도 offset으로 끊어서 전부 긁어옴
+    public List<JsonNode> cargoQueryAll(String tables, String fields, String where, String orderBy, int pageSize) throws Exception {
+
+        List<JsonNode> all = new ArrayList<>();
+
+        int offset = 0;
+
+        while (true) {
+            JsonNode response = cargoQueryWithRetry(tables, fields, where, orderBy, pageSize, offset);
+            JsonNode page = response.path("cargoquery");
+
+            if (page.isEmpty()) break;
+
+            page.forEach(all::add);
+
+            if (page.size() < pageSize) break;
+
+            offset += pageSize;
+
+            Thread.sleep(3000);
+        }
+
+        return all;
+
+    }
+
+    // rate limit(400) 걸리면 대기 후 최대 3번까지 재시도 — 데이터 많은 시즌 백필할 때 페이지네이션 도중 끊기는 것 방지
+    private JsonNode cargoQueryWithRetry(String tables, String fields, String where, String orderBy, int limit, int offset) throws Exception {
+
+        int attempts = 0;
+
+        while (true) {
+            try {
+                return cargoQuery(tables, fields, where, orderBy, limit, offset);
+            } catch (HttpClientErrorException e) {
+
+                attempts++;
+
+                if (attempts >= 5) {
+                    log.error("Leaguepedia API 요청 5회 실패, 포기: {}", e.getMessage());
+                    throw e;
+                }
+
+                long waitMs = 30000L * attempts;
+
+                log.warn("Leaguepedia API 요청 실패 (시도 {}/5), {}ms 대기 후 재시도: {}", attempts, waitMs, e.getMessage());
+
+                Thread.sleep(waitMs);
+
+            }
+        }
 
     }
 

@@ -15,8 +15,6 @@ const POS_LABEL = {
   Support: 'SPT',
 }
 
-const PLAYER_POINT = 10
-
 const BANNED = ['시발', '씨발', '병신', '새끼', '좆', '존나', 'ㅅㅂ', 'ㅄ', 'fuck', 'shit']
 
 export default function RegisterTeamPage({ user, onTeamCreated }) {
@@ -30,7 +28,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
   const [errorMessage, setErrorMessage] = useState('')
   const [showDone, setShowDone] = useState(false)
 
-  const totalValue = (selectedPlayers?.length ?? 0) * PLAYER_POINT
+  const totalValue = (selectedPlayers ?? []).reduce((sum, player) => sum + (player.price ?? 0), 0)
 
   const { nameAlertText, nameAlertColor, isValid } = useMemo(() => {
     const hasProfanity = BANNED.some(word => teamName.toLowerCase().includes(word))
@@ -141,7 +139,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
         <div className="register-list-header">
           <span>{t('registerTeam.listHeaderLabel')}</span>
           <span className="register-value-label">
-            {t('registerTeam.valueLabel')} <span className="register-value-badge">{totalValue}P</span>
+            {t('registerTeam.valueLabel')} <span className="register-value-badge">{totalValue.toFixed(1)}P</span>
           </span>
         </div>
 
@@ -150,9 +148,11 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
             <div className="register-list-row" key={player.playerId}>
               <span className="register-list-name">{player.playerName}</span>
               <span className="register-list-pos">{POS_LABEL[player.position]}</span>
-              <span className="register-list-score">{player.lastSeasonScore ?? '0,321'}</span>
+              <span className="register-list-score">{player.score != null ? player.score.toFixed(1) : '-'}</span>
               <span className="register-list-spacer" />
-              <span className="register-list-point">{PLAYER_POINT}P</span>
+              <span className="register-list-point">
+                {player.price?.toFixed(1)}P{player.priceInsufficientData && '*'}
+              </span>
             </div>
           ))}
 
