@@ -29,7 +29,8 @@ export default function MyRosterPage() {
   const selectedCount = selectedPlayers.length
   const selectedTotal = selectedPlayers.reduce((sum, player) => sum + (player.price ?? 0), 0)
   const remainingPoint = TOTAL_POINT - selectedTotal
-  const isComplete = selectedCount === MAX_ROSTER_SIZE
+  const allPositionsFilled = slots.every(slot => slot.players.length > 0)
+  const isComplete = selectedCount === MAX_ROSTER_SIZE && allPositionsFilled
 
   if (!initialPlayers) {
     navigate('/roster')

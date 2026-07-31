@@ -21,6 +21,7 @@ import java.util.List;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final NicknameGenerator nicknameGenerator;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -29,14 +30,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String googleId = oAuth2User.getAttribute("sub");
         String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
 
         User user = userRepository.findByEmail(email).orElseGet(() ->
                 userRepository.save(User.builder()
                         .googleId(googleId)
                         .email(email)
-                        .username(name)
+                        .username(nicknameGenerator.generate())
                         .profileImageUrl(picture)
                         .role("USER")
                         .build())
