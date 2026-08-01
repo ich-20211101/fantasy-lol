@@ -40,6 +40,26 @@ export async function getLeaderboard(weekNumber, seasonName, { page = 1, pageSiz
   }
 }
 
+export async function getLeaderboardDetail(userId, weekNumber, seasonName) {
+  const params = new URLSearchParams()
+
+  if (weekNumber != null) params.set('weekNumber', weekNumber)
+  if (seasonName != null) params.set('seasonName', seasonName)
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/leaderboard/${userId}?${params.toString()}`, {
+      credentials: 'include',
+    })
+
+    if (!response.ok) return null
+
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch leaderboard detail:', error)
+    return null
+  }
+}
+
 export async function getLeaderboardRounds() {
   try {
     const response = await fetch(`${API_BASE_URL}/leaderboard/rounds`, {

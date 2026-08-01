@@ -65,7 +65,10 @@ function BottomNav() {
   return (
     <div className="lfm-bottomnav">
       {TABS.map((tab) => {
-        const active = tab.path && location.pathname === tab.path
+        const active = tab.path && (
+          location.pathname === tab.path
+          || (tab.path !== '/' && location.pathname.startsWith(`${tab.path}/`))
+        )
 
         return (
           <div

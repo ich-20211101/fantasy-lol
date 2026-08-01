@@ -61,6 +61,7 @@ public class PlayerService {
 
     }
 
+    @Cacheable(cacheNames = "playerRankings")
     @Transactional(readOnly = true)
     public PlayerRankingDto.Response getPlayerRankings(String position, int page, int pageSize) {
 

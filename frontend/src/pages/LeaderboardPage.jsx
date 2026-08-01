@@ -272,7 +272,11 @@ export default function LeaderboardPage({ user, team }) {
                 const isTop3 = row.rank <= 3
 
                 return (
-                  <div key={row.rank} className="leaderboard-row">
+                  <div
+                    key={row.rank}
+                    className="leaderboard-row"
+                    onClick={() => navigate(`/leaderboard/${row.userId}`, { state: selection })}
+                  >
                     <span className="leaderboard-row-rank">
                       {isTop3 ? (
                         <span className="leaderboard-row-rank-badge">{row.rank}</span>

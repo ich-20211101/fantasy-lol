@@ -5,6 +5,7 @@ import com.fantasylol.backend.entity.*;
 import com.fantasylol.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ public class LeaderboardService {
     private final SeasonRepository seasonRepository;
     private final SeasonWeekRepository seasonWeekRepository;
 
+    @Cacheable(cacheNames = "leaderboard")
     @Transactional(readOnly = true)
     public LeaderboardDto.Response getLeaderboard(Integer weekNumber, String seasonName, int page, int pageSize) {
 
@@ -112,6 +114,7 @@ public class LeaderboardService {
         return seasonName.replace("/", " · ").replace(" Season", "");
     }
 
+    @Cacheable(cacheNames = "leaderboardRounds")
     @Transactional(readOnly = true)
     public List<LeaderboardDto.Round> getAvailableRounds() {
 

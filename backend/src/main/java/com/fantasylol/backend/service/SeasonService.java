@@ -7,6 +7,7 @@ import com.fantasylol.backend.util.KstTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,7 @@ public class SeasonService {
         return seasonRepository.findByFeaturedTrue().or(this::getActiveSeason);
     }
 
+    @CacheEvict(cacheNames = "playerRankings", allEntries = true)
     @Transactional
     public void setFeaturedSeason(String seasonName) {
 
@@ -192,6 +194,7 @@ public class SeasonService {
 
     }
 
+    @CacheEvict(cacheNames = {"leaderboardRounds", "playerRankings"}, allEntries = true)
     @Transactional
     public void activateDueSeasons() {
 
@@ -205,6 +208,7 @@ public class SeasonService {
 
     }
 
+    @CacheEvict(cacheNames = {"leaderboardRounds", "playerRankings"}, allEntries = true)
     @Transactional
     public void endSeason(String seasonName) {
 

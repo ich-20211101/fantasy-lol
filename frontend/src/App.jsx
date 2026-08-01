@@ -12,6 +12,7 @@ import ProfilePage from './pages/ProfilePage'
 import WithdrawPage from './pages/WithdrawPage'
 import WithdrawConfirmPage from './pages/WithdrawConfirmPage'
 import LeaderboardPage from './pages/LeaderboardPage'
+import LeaderboardDetailPage from './pages/LeaderboardDetailPage'
 import InfoPage from './pages/InfoPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import ScorePolicyPage from './pages/ScorePolicyPage'
@@ -275,6 +276,11 @@ function App() {
         <Route
           path="/leaderboard"
           element={<LeaderboardPage user={user} team={team} />}
+        />
+
+        <Route
+          path="/leaderboard/:userId"
+          element={<LeaderboardDetailPage />}
         />
 
         <Route
