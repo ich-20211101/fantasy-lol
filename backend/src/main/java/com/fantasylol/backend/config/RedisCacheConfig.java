@@ -31,7 +31,10 @@ public class RedisCacheConfig {
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        GenericJackson2JsonRedisSerializer serializer = GenericJackson2JsonRedisSerializer.builder()
+                .objectMapper(objectMapper)
+                .defaultTyping(true)
+                .build();
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(30))
