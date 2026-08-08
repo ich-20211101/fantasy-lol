@@ -30,10 +30,11 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
 
   const totalValue = (selectedPlayers ?? []).reduce((sum, player) => sum + (player.price ?? 0), 0)
 
+  const defaultTeamName = t('registerTeam.inputPlaceholder', { username: user?.username })
+
   const { nameAlertText, nameAlertColor, isValid } = useMemo(() => {
     const hasProfanity = BANNED.some(word => teamName.toLowerCase().includes(word))
     const tooLong = teamName.length > 10
-    const empty = teamName.trim().length === 0
 
     if (hasProfanity) {
       return { nameAlertText: t('registerTeam.alertProfanity'), nameAlertColor: '#e11d2e', isValid: false }
@@ -41,7 +42,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
     if (tooLong) {
       return { nameAlertText: t('registerTeam.alertTooLong'), nameAlertColor: '#e11d2e', isValid: false }
     }
-    return { nameAlertText: t('registerTeam.alertTooLong'), nameAlertColor: '#9a9a9e', isValid: !empty }
+    return { nameAlertText: t('registerTeam.alertTooLong'), nameAlertColor: '#9a9a9e', isValid: true }
   }, [teamName, t])
 
   if (!selectedPlayers) {
@@ -52,14 +53,18 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
   const handleSubmit = async () => {
     if (!isValid || isSubmitting) return
 
+    const resolvedTeamName = teamName.trim().length > 0 ? teamName.trim() : defaultTeamName
+
     try {
       setIsSubmitting(true)
       setErrorMessage('')
 
       await saveRoster({
-        teamName,
+        teamName: resolvedTeamName,
         playerIds: selectedPlayers.map(player => player.playerId),
       })
+
+      setTeamName(resolvedTeamName)
 
       await onTeamCreated?.()
       setShowDone(true)
@@ -95,7 +100,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
             </div>
 
             <p className="register-done-desc">
-              {t('registerTeam.doneDesc')}
+              {t('registerTeam.doneDescLine1')}<br />{t('registerTeam.doneDescLine2')}
             </p>
           </div>
 
@@ -128,7 +133,7 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
             type="text"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
-            placeholder={t('registerTeam.inputPlaceholder')}
+            placeholder={defaultTeamName}
             className="register-input"
           />
           <div className="register-input-alert" style={{ color: nameAlertColor }}>

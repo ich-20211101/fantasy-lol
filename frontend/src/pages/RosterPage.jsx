@@ -11,6 +11,7 @@ import { POSITIONS, POS_LABEL } from '../constants/positions'
 
 const MAX_ROSTER_SIZE = 8
 const TOTAL_POINT = 100
+const PLAYER_SCORE_FORMULA = 'kills × 3 + assists × 1 − deaths × 1 + win_bonus × 5 + cs × 0.01 + damage_to_champions × 0.001 + vision_score × 0.2'
 
 function mapPurchaseRow(row) {
   return {
@@ -38,11 +39,16 @@ export default function RosterPage() {
   const [positionFilter, setPositionFilter] = useState('Top')
   const [teamFilter, setTeamFilter] = useState('ALL')
   const [teamOpen, setTeamOpen] = useState(false)
-  const [showLimitPopup, setShowLimitPopup] = useState(false)
+  const [limitPopupType, setLimitPopupType] = useState(null)
+  const [priceInfoOpen, setPriceInfoOpen] = useState(false)
+  const [sourceSeasonLabel, setSourceSeasonLabel] = useState('')
 
   useEffect(() => {
     getPurchaseList()
-      .then(data => setPlayers((data?.rows ?? []).map(mapPurchaseRow)))
+      .then(data => {
+        setPlayers((data?.rows ?? []).map(mapPurchaseRow))
+        setSourceSeasonLabel(data?.sourceSeasonLabel ?? '')
+      })
       .catch(error => {
         console.error(error)
         setPlayers([])
@@ -86,8 +92,13 @@ export default function RosterPage() {
         return next
       }
 
-      if (next.size >= MAX_ROSTER_SIZE || remainingPoint - player.price < 0) {
-        setShowLimitPopup(true)
+      if (next.size >= MAX_ROSTER_SIZE) {
+        setLimitPopupType('count')
+        return next
+      }
+
+      if (remainingPoint - player.price < 0) {
+        setLimitPopupType('point')
         return next
       }
 
@@ -106,7 +117,7 @@ export default function RosterPage() {
   return (
     <main className="build-page">
       <section className="build-frame">
-        {showLimitPopup && (
+        {limitPopupType && (
           <div className="build-limit-overlay">
             <div className="build-limit-modal">
               <div className="build-limit-body">
@@ -117,13 +128,17 @@ export default function RosterPage() {
                   </svg>
                 </div>
                 <p>
-                  {t('buildRoster.limitPopupLine1')}<br />{t('buildRoster.limitPopupLine2')}
+                  {limitPopupType === 'point' ? (
+                    <>{t('buildRoster.pointPopupLine1')}<br />{t('buildRoster.pointPopupLine2')}</>
+                  ) : (
+                    <>{t('buildRoster.limitPopupLine1')}<br />{t('buildRoster.limitPopupLine2')}</>
+                  )}
                 </p>
               </div>
               <button
                 type="button"
                 className="build-limit-confirm"
-                onClick={() => setShowLimitPopup(false)}
+                onClick={() => setLimitPopupType(null)}
               >
                 {t('buildRoster.limitConfirm')}
               </button>
@@ -175,6 +190,28 @@ export default function RosterPage() {
 
         <section className="build-list">
           <div className="build-team-filter">
+            <div className="build-price-info">
+              <button
+                type="button"
+                className="build-price-info-btn"
+                onClick={() => setPriceInfoOpen(prev => !prev)}
+              >
+                <svg width="3" height="8.2" viewBox="0 0 4 11" fill="#6a6a6f">
+                  <circle cx="2" cy="1.4" r="1.4" />
+                  <rect x="1.1" y="3.7" width="1.8" height="7" rx="0.9" />
+                </svg>
+              </button>
+
+              {priceInfoOpen && (
+                <div className="build-price-info-popup">
+                  <p>
+                    {t('buildRoster.priceInfoLine1', { season: sourceSeasonLabel })} {t('buildRoster.priceInfoLine2')}
+                  </p>
+                  <p className="build-price-info-formula">{PLAYER_SCORE_FORMULA}</p>
+                </div>
+              )}
+            </div>
+
             <div className="build-dropdown">
               <button
                 type="button"

@@ -13,7 +13,8 @@
   gap: 14px 20px;
 }
 
-.app-footer-links span {
+.app-footer-links span,
+.app-footer-links a {
   font-family: 'Archivo', sans-serif;
   font-weight: 700;
   font-size: 11.5px;

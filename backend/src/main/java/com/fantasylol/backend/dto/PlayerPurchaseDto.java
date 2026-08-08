@@ -29,6 +29,7 @@ public class PlayerPurchaseDto {
     public static class Response {
         private List<Row> rows;
         private String sourceSeasonName;
+        private String sourceSeasonLabel;
     }
 
 

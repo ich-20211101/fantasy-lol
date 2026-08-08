@@ -16,7 +16,7 @@ export default function Footer({ marginTop = '20px', padding = '24px 4px 40px' }
         <span onClick={() => navigate('/score-policy')}>
           {t('common.scorePolicy')}
         </span>
-        <span>{t('common.contactUs')}</span>
+        <a href="mailto:redtonguegames@gmail.com">{t('common.contactUs')}</a>
         <LanguageToggle />
       </div>
       <p>

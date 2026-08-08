@@ -117,10 +117,6 @@ public class PlayerService {
 
     }
 
-    private String formatSeasonLabel(String seasonName) {
-        return seasonName.replace("/", " · ").replace(" Season", "");
-    }
-
     // 로스터 구매 기준 시즌을 바꿀 때 호출 — 그 시즌에 실제로 뛴 선수는 CURRENT로, 나머지(다른 팀 소속이거나 이미 이적한 선수)는 전부 DEPARTED로 일괄 전환
     @CacheEvict(cacheNames = "players", allEntries = true)
     @Transactional
@@ -163,7 +159,7 @@ public class PlayerService {
         Optional<Season> rosterSourceSeason = seasonService.getRosterSourceSeason();
 
         if (rosterSourceSeason.isEmpty()) {
-            return PlayerPurchaseDto.Response.builder().rows(List.of()).sourceSeasonName(null).build();
+            return PlayerPurchaseDto.Response.builder().rows(List.of()).sourceSeasonName(null).sourceSeasonLabel(null).build();
         }
 
         String seasonName = rosterSourceSeason.get().getSeasonName();
@@ -184,8 +180,17 @@ public class PlayerService {
                 })
                 .toList();
 
-        return PlayerPurchaseDto.Response.builder().rows(rows).sourceSeasonName(seasonName).build();
+        return PlayerPurchaseDto.Response.builder()
+                .rows(rows)
+                .sourceSeasonName(seasonName)
+                .sourceSeasonLabel(formatSeasonLabel(seasonName))
+                .build();
 
+    }
+
+    private String formatSeasonLabel(String seasonName) {
+        if (seasonName == null) return null;
+        return seasonName.replace("/", " · ").replace(" Season", "");
     }
 
 }
