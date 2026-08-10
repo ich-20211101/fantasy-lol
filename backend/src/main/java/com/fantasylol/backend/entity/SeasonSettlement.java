@@ -9,7 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "season_settlements", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "season_name"}))
+@Table(name = "season_settlements", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "season_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,8 +25,9 @@ public class SeasonSettlement {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private String seasonName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id", nullable = false)
+    private Season season;
 
     @Column(nullable = false)
     private Double totalScore;

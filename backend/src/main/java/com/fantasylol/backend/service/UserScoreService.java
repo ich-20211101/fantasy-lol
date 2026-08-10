@@ -35,12 +35,11 @@ public class UserScoreService {
                 .map(s -> s.getPlayer().getPlayerId())
                 .collect(Collectors.toSet());
 
-        String seasonName = match.getSeasonName();
+        Season season = match.getSeason();
+        String seasonName = season.getSeasonName();
         int weekNumber = seasonService.resolveWeekNumber(seasonName, KstTime.toKstDate(match.getMatchDate()));
 
-        Long seasonId = seasonService.getBySeasonName(seasonName).map(Season::getSeasonId).orElse(null);
-
-        if (seasonId == null) return;
+        Long seasonId = season.getSeasonId();
 
         List<WeeklyStarter> starters = weeklyStarterRepository.findByPlayerPlayerIdInAndWeekNumberAndSeasonSeasonId(playerIds, weekNumber, seasonId);
 
@@ -78,7 +77,7 @@ public class UserScoreService {
                     .orElseGet(() -> UserScore.builder()
                             .user(user)
                             .weekNumber(weekNumber)
-                            .seasonName(seasonName)
+                            .season(season)
                             .build());
 
             userScore.setWeeklyScore(userScore.getWeeklyScore() + delta);

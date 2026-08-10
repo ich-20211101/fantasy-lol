@@ -26,8 +26,9 @@ public class UserScore {
     @Column(nullable = false)
     private Integer weekNumber;
 
-    @Column(nullable = false)
-    private String seasonName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id", nullable = false)
+    private Season season;
 
     @Column(nullable = false)
     @Builder.Default

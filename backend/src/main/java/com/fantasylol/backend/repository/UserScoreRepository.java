@@ -12,41 +12,53 @@ import java.util.Optional;
 
 public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
 
-    Optional<UserScore> findByUserUserIdAndWeekNumberAndSeasonName(Long userId, Integer weekNumber, String seasonName);
+    @Query("SELECT us FROM UserScore us WHERE us.user.userId = :userId AND us.weekNumber = :weekNumber AND us.season.seasonName = :seasonName")
+    Optional<UserScore> findByUserUserIdAndWeekNumberAndSeasonName(@Param("userId") Long userId, @Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName);
 
-    @Query("SELECT COALESCE(SUM(s.weeklyScore), 0) FROM UserScore s WHERE s.user.userId = :userId AND s.seasonName = :seasonName")
+    @Query("SELECT COALESCE(SUM(s.weeklyScore), 0) FROM UserScore s WHERE s.user.userId = :userId AND s.season.seasonName = :seasonName")
     Double findSeasonalScoreByUserIdAndSeasonName(@Param("userId") Long userId, @Param("seasonName") String seasonName);
 
-    List<UserScore> findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(Integer weekNumber, String seasonName);
+    @Query("SELECT us FROM UserScore us WHERE us.weekNumber = :weekNumber AND us.season.seasonName = :seasonName ORDER BY us.weeklyScore DESC")
+    List<UserScore> findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(@Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName);
 
-    long countByWeekNumberAndSeasonNameAndWeeklyScoreGreaterThan(Integer weekNumber, String seasonName, Double weeklyScore);
+    @Query("SELECT COUNT(us) FROM UserScore us WHERE us.weekNumber = :weekNumber AND us.season.seasonName = :seasonName AND us.weeklyScore > :weeklyScore")
+    long countByWeekNumberAndSeasonNameAndWeeklyScoreGreaterThan(@Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName, @Param("weeklyScore") Double weeklyScore);
 
     Optional<UserScore> findTopByUserUserIdOrderByUpdatedAtDesc(Long userId);
 
     List<UserScore> findByUserUserId(Long userId);
 
-    Page<UserScore> findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(Integer weekNumber, String seasonName, Pageable pageable);
+    @Query("SELECT us FROM UserScore us WHERE us.weekNumber = :weekNumber AND us.season.seasonName = :seasonName ORDER BY us.weeklyScore DESC")
+    Page<UserScore> findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(@Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName, Pageable pageable);
 
     @Query("""
         SELECT us FROM UserScore us
-        WHERE us.seasonName = :seasonName
+        WHERE us.season.seasonName = :seasonName
         AND us.weekNumber = (
             SELECT MAX(us2.weekNumber) FROM UserScore us2
-            WHERE us2.user = us.user AND us2.seasonName = :seasonName
+            WHERE us2.user = us.user AND us2.season.seasonName = :seasonName
         )
         ORDER BY us.seasonalScore DESC
         """)
     Page<UserScore> findLatestPerUserBySeasonNameOrderBySeasonalScoreDesc(@Param("seasonName") String seasonName, Pageable pageable);
 
-    Optional<UserScore>
-    findTopByUserUserIdAndSeasonNameOrderByWeekNumberDesc(Long userId, String seasonName);
+    @Query("""
+        SELECT us FROM UserScore us
+        WHERE us.user.userId = :userId
+        AND us.season.seasonName = :seasonName
+        AND us.weekNumber = (
+            SELECT MAX(us2.weekNumber) FROM UserScore us2
+            WHERE us2.user.userId = :userId AND us2.season.seasonName = :seasonName
+        )
+        """)
+    Optional<UserScore> findTopByUserUserIdAndSeasonNameOrderByWeekNumberDesc(@Param("userId") Long userId, @Param("seasonName") String seasonName);
 
     @Query("""
         SELECT us FROM UserScore us
-        WHERE us.seasonName = :seasonName
+        WHERE us.season.seasonName = :seasonName
         AND us.weekNumber = (
             SELECT MAX(us2.weekNumber) FROM UserScore us2
-            WHERE us2.user = us.user AND us2.seasonName = :seasonName
+            WHERE us2.user = us.user AND us2.season.seasonName = :seasonName
         )
         ORDER BY us.seasonalScore DESC
         """)
@@ -54,14 +66,13 @@ public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
 
     @Query("""
         SELECT COUNT(us) FROM UserScore us
-        WHERE us.seasonName = :seasonName
+        WHERE us.season.seasonName = :seasonName
         AND us.weekNumber = (
             SELECT MAX(us2.weekNumber) FROM UserScore us2
-            WHERE us2.user = us.user AND us2.seasonName = :seasonName
+            WHERE us2.user = us.user AND us2.season.seasonName = :seasonName
         )
         AND us.seasonalScore > :score
         """)
     long countLatestPerUserBySeasonNameAndSeasonalScoreGreaterThan(@Param("seasonName") String seasonName, @Param("score") Double score);
-
 
 }

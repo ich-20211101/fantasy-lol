@@ -71,25 +71,25 @@ public class SeasonWeekService {
     @Transactional
     public void checkAndFinalizeWeek(Match match) throws Exception {
 
-        Season matchSeason = seasonService.getBySeasonName(match.getSeasonName()).orElse(null);
-        if (matchSeason == null) return;
+        Season matchSeason = match.getSeason();
+        String seasonName = matchSeason.getSeasonName();
 
         LocalDate matchDate = KstTime.toKstDate(match.getMatchDate());
-        int weekNumber = seasonService.resolveWeekNumber(match.getSeasonName(), matchDate);
+        int weekNumber = seasonService.resolveWeekNumber(seasonName, matchDate);
 
         SeasonWeek seasonWeek = seasonWeekRepository
                 .findBySeasonSeasonIdAndWeekNumber(matchSeason.getSeasonId(), weekNumber)
                 .orElse(null);
         if (seasonWeek == null || seasonWeek.getFinalizedAt() != null) return;
 
-        boolean weekComplete = matchScheduleService.isLastMatchOfWeek(match.getSeasonName(), seasonWeek.getWeekStartDate(), seasonWeek.getWeekEndDate());
+        boolean weekComplete = matchScheduleService.isLastMatchOfWeek(seasonName, seasonWeek.getWeekStartDate(), seasonWeek.getWeekEndDate());
         if (!weekComplete) return;
 
         seasonWeek.setFinalizedAt(LocalDateTime.now());
         seasonWeekRepository.save(seasonWeek);
-        settlementService.settleWeek(match.getSeasonName(), weekNumber);
+        settlementService.settleWeek(seasonName, weekNumber);
 
-        log.info("Finalized week {} ({}) — all matches scored", weekNumber, match.getSeasonName());
+        log.info("Finalized week {} ({}) — all matches scored", weekNumber, seasonName);
 
     }
 

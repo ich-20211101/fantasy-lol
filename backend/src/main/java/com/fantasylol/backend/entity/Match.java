@@ -21,7 +21,9 @@ public class Match {
     @Column(unique = true)
     private String leaguepediaMatchId;
 
-    private String seasonName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id", nullable = false)
+    private Season season;
 
     @Column(nullable = false)
     private String team1;

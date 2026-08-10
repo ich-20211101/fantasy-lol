@@ -161,7 +161,9 @@ public class MatchSyncService {
         String overviewPage = t.path("OverviewPage").asText();
         String dateTimeStr = t.path("DateTime UTC").asText();
 
-        if (!seasonRepository.existsBySeasonName(overviewPage)) {
+        Season season = seasonRepository.findBySeasonName(overviewPage).orElse(null);
+
+        if (season == null) {
             return;
         }
 
@@ -178,7 +180,7 @@ public class MatchSyncService {
         Match match = matchRepository.findByLeaguepediaMatchId(matchId)
                 .orElseGet(() -> matchRepository.save(Match.builder()
                         .leaguepediaMatchId(matchId)
-                        .seasonName(overviewPage)
+                        .season(season)
                         .team1(team1)
                         .team2(team2)
                         .matchDate(LocalDateTime.parse(dateTimeStr, FORMATTER))
@@ -220,7 +222,7 @@ public class MatchSyncService {
                     .map(existing -> {
                         existing.setTeamName(teamName);
                         existing.setPosition(s.path("Role").asText());
-                        existing.setCurrentSeasonName(match.getSeasonName());
+                        existing.setCurrentSeasonName(match.getSeason().getSeasonName());
                         existing.setStatus("CURRENT");
                         return existing;
                     })
@@ -228,7 +230,7 @@ public class MatchSyncService {
                             .playerName(playerName)
                             .teamName(teamName)
                             .position(s.path("Role").asText())
-                            .currentSeasonName(match.getSeasonName())
+                            .currentSeasonName(match.getSeason().getSeasonName())
                             .build());
 
             player = playerRepository.save(player);

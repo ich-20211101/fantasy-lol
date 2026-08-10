@@ -30,7 +30,7 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStat, Long> {
             COUNT(ps) AS gamesPlayed,
             CASE WHEN COUNT(ps) >= :minGames THEN true ELSE false END AS qualified
         FROM PlayerStat ps
-        WHERE ps.match.seasonName = :seasonName
+        WHERE ps.match.season.seasonName = :seasonName
         AND (:position = 'ALL' OR ps.player.position = :position)
         GROUP BY ps.player
         ORDER BY CASE WHEN COUNT(ps) >= :minGames THEN 0 ELSE 1 END, AVG(ps.actualScore) DESC
@@ -49,9 +49,9 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStat, Long> {
     @Query("""
         SELECT ps.player AS player, AVG(ps.actualScore) AS avgScore, COUNT(ps) AS gamesPlayed
         FROM PlayerStat ps
-        WHERE ps.match.seasonName = :seasonName
+        WHERE ps.match.season.seasonName = :seasonName
         GROUP BY ps.player
-    """)
+        """)
     List<PlayerSeasonAggregate> findSeasonAggregates(@Param("seasonName") String seasonName);
 
 }
