@@ -7,6 +7,7 @@ import BottomNav from '../components/BottomNav'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { deleteMyTeam } from '../api/teams'
+import { getMyScores } from '../api/scores'
 import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
 import { POSITIONS, POS_LABEL } from '../constants/positions'
 
@@ -44,7 +45,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
   const scrollRef = useRef(null)
   const teamAbbreviations = useProTeamAbbreviations()
 
-  const [rankPopupOpen, setRankPopupOpen] = useState(() => !isRankPopupSuppressed())
+  const [rankPopupOpen, setRankPopupOpen] = useState(false)
   const [rankDontShow, setRankDontShow] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [countdown, setCountdown] = useState(getSecondsUntilNextMonday)
@@ -55,6 +56,16 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
       setCountdown(prev => (prev > 0 ? prev - 1 : 0))
     }, 1000)
     return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (isRankPopupSuppressed()) return
+
+    getMyScores().then((data) => {
+      if (data?.rank != null) {
+        setRankPopupOpen(true)
+      }
+    })
   }, [])
 
   useEffect(() => {
