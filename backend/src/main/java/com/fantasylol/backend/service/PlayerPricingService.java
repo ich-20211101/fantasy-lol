@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlayerPricingService {
 
-    private static final int MIN_GAMES = 3;
+    private static final int MIN_MATCHES = 5;
     private static final double MIN_PRICE = 5.0;
     private static final double MAX_PRICE = 25.0;
 
@@ -31,13 +31,13 @@ public class PlayerPricingService {
         List<PlayerStatRepository.PlayerSeasonAggregate> aggregates = playerStatRepository.findSeasonAggregates(seasonName);
 
         List<PlayerStatRepository.PlayerSeasonAggregate> qualified = aggregates.stream()
-                .filter(a -> a.getGamesPlayed() >= MIN_GAMES)
+                .filter(a -> a.getMatchesPlayed() >= MIN_MATCHES)
                 .sorted(Comparator.comparing(PlayerStatRepository.PlayerSeasonAggregate::getAvgScore))
                 .toList();
 
         int n = qualified.size();
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i ++) {
             double percentile = n > 1 ? (double) i / (n - 1) : 0.5;
             double price = roundToOneDecimal(MIN_PRICE + percentile * (MAX_PRICE - MIN_PRICE));
 
@@ -48,7 +48,7 @@ public class PlayerPricingService {
         }
 
         List<Player> unqualified = aggregates.stream()
-                .filter(a -> a.getGamesPlayed() < MIN_GAMES)
+                .filter(a -> a.getMatchesPlayed() < MIN_MATCHES)
                 .map(PlayerStatRepository.PlayerSeasonAggregate::getPlayer)
                 .toList();
 
@@ -58,7 +58,7 @@ public class PlayerPricingService {
             playerRepository.save(player);
         }
 
-        log.info("Priced season {}: {} qualified players scaled to {}~{}, {} players below {}-game minimum fixed at {}", seasonName, n, MIN_PRICE, MAX_PRICE, unqualified.size(), MIN_GAMES, MIN_PRICE);
+        log.info("Priced season {}: {} qualified players scaled to {}~{}, {} players below {}-match minimum fixed at {}", seasonName, n, MIN_PRICE, MAX_PRICE, unqualified.size(), MIN_MATCHES, MIN_PRICE);
 
     }
 

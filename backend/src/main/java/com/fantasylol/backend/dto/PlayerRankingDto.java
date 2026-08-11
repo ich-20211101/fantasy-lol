@@ -18,8 +18,7 @@ public class PlayerRankingDto {
         private String team;
         private String pos;
         private Double score;
-        private Long gamesPlayed;
-        private Boolean qualified;
+        private Long matchesPlayed;
     }
 
     @Getter

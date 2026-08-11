@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class PlayerService {
 
     private static final int MAX_PAGE_SIZE = 50;
-    private static final int DEFAULT_MIN_GAMES_FOR_RANKING = 3;
 
     private final PlayerRepository playerRepository;
     private final PlayerStatRepository playerStatRepository;
@@ -78,14 +77,13 @@ public class PlayerService {
 
         Season season = rankingSeason.get();
         String seasonName = season.getSeasonName();
-        int minGames = season.getMinGamesForRanking() != null ? season.getMinGamesForRanking() : DEFAULT_MIN_GAMES_FOR_RANKING;
 
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
 
         Pageable pageable = PageRequest.of(safePage - 1, safePageSize);
 
-        Page<PlayerStatRepository.PlayerRankingRow> resultPage = playerStatRepository.findPlayerRankings(seasonName, position, minGames, pageable);
+        Page<PlayerStatRepository.PlayerRankingRow> resultPage = playerStatRepository.findPlayerRankings(seasonName, position, pageable);
         List<PlayerStatRepository.PlayerRankingRow> content = resultPage.getContent();
 
         int startRank = (safePage - 1) * safePageSize + 1;
@@ -103,8 +101,7 @@ public class PlayerService {
                     .team(player.getTeamName())
                     .pos(player.getPosition())
                     .score(row.getAvgScore())
-                    .gamesPlayed(row.getGamesPlayed())
-                    .qualified(row.getQualified())
+                    .matchesPlayed(row.getMatchesPlayed())
                     .build());
         }
 
