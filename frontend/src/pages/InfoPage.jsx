@@ -6,6 +6,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import BottomNav from '../components/BottomNav'
 import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
+import { PLAYER_SCORE_FORMULA } from '../constants/scoreFormula'
 import './InfoPage.css'
 
 const POSITIONS = ['ALL', 'TOP', 'JUG', 'MID', 'ADC', 'SPT']
@@ -121,6 +122,7 @@ export default function InfoPage({ user, team }) {
             <div className="info-popover" onClick={(e) => e.stopPropagation()}>
               <div className="info-popover-title">{t('info.rankInfoTitle')}</div>
               <p className="info-popover-desc">{t('info.rankInfoDesc')}</p>
+              <p className="info-popover-formula">{PLAYER_SCORE_FORMULA}</p>
               <button type="button" className="info-popover-confirm" onClick={() => setRankInfoOpen(false)}>
                 {t('info.rankInfoConfirm')}
               </button>
@@ -211,7 +213,7 @@ export default function InfoPage({ user, team }) {
                   <div className="info-row-info">
                     <div className="info-row-name">{row.name}</div>
                     <div className="info-row-sub">
-                      {abbreviateTeam(teamAbbreviations, row.team)} | {row.pos} · {row.matchesPlayed}매치
+                      {abbreviateTeam(teamAbbreviations, row.team)} | {row.pos}
                     </div>
                   </div>
                   <span className="info-row-score">{row.score?.toFixed(1)}</span>

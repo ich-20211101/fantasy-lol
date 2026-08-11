@@ -29,6 +29,8 @@ public class TeamRoster {
     @Builder.Default
     private Boolean isStarter = false;
 
+    private String purchaseTeamName;
+
     private LocalDateTime createdAt;
 
     @PrePersist

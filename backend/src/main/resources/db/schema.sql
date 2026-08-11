@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS team_roster (
     team_id         BIGINT NOT NULL,
     player_id       BIGINT NOT NULL,
     is_starter      BOOLEAN DEFAULT FALSE,
+    purchase_team_name VARCHAR(100),
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (team_id) REFERENCES teams(team_id),
     FOREIGN KEY (player_id) REFERENCES players(player_id)

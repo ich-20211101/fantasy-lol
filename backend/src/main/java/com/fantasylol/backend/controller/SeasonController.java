@@ -1,10 +1,7 @@
 package com.fantasylol.backend.controller;
 
 import com.fantasylol.backend.entity.Season;
-import com.fantasylol.backend.service.MatchScheduleService;
-import com.fantasylol.backend.service.PlayerService;
-import com.fantasylol.backend.service.SeasonService;
-import com.fantasylol.backend.service.SeasonWeekService;
+import com.fantasylol.backend.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +23,7 @@ public class SeasonController {
     private final MatchScheduleService matchScheduleService;
     private final SeasonWeekService seasonWeekService;
     private final PlayerService playerService;
+    private final PlayerPricingService playerPricingService;
 
     @GetMapping
     @Operation(summary = "[ADMIN] List all registered seasons")
@@ -52,7 +50,7 @@ public class SeasonController {
     public ResponseEntity<String> setRosterSourceSeason(@RequestParam String seasonName) {
         playerService.syncStatusForRosterSourceSeason(seasonName);
         seasonService.setRosterSourceSeason(seasonName);
-        return ResponseEntity.ok("로스터 구매 기준 시즌 설정 완료: " + seasonName);
+        playerPricingService.calculatePricesForSeason(seasonName);        return ResponseEntity.ok("로스터 구매 기준 시즌 설정 완료: " + seasonName);
     }
 
     @PostMapping

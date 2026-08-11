@@ -8,10 +8,10 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
 import { POSITIONS, POS_LABEL } from '../constants/positions'
+import { PLAYER_SCORE_FORMULA } from '../constants/scoreFormula'
 
 const MAX_ROSTER_SIZE = 8
 const TOTAL_POINT = 100
-const PLAYER_SCORE_FORMULA = 'kills × 3 + assists × 1 − deaths × 1 + win_bonus × 5 + cs × 0.01 + damage_to_champions × 0.001 + vision_score × 0.2'
 
 function mapPurchaseRow(row) {
   return {

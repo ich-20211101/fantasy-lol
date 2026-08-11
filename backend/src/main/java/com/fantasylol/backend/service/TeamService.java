@@ -113,7 +113,7 @@ public class TeamService {
                         .playerId(r.getPlayer().getPlayerId())
                         .playerName(r.getPlayer().getPlayerName())
                         .position(r.getPlayer().getPosition())
-                        .teamName(r.getPlayer().getTeamName())
+                        .teamName(r.getPurchaseTeamName() != null ? r.getPurchaseTeamName() : r.getPlayer().getTeamName())
                         .isStarter(r.getIsStarter())
                         .build())
                 .toList();
@@ -202,6 +202,7 @@ public class TeamService {
                             .team(team)
                             .player(player)
                             .isStarter(isStarter)
+                            .purchaseTeamName(player.getTeamName())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -248,7 +249,7 @@ public class TeamService {
                         .playerId(r.getPlayer().getPlayerId())
                         .playerName(r.getPlayer().getPlayerName())
                         .position(r.getPlayer().getPosition())
-                        .teamName(r.getPlayer().getTeamName())
+                        .teamName(r.getPurchaseTeamName() != null ? r.getPurchaseTeamName() : r.getPlayer().getTeamName())
                         .isStarter(r.getIsStarter())
                         .build())
                 .toList();

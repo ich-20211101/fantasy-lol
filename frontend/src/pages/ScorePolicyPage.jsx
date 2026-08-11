@@ -3,17 +3,8 @@ import { useTranslation } from 'react-i18next'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import BottomNav from '../components/BottomNav'
+import { PLAYER_SCORE_FORMULA_TERMS } from '../constants/scoreFormula'
 import './ScorePolicyPage.css'
-
-const PLAYER_SCORE_FORMULA = [
-  'kills × 3',
-  '+ assists × 1',
-  '− deaths × 1',
-  '+ win_bonus × 5',
-  '+ cs × 0.01',
-  '+ damage_to_champions × 0.001',
-  '+ vision_score × 0.2',
-]
 
 export default function ScorePolicyPage() {
   const { t } = useTranslation()
@@ -30,7 +21,7 @@ export default function ScorePolicyPage() {
             <p className="score-policy-section-body">{t('scorePolicy.section1Body')}</p>
 
             <div className="score-policy-formula-box">
-              {PLAYER_SCORE_FORMULA.map((line) => (
+              {PLAYER_SCORE_FORMULA_TERMS.map((line) => (
                 <div className="score-policy-formula-row" key={line}>
                   <span>{line}</span>
                 </div>
