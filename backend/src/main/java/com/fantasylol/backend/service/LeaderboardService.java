@@ -128,7 +128,7 @@ public class LeaderboardService {
                             .stream()
                             .filter(w -> w.getStarterLockedAt() != null)
                             .map(SeasonWeek::getWeekNumber)
-                            .toList();
+                            .collect(Collectors.toCollection(ArrayList::new));
 
                     return LeaderboardDto.Round.builder()
                             .seasonName(season.getSeasonName())
@@ -136,7 +136,7 @@ public class LeaderboardService {
                             .weeks(weeks)
                             .build();
                 })
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
     }
 

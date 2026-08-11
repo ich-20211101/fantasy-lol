@@ -97,6 +97,11 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
     setRankPopupOpen(false)
   }
 
+  const viewRanking = () => {
+    closeRankPopup()
+    navigate('/leaderboard')
+  }
+
   const countdownStr = useMemo(() => {
     const DAY = 86400
     if (countdown <= DAY) {
@@ -163,7 +168,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
                 <button type="button" className="myteam-rank-close" onClick={closeRankPopup}>
                   {t('myTeam.rankClose')}
                 </button>
-                <button type="button" className="myteam-rank-view" onClick={closeRankPopup}>
+                <button type="button" className="myteam-rank-view" onClick={viewRanking}>
                   {t('myTeam.rankView')}
                 </button>
               </div>
