@@ -28,7 +28,7 @@ function getSecondsUntilNextMonday() {
 }
 
 function scoreValue(player) {
-  return parseInt(String(player.lastSeasonScore ?? '0').replace(/[^0-9]/g, ''), 10) || 0
+  return player.score ?? 0
 }
 
 export default function StarterPage({ onTeamUpdated }) {
@@ -187,12 +187,14 @@ export default function StarterPage({ onTeamUpdated }) {
                   <div className="setlineup-player-title">
                     <span>{slot.player.playerName}</span>
                     <span className="setlineup-player-score">
-                      {slot.player.lastSeasonScore ?? '0,321'}
+                      {slot.player.score != null ? slot.player.score.toFixed(1) : '-'}
                     </span>
                   </div>
                   <p>{abbreviateTeam(teamAbbreviations, slot.player.teamName)} | {POS_LABEL[slot.player.position]}</p>
                 </div>
-                <strong className="setlineup-point">10P</strong>
+                <strong className="setlineup-point">
+                  {slot.player.price != null ? slot.player.price.toFixed(1) : '-'}P{slot.player.priceInsufficientData && '*'}
+                </strong>
                 <button
                   type="button"
                   className="setlineup-demote"
@@ -228,12 +230,14 @@ export default function StarterPage({ onTeamUpdated }) {
                 <div className="setlineup-player-title">
                   <span>{player.playerName}</span>
                   <span className="setlineup-player-score">
-                    {player.lastSeasonScore ?? '0,321'}
+                    {player.score != null ? player.score.toFixed(1) : '-'}
                   </span>
                 </div>
                 <p>{abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}</p>
               </div>
-              <strong className="setlineup-point">10P</strong>
+              <strong className="setlineup-point">
+                {player.price != null ? player.price.toFixed(1) : '-'}P{player.priceInsufficientData && '*'}
+              </strong>
               <button
                 type="button"
                 className="setlineup-promote"

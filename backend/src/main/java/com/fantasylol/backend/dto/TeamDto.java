@@ -50,6 +50,9 @@ public class TeamDto {
         private String playerName;
         private String position;
         private String teamName;
+        private Double score;
+        private Double price;
+        private Boolean priceInsufficientData;
 
         @JsonProperty("isStarter")
         private boolean isStarter;

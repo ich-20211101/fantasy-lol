@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getPlayerRankings } from '../api/players'
-import { getUpcomingMatches } from '../api/matches'
+import { getWeekMatches } from '../api/matches'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import BottomNav from '../components/BottomNav'
@@ -20,14 +20,55 @@ const POSITION_TO_API_VALUE = {
   SPT: 'Support',
 }
 
+const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+const MAX_WEEK_DAYS = 5
+
+function dayKeyFromKst(kst) {
+  return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}-${String(kst.getUTCDate()).padStart(2, '0')}`
+}
+
+function dateLabelFromKst(kst) {
+  return `${String(kst.getUTCMonth() + 1).padStart(2, '0')}/${String(kst.getUTCDate()).padStart(2, '0')}`
+}
+
 function toKst(dateTimeUtc) {
   const parsed = new Date(dateTimeUtc.replace(' ', 'T') + 'Z')
   const kst = new Date(parsed.getTime() + 9 * 60 * 60 * 1000)
 
   return {
-    date: `${kst.getUTCMonth() + 1}월 ${kst.getUTCDate()}일`,
+    dayKey: dayKeyFromKst(kst),
+    date: dateLabelFromKst(kst),
+    dow: DOW_LABELS[kst.getUTCDay()],
     time: `${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')}`,
   }
+}
+
+// 오늘부터 시작해서 경기 있는 날만, 최대 MAX_WEEK_DAYS개까지
+function buildUpcomingDays(weekMatches) {
+  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(nowKst)
+    d.setUTCDate(nowKst.getUTCDate() + i)
+
+    return {
+      key: dayKeyFromKst(d),
+      date: dateLabelFromKst(d),
+      dow: DOW_LABELS[d.getUTCDay()],
+      matches: [],
+    }
+  })
+
+  const byKey = new Map(days.map((d) => [d.key, d]))
+
+  weekMatches.forEach((m) => {
+    const { dayKey, time } = toKst(m.dateTimeUtc)
+    byKey.get(dayKey)?.matches.push({ ...m, time })
+  })
+
+  days.forEach((d) => d.matches.sort((a, b) => a.time.localeCompare(b.time)))
+
+  return days.filter((d) => d.matches.length > 0).slice(0, MAX_WEEK_DAYS)
 }
 
 export default function InfoPage({ user, team }) {
@@ -47,13 +88,34 @@ export default function InfoPage({ user, team }) {
   const [tallying, setTallying] = useState(false)
   const [showToTop, setShowToTop] = useState(false)
 
-  const [upcomingMatches, setUpcomingMatches] = useState([])
+  const [weekMatches, setWeekMatches] = useState([])
+  const [weekIndex, setWeekIndex] = useState(0)
+  const weekScrollRef = useRef(null)
 
   useEffect(() => {
-    getUpcomingMatches().then((data) => {
-      if (data && data.length) setUpcomingMatches(data.slice(0, 2))
+    getWeekMatches().then((data) => {
+      if (data) setWeekMatches(data)
     })
   }, [])
+
+  // 목록은 이미 오늘부터 시작하도록 정렬되어 있으므로 초기 위치는 0
+  const weekDays = useMemo(() => buildUpcomingDays(weekMatches), [weekMatches])
+
+  const goToWeekIndex = (i) => {
+    const clamped = Math.max(0, Math.min(weekDays.length - 1, i))
+    setWeekIndex(clamped)
+
+    const el = weekScrollRef.current
+    if (el) el.scrollTo({ left: clamped * el.clientWidth, behavior: 'smooth' })
+  }
+
+  const handleWeekScroll = () => {
+    const el = weekScrollRef.current
+    if (!el || el.clientWidth === 0) return
+
+    const idx = Math.round(el.scrollLeft / el.clientWidth)
+    setWeekIndex((prev) => (prev === idx ? prev : idx))
+  }
 
   const loadPage = useCallback(async (pageToLoad, position) => {
     setLoadingMore(true)
@@ -112,8 +174,6 @@ export default function InfoPage({ user, team }) {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const upcomingDate = upcomingMatches[0] ? toKst(upcomingMatches[0].dateTimeUtc).date : null
-
   return (
     <main className="info-page">
       <section className="info-frame">
@@ -133,29 +193,64 @@ export default function InfoPage({ user, team }) {
         <Header variant="logo" />
 
         <div className="info-scroll" ref={scrollRef} onScroll={handleScroll}>
-          {upcomingMatches.length > 0 && (
-            <div className="info-upcoming">
-              <div className="info-upcoming-header">
-                <div className="info-upcoming-label-group">
-                  <span className="info-upcoming-label">Upcoming</span>
-                  <span className="info-upcoming-date">{upcomingDate}</span>
-                </div>
-                <div className="info-upcoming-matches">
-                  {upcomingMatches.map((m, i) => {
-                    const { time } = toKst(m.dateTimeUtc)
+          {weekDays.length > 0 && (
+            <div className="info-week">
+              <div className="info-week-scroll" ref={weekScrollRef} onScroll={handleWeekScroll}>
+                {weekDays.map((day) => (
+                  <div className="info-week-day" key={day.key}>
+                    <div className="info-week-day-label">
+                      <div className="info-week-date">{day.date}</div>
+                      <div className="info-week-dow">{day.dow}</div>
+                    </div>
+                    <div className="info-week-matches">
+                      {day.matches.map((m, i) => {
+                        const started = m.team1Score + m.team2Score > 0
 
-                    return (
-                      <div className="info-upcoming-match" key={i}>
-                        <div className="info-upcoming-teams">
-                          {abbreviateTeam(teamAbbreviations, m.team1)} <span className="info-upcoming-vs">vs</span> {abbreviateTeam(teamAbbreviations, m.team2)}
-                        </div>
-                        <div className="info-upcoming-time">{time}</div>
-                      </div>
-                    )
-                  })}
-                </div>
+                        return (
+                          <div className="info-week-match" key={i}>
+                            <span className="info-week-match-time">{m.time}</span>
+                            <div className="info-week-match-team">
+                              <div className="info-week-match-team-name">{abbreviateTeam(teamAbbreviations, m.team1)}</div>
+                              <div className="info-week-match-score">{started ? m.team1Score : '-'}</div>
+                            </div>
+                            <span className="info-week-match-vs">vs</span>
+                            <div className="info-week-match-team">
+                              <div className="info-week-match-team-name">{abbreviateTeam(teamAbbreviations, m.team2)}</div>
+                              <div className="info-week-match-score">{started ? m.team2Score : '-'}</div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="info-upcoming-divider" />
+
+              <div className="info-week-nav">
+                <span
+                  className="info-week-arrow"
+                  onClick={() => goToWeekIndex(weekIndex - 1)}
+                  style={{ opacity: weekIndex === 0 ? 0.3 : 1 }}
+                >
+                  <svg width="5" height="8" viewBox="0 0 6 10" fill="none">
+                    <path d="M5 1L1 5l4 4" stroke="#6a6a6f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                {weekDays.map((day, i) => (
+                  <span key={day.key} className={`info-week-dot ${i === weekIndex ? 'active' : ''}`} />
+                ))}
+                <span
+                  className="info-week-arrow"
+                  onClick={() => goToWeekIndex(weekIndex + 1)}
+                  style={{ opacity: weekIndex === weekDays.length - 1 ? 0.3 : 1 }}
+                >
+                  <svg width="5" height="8" viewBox="0 0 6 10" fill="none">
+                    <path d="M1 1l4 4-4 4" stroke="#6a6a6f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+
+              <div className="info-week-divider" />
             </div>
           )}
 

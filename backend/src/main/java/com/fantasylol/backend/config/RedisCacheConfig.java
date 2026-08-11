@@ -20,6 +20,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
+import java.util.Map;
 
 @EnableCaching
 @Configuration
@@ -48,7 +49,10 @@ public class RedisCacheConfig implements CachingConfigurer {
                 .entryTtl(Duration.ofMinutes(30))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer));
 
-        return RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(config)
+                .withInitialCacheConfigurations(Map.of("weekMatches", config.entryTtl(Duration.ofMinutes(5))))
+                .build();
 
     }
 

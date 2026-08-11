@@ -300,15 +300,39 @@
   color: #0b0b0c;
 }
 
-.myteam-rank-title {
-  margin: 20px 0 0;
+.myteam-rank-results {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.myteam-rank-results-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 12px;
+  color: #9a9a9e;
+}
+
+.myteam-rank-result-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.myteam-rank-result-team {
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: 34px;
-  line-height: 0.96;
-  letter-spacing: -1.4px;
+  font-size: 24px;
+  letter-spacing: -0.5px;
   color: #0b0b0c;
-  text-transform: uppercase;
+}
+
+.myteam-rank-result-vs {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 12px;
+  color: #9a9a9e;
 }
 
 .myteam-rank-desc {

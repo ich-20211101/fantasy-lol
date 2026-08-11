@@ -7,12 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -108,23 +110,46 @@ public class MatchScheduleService {
 
     }
 
-    public List<Map<String, String>> fetchUpcomingMatchesForTeams(Set<String> teamNames) throws Exception {
+    public List<Map<String, String>> fetchWeekSchedule(LocalDate weekStart, LocalDate weekEndExclusive, List<String> seasonNames) throws Exception {
 
-        List<Map<String, String>> allUpcoming = fetchUpcomingMatches(null);
-
-        List<Map<String, String>> relevant = allUpcoming.stream()
-                .filter(m -> teamNames.contains(m.get("team1")) || teamNames.contains(m.get("team2")))
-                .toList();
-
-        if (relevant.isEmpty()) {
-            return relevant;
+        if (seasonNames.isEmpty()) {
+            return List.of();
         }
 
-        String nextMatchDate = relevant.get(0).get("dateTimeUtc").substring(0, 10);
+        leaguepediaClient.login();
 
-        return relevant.stream()
-                .takeWhile(m -> m.get("dateTimeUtc").startsWith(nextMatchDate))
-                .toList();
+        ZonedDateTime fromKst = weekStart.atStartOfDay(KstTime.KST);
+        ZonedDateTime toKst = weekEndExclusive.atStartOfDay(KstTime.KST).minusSeconds(1);
+
+        String from = fromKst.withZoneSameInstant(ZoneOffset.UTC).format(FORMATTER);
+        String to = toKst.withZoneSameInstant(ZoneOffset.UTC).format(FORMATTER);
+
+        String overviewPageFilter = seasonNames.stream()
+                .map(name -> "'" + name + "'")
+                .collect(Collectors.joining(","));
+
+        String whereClause = "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'" + " AND OverviewPage IN (" + overviewPageFilter + ")";
+
+        JsonNode matchSchedules = leaguepediaClient.cargoQuery(
+                "MatchSchedule",
+                "Team1,Team2,DateTime_UTC,OverviewPage",
+                whereClause,
+                "DateTime_UTC",
+                100
+        );
+
+        List<Map<String, String>> result = new ArrayList<>();
+
+        for (JsonNode node : matchSchedules.path("cargoquery")) {
+            JsonNode t = node.path("title");
+            result.add(Map.of(
+                    "team1", t.path("Team1").asText(),
+                    "team2", t.path("Team2").asText(),
+                    "dateTimeUtc", t.path("DateTime UTC").asText()
+            ));
+        }
+
+        return result;
 
     }
 

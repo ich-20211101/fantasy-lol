@@ -45,9 +45,9 @@ export async function syncPlayers(overviewPage) {
   return text
 }
 
-export async function getUpcomingMatches() {
+export async function getWeekMatches() {
   try {
-    const response = await fetch(`${API_BASE_URL}/matches/upcoming`, {
+    const response = await fetch(`${API_BASE_URL}/matches/week`, {
       credentials: 'include',
     })
 
@@ -55,7 +55,22 @@ export async function getUpcomingMatches() {
 
     return await response.json()
   } catch (error) {
-    console.error('Failed to fetch upcoming matches:', error)
+    console.error('Failed to fetch week matches:', error)
+    return null
+  }
+}
+
+export async function getRecentResults() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/matches/recent-results`, {
+      credentials: 'include',
+    })
+
+    if (!response.ok) return null
+
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to fetch recent results:', error)
     return null
   }
 }

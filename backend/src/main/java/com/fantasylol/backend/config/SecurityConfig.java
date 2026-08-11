@@ -35,7 +35,8 @@ public class SecurityConfig {
                     .requestMatchers(
                             "/",
                             "/actuator/**",
-                            "/matches/upcoming",
+                            "/matches/recent-results",
+                            "/matches/week",
                             "/admin/login",
                             "/players",
                             "/players/rankings",

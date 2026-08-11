@@ -99,75 +99,157 @@
   display: none;
 }
 
-/* 업커밍 */
-.info-upcoming {
+/* 주간 경기 일정 */
+.info-week {
   flex: none;
-  padding: 16px 22px 14px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 16px 0 14px;
 }
 
-.info-upcoming-header {
+.info-week-scroll {
+  position: relative;
+  width: 100%;
+  min-width: 0;
   display: flex;
-  align-items: baseline;
+  overflow-x: auto;
+  overflow-y: hidden;
+  contain: layout paint;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.info-week-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.info-week-day {
+  flex: 0 0 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  padding: 0 22px;
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
-.info-upcoming-label-group {
+.info-week-day-label {
   flex: none;
+  text-align: left;
 }
 
-.info-upcoming-label {
-  display: block;
-  font-size: 12px;
+.info-week-date {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+  color: #0b0b0c;
+}
+
+.info-week-dow {
+  margin-top: 1px;
+  font-size: 11px;
   font-weight: 600;
   color: #9a9a9e;
 }
 
-.info-upcoming-date {
-  display: block;
-  margin-top: 2px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #6a6a6f;
-}
-
-.info-upcoming-matches {
-  flex: 1;
+.info-week-matches {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 22px;
+  gap: 8px 14px;
+  min-width: 0;
 }
 
-.info-upcoming-match {
+.info-week-match {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.info-week-match-time {
+  margin-top: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9a9a9e;
+}
+
+.info-week-match-team {
   text-align: center;
 }
 
-.info-upcoming-teams {
+.info-week-match-team-name {
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: -0.2px;
   color: #0b0b0c;
   white-space: nowrap;
 }
 
-.info-upcoming-vs {
+.info-week-match-score {
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0b0b0c;
+}
+
+.info-week-match-vs {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 11px;
   font-weight: 500;
   color: #9a9a9e;
-  font-size: 11px;
 }
 
-.info-upcoming-time {
-  margin-top: 3px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: #9a9a9e;
+.info-week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 7px;
 }
 
-.info-upcoming-divider {
-  margin-top: 16px;
+.info-week-arrow {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.info-week-arrow:hover {
+  background: rgba(11, 11, 12, 0.06);
+}
+
+.info-week-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(11, 11, 12, 0.16);
+}
+
+.info-week-dot.active {
+  background: #0b0b0c;
+}
+
+.info-week-divider {
+  margin-top: 10px;
   height: 1px;
   background: rgba(11, 11, 12, 0.1);
+  margin-left: 22px;
+  margin-right: 22px;
 }
 
 /* 시즌 라벨 */

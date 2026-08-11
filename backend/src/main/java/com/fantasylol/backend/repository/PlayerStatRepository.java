@@ -52,4 +52,18 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStat, Long> {
         """)
     List<PlayerSeasonAggregate> findSeasonAggregates(@Param("seasonName") String seasonName);
 
+    interface MatchTeamGameWins {
+        Long getMatchId();
+        String getTeam();
+        Long getGamesWon();
+    }
+
+    @Query("""
+        SELECT ps.match.matchId AS matchId, ps.team AS team, COUNT(DISTINCT ps.gameNumber) AS gamesWon
+        FROM PlayerStat ps
+        WHERE ps.match.matchId IN :matchIds AND ps.playerWin = true
+        GROUP BY ps.match.matchId, ps.team
+        """)
+    List<MatchTeamGameWins> findGameWinsByMatchIds(@Param("matchIds") List<Long> matchIds);
+
 }

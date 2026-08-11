@@ -13,6 +13,7 @@ import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ public class MatchSyncService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final UserScoreService userScoreService;
 
+    @CacheEvict(cacheNames = {"weekMatches", "recentResults"}, allEntries = true)
     @Transactional
     public void syncByDate(LocalDate date) throws Exception {
 
@@ -274,6 +276,7 @@ public class MatchSyncService {
 
     // [TEST/INIT] 시즌 이름 하나로 그 시즌 전체 매치+선수스탯을 한 번에 동기화
     // 날짜별로 쪼개서 도는 syncByDate()와 달리 OverviewPage만으로 조회해서 요청 수를 최소화함
+    @CacheEvict(cacheNames = {"weekMatches", "recentResults"}, allEntries = true)
     @Transactional
     public void syncBySeasonName(String seasonName) throws Exception {
 

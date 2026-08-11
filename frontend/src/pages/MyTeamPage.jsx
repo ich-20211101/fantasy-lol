@@ -8,8 +8,19 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { deleteMyTeam } from '../api/teams'
 import { getMyScores } from '../api/scores'
+import { getRecentResults } from '../api/matches'
 import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
 import { POSITIONS, POS_LABEL } from '../constants/positions'
+
+const RESULT_DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+
+function toKstDateLabel(dateTimeUtc) {
+  const parsed = new Date(dateTimeUtc.replace(' ', 'T') + 'Z')
+  const kst = new Date(parsed.getTime() + 9 * 60 * 60 * 1000)
+  const mm = String(kst.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(kst.getUTCDate()).padStart(2, '0')
+  return `${mm}/${dd} (${RESULT_DOW_LABELS[kst.getUTCDay()]})`
+}
 
 function getIsoWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -47,6 +58,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
 
   const [rankPopupOpen, setRankPopupOpen] = useState(false)
   const [rankDontShow, setRankDontShow] = useState(false)
+  const [recentResults, setRecentResults] = useState([])
   const [collapsed, setCollapsed] = useState(false)
   const [countdown, setCountdown] = useState(getSecondsUntilNextMonday)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -65,6 +77,10 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
       if (data?.rank != null) {
         setRankPopupOpen(true)
       }
+    })
+
+    getRecentResults().then((data) => {
+      if (data) setRecentResults(data)
     })
   }, [])
 
@@ -139,9 +155,20 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
             <div className="myteam-rank-modal">
               <p className="myteam-rank-eyebrow">{t('myTeam.rankEyebrowRound')}</p>
               <p className="myteam-rank-eyebrow">{t('myTeam.rankEyebrowWeek', { week: weekNumber - 1 })}</p>
-              <h2 className="myteam-rank-title">
-                {t('myTeam.rankTitleLine1')}<br />{t('myTeam.rankTitleLine2')}
-              </h2>
+
+              {recentResults.length > 0 && (
+                <div className="myteam-rank-results">
+                  <div className="myteam-rank-results-date">{toKstDateLabel(recentResults[0].dateTimeUtc)}</div>
+                  {recentResults.map((m, i) => (
+                    <div className="myteam-rank-result-row" key={i}>
+                      <span className="myteam-rank-result-team">{abbreviateTeam(teamAbbreviations, m.team1)} {m.team1Score}</span>
+                      <span className="myteam-rank-result-vs">vs</span>
+                      <span className="myteam-rank-result-team">{m.team2Score} {abbreviateTeam(teamAbbreviations, m.team2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <p className="myteam-rank-desc">
                 {t('myTeam.rankDescLine1')}<br />{t('myTeam.rankDescLine2')}
               </p>
@@ -207,12 +234,14 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
                   <div className="myteam-player-title">
                     <span>{player.playerName}</span>
                     <span className="myteam-player-score">
-                      {player.lastSeasonScore ?? '0,321'}
+                      {player.score != null ? player.score.toFixed(1) : '-'}
                     </span>
                   </div>
                   <p>{abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}</p>
                 </div>
-                <span className="myteam-point">10P</span>
+                <span className="myteam-point">
+                  {player.price != null ? player.price.toFixed(1) : '-'}P{player.priceInsufficientData && '*'}
+                </span>
               </div>
             ) : (
               <div className="myteam-slot-empty" key={position}>
@@ -236,12 +265,14 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
                 <div className="myteam-player-title">
                   <span>{player.playerName}</span>
                   <span className="myteam-player-score">
-                    {player.lastSeasonScore ?? '0,321'}
+                    {player.score != null ? player.score.toFixed(1) : '-'}
                   </span>
                 </div>
                 <p>{abbreviateTeam(teamAbbreviations, player.teamName)} | {POS_LABEL[player.position]}</p>
               </div>
-              <span className="myteam-point">10P</span>
+              <span className="myteam-point">
+                {player.price != null ? player.price.toFixed(1) : '-'}P{player.priceInsufficientData && '*'}
+              </span>
             </div>
           ))}
 

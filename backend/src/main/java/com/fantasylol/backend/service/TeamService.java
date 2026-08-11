@@ -6,6 +6,7 @@ import com.fantasylol.backend.entity.Team;
 import com.fantasylol.backend.entity.TeamRoster;
 import com.fantasylol.backend.entity.User;
 import com.fantasylol.backend.repository.PlayerRepository;
+import com.fantasylol.backend.repository.PlayerStatRepository;
 import com.fantasylol.backend.repository.TeamRepository;
 import com.fantasylol.backend.repository.TeamRosterRepository;
 import com.fantasylol.backend.repository.UserRepository;
@@ -31,6 +32,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final TeamRosterRepository teamRosterRepository;
     private final PlayerRepository playerRepository;
+    private final PlayerStatRepository playerStatRepository;
     private final UserRepository userRepository;
     private final SeasonService seasonService;
     private final WeeklyStarterService weeklyStarterService;
@@ -106,6 +108,8 @@ public class TeamService {
         Team team = teamRepository.findByUserUserId(user.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
+        Map<Long, Double> scoreByPlayerId = loadScoresByPlayerId();
+
         return teamRosterRepository.findByTeamTeamId(team.getTeamId()).stream()
                 .filter(r -> Boolean.TRUE.equals(r.getIsStarter()))
                 .map(r -> TeamDto.RosterPlayerResponse.builder()
@@ -114,6 +118,9 @@ public class TeamService {
                         .playerName(r.getPlayer().getPlayerName())
                         .position(r.getPlayer().getPosition())
                         .teamName(r.getPurchaseTeamName() != null ? r.getPurchaseTeamName() : r.getPlayer().getTeamName())
+                        .score(scoreByPlayerId.get(r.getPlayer().getPlayerId()))
+                        .price(r.getPlayer().getPrice())
+                        .priceInsufficientData(r.getPlayer().getPriceInsufficientData())
                         .isStarter(r.getIsStarter())
                         .build())
                 .toList();
@@ -243,6 +250,8 @@ public class TeamService {
 
     private TeamDto.Response toResponse(Team team, List<TeamRoster> roster) {
 
+        Map<Long, Double> scoreByPlayerId = loadScoresByPlayerId();
+
         List<TeamDto.RosterPlayerResponse> rosterResponses = roster.stream()
                 .map(r -> TeamDto.RosterPlayerResponse.builder()
                         .teamRosterId(r.getTeamRosterId())
@@ -250,6 +259,9 @@ public class TeamService {
                         .playerName(r.getPlayer().getPlayerName())
                         .position(r.getPlayer().getPosition())
                         .teamName(r.getPurchaseTeamName() != null ? r.getPurchaseTeamName() : r.getPlayer().getTeamName())
+                        .score(scoreByPlayerId.get(r.getPlayer().getPlayerId()))
+                        .price(r.getPlayer().getPrice())
+                        .priceInsufficientData(r.getPlayer().getPriceInsufficientData())
                         .isStarter(r.getIsStarter())
                         .build())
                 .toList();
@@ -272,6 +284,16 @@ public class TeamService {
 
         teamRosterRepository.deleteAll(teamRosterRepository.findByTeamTeamId(team.getTeamId()));
         teamRepository.delete(team);
+    }
+
+    private Map<Long, Double> loadScoresByPlayerId() {
+        return seasonService.getRankingSeason()
+                .map(season -> playerStatRepository.findSeasonAggregates(season.getSeasonName()).stream()
+                        .collect(Collectors.toMap(
+                                a -> a.getPlayer().getPlayerId(),
+                                PlayerStatRepository.PlayerSeasonAggregate::getAvgScore
+                        )))
+                .orElse(Map.of());
     }
 
 }

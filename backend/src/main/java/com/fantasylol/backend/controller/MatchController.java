@@ -1,5 +1,6 @@
 package com.fantasylol.backend.controller;
 
+import com.fantasylol.backend.dto.RecentMatchDto;
 import com.fantasylol.backend.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,9 +22,8 @@ public class MatchController {
     private final MatchSyncService matchSyncService;
     private final PlayerSyncService playerSyncService;
     private final WeeklyStarterService weeklyStarterService;
-    private final MatchScheduleService matchScheduleService;
-    private final ProTeamService proTeamService;
     private final PlayerPricingService playerPricingService;
+    private final MatchResultService matchResultService;
 
     @PostMapping("/sync")
     @Operation(summary = "Sync match data by date")
@@ -72,18 +72,6 @@ public class MatchController {
 
     }
 
-    @GetMapping("/upcoming")
-    @Operation(summary = "Fetch upcoming matches from Leaguepedia (read-only, no persistence)")
-    public ResponseEntity<List<Map<String, String>>> getUpcomingMatches() {
-
-        try {
-            return ResponseEntity.ok(matchScheduleService.fetchUpcomingMatchesForTeams(proTeamService.getKnownTeamNames()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(null);
-        }
-
-    }
-
     @PostMapping("/starters/lock")
     @Operation(summary = "[TEST] Lock weekly starters (manual trigger, will later be scheduled)")
     public ResponseEntity<String> lockStarters(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -92,6 +80,22 @@ public class MatchController {
         int count = weeklyStarterService.lockStartersForDate(date, seasonName);
         return ResponseEntity.ok(count + "개 팀 스타터 락 완료: " + date + ", " + seasonName);
 
+    }
+
+    @GetMapping("/recent-results")
+    @Operation(summary = "Fetch the 2 most recently completed matches with series scores (weekly rank-popup)")
+    public ResponseEntity<List<RecentMatchDto>> getRecentResults() {
+        return ResponseEntity.ok(matchResultService.getRecentResults());
+    }
+
+    @GetMapping("/week")
+    @Operation(summary = "Fetch this week's (Mon-Sun KST) full match schedule with live scores — 0:0 until a match finishes")
+    public ResponseEntity<List<RecentMatchDto>> getWeekMatches() {
+        try {
+            return ResponseEntity.ok(matchResultService.getWeekMatches());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
     }
 
 }
