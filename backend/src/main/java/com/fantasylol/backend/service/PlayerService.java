@@ -16,10 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,33 +78,40 @@ public class PlayerService {
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
 
-        Pageable pageable = PageRequest.of(safePage - 1, safePageSize);
+        List<PlayerStatRepository.PlayerSeasonAggregate> allRanked = playerStatRepository.findSeasonAggregates(seasonName).stream()
+                .sorted(Comparator.comparing(PlayerStatRepository.PlayerSeasonAggregate::getAvgScore).reversed())
+                .toList();
 
-        Page<PlayerStatRepository.PlayerRankingRow> resultPage = playerStatRepository.findPlayerRankings(seasonName, position, pageable);
-        List<PlayerStatRepository.PlayerRankingRow> content = resultPage.getContent();
+        List<PlayerRankingDto.Row> allRows = new ArrayList<>();
 
-        int startRank = (safePage - 1) * safePageSize + 1;
+        for (int i = 0; i < allRanked.size(); i++) {
 
-        List<PlayerRankingDto.Row> rows = new ArrayList<>();
+            PlayerStatRepository.PlayerSeasonAggregate a = allRanked.get(i);
+            Player player = a.getPlayer();
 
-        for (int i = 0; i < content.size(); i++) {
-            PlayerStatRepository.PlayerRankingRow row = content.get(i);
-            Player player = row.getPlayer();
+            if (!"ALL".equals(position) && !position.equals(player.getPosition())) {
+                continue;
+            }
 
-            rows.add(PlayerRankingDto.Row.builder()
-                    .rank(startRank + i)
+            allRows.add(PlayerRankingDto.Row.builder()
+                    .rank(i + 1)
                     .playerId(player.getPlayerId())
                     .name(player.getPlayerName())
                     .team(player.getTeamName())
                     .pos(player.getPosition())
-                    .score(row.getAvgScore())
-                    .matchesPlayed(row.getMatchesPlayed())
+                    .score(a.getAvgScore())
+                    .matchesPlayed(a.getMatchesPlayed())
                     .build());
+
         }
+
+        int fromIndex = Math.min((safePage - 1) * safePageSize, allRows.size());
+        int toIndex = Math.min(fromIndex + safePageSize, allRows.size());
+        List<PlayerRankingDto.Row> rows = new ArrayList<>(allRows.subList(fromIndex, toIndex));
 
         return PlayerRankingDto.Response.builder()
                 .rows(rows)
-                .hasMore(resultPage.hasNext())
+                .hasMore(toIndex < allRows.size())
                 .tallying(rows.isEmpty())
                 .seasonLabel(formatSeasonLabel(seasonName))
                 .build();

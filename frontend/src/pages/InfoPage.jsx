@@ -150,9 +150,7 @@ export default function InfoPage({ user, team }) {
 
   const visibleRows = useMemo(() => {
     const withMine = rows.map((r) => ({ ...r, mine: rosterPlayerIds.has(r.playerId) }))
-    const filtered = mineOnly ? withMine.filter((r) => r.mine) : withMine
-
-    return filtered.map((r, i) => ({ ...r, displayRank: i + 1 }))
+    return mineOnly ? withMine.filter((r) => r.mine) : withMine
   }, [rows, mineOnly, rosterPlayerIds])
 
   const handleScroll = useCallback(() => {
@@ -304,7 +302,7 @@ export default function InfoPage({ user, team }) {
             <div className="info-rows">
               {visibleRows.map((row, i) => (
                 <div key={`${row.playerId}-${i}`} className="info-row">
-                  <span className="info-row-rank">{row.displayRank}</span>
+                  <span className="info-row-rank">{row.rank}</span>
                   <div className="info-row-info">
                     <div className="info-row-name">{row.name}</div>
                     <div className="info-row-sub">
