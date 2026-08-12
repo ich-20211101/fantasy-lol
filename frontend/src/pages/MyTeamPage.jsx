@@ -278,26 +278,28 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
 
           <Footer marginTop="20px" padding="24px 4px 40px" />
 
-          {/* [TEST] 테스트 편의용 — 나중에 제거 예정 */}
-          <button
-            type="button"
-            onClick={handleDeleteTeam}
-            disabled={isDeleting}
-            style={{
-              marginTop: 4,
-              marginBottom: 16,
-              padding: '10px',
-              border: '1px dashed #d92d20',
-              borderRadius: 10,
-              background: 'transparent',
-              color: '#d92d20',
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: isDeleting ? 'not-allowed' : 'pointer',
-            }}
-          >
-            [TEST] 내 로스터 삭제{isDeleting ? '...' : ''}
-          </button>
+          {/* [TEST] 테스트 편의용 — 개발 서버에서만 노출, 배포 빌드에는 포함 안 됨 */}
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              onClick={handleDeleteTeam}
+              disabled={isDeleting}
+              style={{
+                marginTop: 4,
+                marginBottom: 16,
+                padding: '10px',
+                border: '1px dashed #d92d20',
+                borderRadius: 10,
+                background: 'transparent',
+                color: '#d92d20',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: isDeleting ? 'not-allowed' : 'pointer',
+              }}
+            >
+              [TEST] 내 로스터 삭제{isDeleting ? '...' : ''}
+            </button>
+          )}
         </div>
 
         {!team.starterLocked && (
