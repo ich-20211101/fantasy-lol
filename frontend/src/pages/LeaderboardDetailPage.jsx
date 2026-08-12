@@ -177,9 +177,9 @@ export default function LeaderboardDetailPage() {
 
           <div className="lbd-col-header">
             <span className="lbd-col-header-name" />
-            <span className="lbd-col-header-cell" style={{ width: 52 }}>구매가</span>
-            <span className="lbd-col-header-cell" style={{ width: 64 }}>지난시즌점수</span>
-            <span className="lbd-col-header-cell" style={{ width: 56 }}>현재점수</span>
+            <span className="lbd-col-header-cell" style={{ width: 56 }}>총 스코어</span>
+            <span className="lbd-col-header-cell" style={{ width: 64 }}>벤치스코어</span>
+            <span className="lbd-col-header-cell" style={{ width: 52 }}>출전스코어</span>
           </div>
 
           {(detail?.players ?? []).map((player, i) => (
@@ -188,9 +188,9 @@ export default function LeaderboardDetailPage() {
                 <div className="lbd-player-name">{player.name}</div>
                 <div className="lbd-player-sub">{player.team} | {player.pos}</div>
               </div>
-              <span className="lbd-player-cell" style={{ width: 52 }}>{player.price?.toFixed(1) ?? '-'}</span>
-              <span className="lbd-player-cell" style={{ width: 64 }}>{player.lastScore?.toFixed(1) ?? '-'}</span>
               <span className="lbd-player-cell" style={{ width: 56 }}>{player.curScore?.toFixed(1) ?? '-'}</span>
+              <span className="lbd-player-cell" style={{ width: 64 }}>{player.benchScore?.toFixed(1) ?? '-'}</span>
+              <span className="lbd-player-cell lbd-player-cell-applied" style={{ width: 52 }}>{player.appliedScore?.toFixed(1) ?? '-'}</span>
             </div>
           ))}
 

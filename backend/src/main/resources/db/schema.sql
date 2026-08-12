@@ -132,6 +132,21 @@ CREATE TABLE IF NOT EXISTS weekly_starters (
     UNIQUE (team_id, week_number, season_id, player_id)
 );
 
+CREATE TABLE IF NOT EXISTS weekly_player_scores (
+    weekly_player_score_id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    team_id                 BIGINT NOT NULL,
+    player_id               BIGINT NOT NULL,
+    season_id               BIGINT NOT NULL,
+    week_number             INT NOT NULL,
+    is_starter              BOOLEAN NOT NULL DEFAULT FALSE,
+    score                   DOUBLE PRECISION NOT NULL DEFAULT 0,
+    updated_at              TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    FOREIGN KEY (player_id) REFERENCES players(player_id),
+    FOREIGN KEY (season_id) REFERENCES seasons(season_id),
+    UNIQUE (team_id, player_id, season_id, week_number)
+);
+
 CREATE TABLE IF NOT EXISTS season_weeks (
     season_week_id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     season_id           BIGINT NOT NULL,
@@ -175,3 +190,4 @@ CREATE INDEX IF NOT EXISTS idx_team_roster_team_id ON team_roster(team_id);
 CREATE INDEX IF NOT EXISTS idx_player_stats_match_id ON player_stats(match_id);
 CREATE INDEX IF NOT EXISTS idx_player_stats_player_id ON player_stats(player_id);
 CREATE INDEX IF NOT EXISTS idx_user_scores_user_id ON user_scores(user_id);
+CREATE INDEX IF NOT EXISTS idx_weekly_player_scores_team_season_week ON weekly_player_scores(team_id, season_id, week_number);

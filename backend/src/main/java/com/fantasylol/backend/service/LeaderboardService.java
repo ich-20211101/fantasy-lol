@@ -27,6 +27,9 @@ public class LeaderboardService {
     private final WeeklyStarterRepository weeklyStarterRepository;
     private final SeasonRepository seasonRepository;
     private final SeasonWeekRepository seasonWeekRepository;
+    private final TeamRosterRepository teamRosterRepository;
+    private final WeeklyPlayerScoreRepository weeklyPlayerScoreRepository;
+    private final UserRepository userRepository;
 
     @Cacheable(cacheNames = "leaderboard")
     @Transactional(readOnly = true)
@@ -91,6 +94,7 @@ public class LeaderboardService {
 
             rows.add(LeaderboardDto.Row.builder()
                     .rank(startRank + i)
+                    .userId(score.getUser().getUserId())
                     .team(team != null ? team.getTeamName() : null)
                     .owner(score.getUser().getUsername())
                     .score(isOverall ? score.getSeasonalScore() : score.getWeeklyScore())
@@ -140,5 +144,117 @@ public class LeaderboardService {
 
     }
 
+    @Cacheable(cacheNames = "leaderboardDetail")
+    @Transactional(readOnly = true)
+    public LeaderboardDto.DetailResponse getUserDetail(Long userId, Integer weekNumber, String seasonName) {
+
+        String resolvedSeasonName = (seasonName != null)
+                ? seasonName
+                : weeklyStarterRepository.findTopByOrderByLockedAtDesc()
+                .map(ws -> ws.getSeason().getSeasonName())
+                .orElseThrow(() -> new IllegalArgumentException("등록된 시즌이 없습니다."));
+
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        Team team = teamRepository.findByUserUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        Season season = seasonRepository.findBySeasonName(resolvedSeasonName)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다: " + resolvedSeasonName));
+
+        List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(team.getTeamId());
+
+        Integer rank;
+        Double score;
+        List<LeaderboardDto.PlayerRow> playerRows;
+
+        if (weekNumber != null) {
+            Double weeklyScore = userScoreRepository.findByUserUserIdAndWeekNumberAndSeasonName(userId, weekNumber, resolvedSeasonName)
+                    .map(UserScore::getWeeklyScore).orElse(0.0);
+            score = weeklyScore;
+            rank = (int) userScoreRepository.countByWeekNumberAndSeasonNameAndWeeklyScoreGreaterThan(weekNumber, resolvedSeasonName, weeklyScore) + 1;
+
+            List<WeeklyPlayerScore> weekScores = weeklyPlayerScoreRepository
+                    .findByTeamTeamIdAndSeasonSeasonIdAndWeekNumber(team.getTeamId(), season.getSeasonId(), weekNumber);
+
+            Map<Long, WeeklyPlayerScore> byPlayerId = weekScores.stream()
+                    .collect(Collectors.toMap(s -> s.getPlayer().getPlayerId(), s -> s));
+
+            playerRows = roster.stream()
+                    .map(r -> {
+                        Player p = r.getPlayer();
+                        WeeklyPlayerScore wps = byPlayerId.get(p.getPlayerId());
+                        double curScore = wps != null ? wps.getScore() : 0.0;
+                        boolean isStarter = wps != null && Boolean.TRUE.equals(wps.getIsStarter());
+
+                        return LeaderboardDto.PlayerRow.builder()
+                                .playerId(p.getPlayerId())
+                                .name(p.getPlayerName())
+                                .team(r.getPurchaseTeamName() != null ? r.getPurchaseTeamName() : p.getTeamName())
+                                .pos(p.getPosition())
+                                .isStarter(isStarter)
+                                .curScore(curScore)
+                                .benchScore(isStarter ? null : curScore)
+                                .appliedScore(isStarter ? curScore : null)
+                                .build();
+                    })
+                    .sorted(Comparator.comparing(LeaderboardDto.PlayerRow::isStarter).reversed())
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            Double seasonalScore = userScoreRepository.findTopByUserUserIdAndSeasonNameOrderByWeekNumberDesc(userId, resolvedSeasonName)
+                    .map(UserScore::getSeasonalScore).orElse(0.0);
+            score = seasonalScore;
+            rank = (int) userScoreRepository.countLatestPerUserBySeasonNameAndSeasonalScoreGreaterThan(resolvedSeasonName, seasonalScore) + 1;
+
+            List<WeeklyPlayerScore> allScores = weeklyPlayerScoreRepository
+                    .findByTeamTeamIdAndSeasonSeasonId(team.getTeamId(), season.getSeasonId());
+
+            Map<Long, Double> totalByPlayer = new HashMap<>();
+            Map<Long, Double> appliedByPlayer = new HashMap<>();
+            Map<Long, Double> benchByPlayer = new HashMap<>();
+
+            for (WeeklyPlayerScore wps : allScores) {
+                Long playerId = wps.getPlayer().getPlayerId();
+                totalByPlayer.merge(playerId, wps.getScore(), Double::sum);
+                if (Boolean.TRUE.equals(wps.getIsStarter())) {
+                    appliedByPlayer.merge(playerId, wps.getScore(), Double::sum);
+                } else {
+                    benchByPlayer.merge(playerId, wps.getScore(), Double::sum);
+                }
+            }
+
+            playerRows = roster.stream()
+                    .map(r -> {
+                        Player p = r.getPlayer();
+                        Long playerId = p.getPlayerId();
+
+                        return LeaderboardDto.PlayerRow.builder()
+                                .playerId(playerId)
+                                .name(p.getPlayerName())
+                                .team(r.getPurchaseTeamName() != null ? r.getPurchaseTeamName() : p.getTeamName())
+                                .pos(p.getPosition())
+                                .isStarter(appliedByPlayer.containsKey(playerId))
+                                .curScore(totalByPlayer.getOrDefault(playerId, 0.0))
+                                .benchScore(benchByPlayer.get(playerId))
+                                .appliedScore(appliedByPlayer.get(playerId))
+                                .build();
+                    })
+                    .sorted(Comparator.comparing(LeaderboardDto.PlayerRow::getCurScore).reversed())
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        return LeaderboardDto.DetailResponse.builder()
+                .ownerName(owner.getUsername())
+                .teamName(team.getTeamName())
+                .rank(rank)
+                .score(score)
+                .weekNumber(weekNumber)
+                .seasonName(resolvedSeasonName)
+                .seasonLabel(formatSeasonLabel(resolvedSeasonName))
+                .players(playerRows)
+                .build();
+
+    }
 
 }

@@ -255,7 +255,11 @@
   flex: none;
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 13px;
   color: #0b0b0c;
+}
+
+.lbd-player-cell-applied {
+  font-weight: 900;
 }

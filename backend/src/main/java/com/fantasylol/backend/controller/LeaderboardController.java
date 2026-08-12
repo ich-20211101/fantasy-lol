@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,6 +39,12 @@ public class LeaderboardController {
     @Operation(summary = "List rounds/weeks with real leaderboard data")
     public ResponseEntity<List<LeaderboardDto.Round>> getLeaderboardRounds() {
         return ResponseEntity.ok(leaderboardService.getAvailableRounds());
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(summary = "Get a user's leaderboard detail (roster + week/overall scores split by starter/bench)")
+    public ResponseEntity<LeaderboardDto.DetailResponse> getUserDetail(@PathVariable Long userId, @RequestParam(required = false) Integer weekNumber, @RequestParam(required = false) String seasonName) {
+        return ResponseEntity.ok(leaderboardService.getUserDetail(userId, weekNumber, seasonName));
     }
 
 }

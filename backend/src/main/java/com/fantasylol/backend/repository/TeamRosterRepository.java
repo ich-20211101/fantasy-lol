@@ -12,4 +12,5 @@ public interface TeamRosterRepository extends JpaRepository<TeamRoster, Long> {
     Optional<TeamRoster> findByTeamTeamIdAndPlayerPlayerId(Long teamId, Long playerId);
     int countByTeamTeamId(Long teamId);
     List<TeamRoster> findByPlayerPlayerIdInAndIsStarterTrue(Set<Long> playerIds);
+    List<TeamRoster> findByPlayerPlayerIdIn(Set<Long> playerIds);
 }

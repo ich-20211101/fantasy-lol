@@ -24,6 +24,8 @@ public class UserScoreService {
     private final PlayerStatRepository playerStatRepository;
     private final UserRepository userRepository;
     private final SeasonService seasonService;
+    private final TeamRosterRepository teamRosterRepository;
+    private final WeeklyPlayerScoreRepository weeklyPlayerScoreRepository;
 
     @CacheEvict(cacheNames = {"leaderboard", "playerRankings", "leaderboardDetail"}, allEntries = true)
     @Transactional
@@ -46,6 +48,41 @@ public class UserScoreService {
         if (starters.isEmpty()) {
             log.info("No locked starters found for match: {} (week {}, {})", match.getMatchId(), weekNumber, seasonName);
             return;
+        }
+
+        Set<String> starterKeys = starters.stream()
+                .map(ws -> ws.getTeam().getTeamId() + ":" + ws.getPlayer().getPlayerId())
+                .collect(Collectors.toSet());
+
+        List<TeamRoster> rosterEntries = teamRosterRepository.findByPlayerPlayerIdIn(playerIds);
+
+        for (TeamRoster entry : rosterEntries) {
+
+            Team team = entry.getTeam();
+            Player player = entry.getPlayer();
+            Long playerId = player.getPlayerId();
+
+            double playerScore = stats.stream()
+                    .filter(s -> s.getPlayer().getPlayerId().equals(playerId))
+                    .mapToDouble(PlayerStat::getActualScore)
+                    .sum();
+
+            boolean isStarter = starterKeys.contains(team.getTeamId() + ":" + playerId);
+
+            WeeklyPlayerScore wps = weeklyPlayerScoreRepository
+                    .findByTeamTeamIdAndPlayerPlayerIdAndSeasonSeasonIdAndWeekNumber(team.getTeamId(), playerId, seasonId, weekNumber)
+                    .orElseGet(() -> WeeklyPlayerScore.builder()
+                            .team(team)
+                            .player(player)
+                            .season(season)
+                            .weekNumber(weekNumber)
+                            .score(0.0)
+                            .build());
+
+            wps.setScore(wps.getScore() + playerScore);
+            wps.setIsStarter(isStarter);
+            weeklyPlayerScoreRepository.save(wps);
+
         }
 
         Map<Long, Double> scoreByUser = new HashMap<>();

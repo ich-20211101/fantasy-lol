@@ -43,7 +43,8 @@ public class SecurityConfig {
                             "/players/purchase-list",
                             "/pro-teams",
                             "/leaderboard",
-                            "/leaderboard/rounds"
+                            "/leaderboard/rounds",
+                            "/leaderboard/*"
                     ).permitAll()
                     .requestMatchers(
                             "/matches/sync",

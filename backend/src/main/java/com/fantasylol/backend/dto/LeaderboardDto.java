@@ -13,6 +13,7 @@ public class LeaderboardDto {
     @Builder
     public static class Row {
         private int rank;
+        private Long userId;
         private String team;
         private String owner;
         private Double score;
@@ -41,6 +42,38 @@ public class LeaderboardDto {
         private String seasonName;
         private String seasonLabel;
         private List<Integer> weeks;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class PlayerRow {
+        private Long playerId;
+        private String name;
+        private String team;
+        private String pos;
+        private boolean isStarter;
+        private Double curScore;
+        private Double benchScore;
+        private Double appliedScore;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class DetailResponse {
+        private String ownerName;
+        private String teamName;
+        private Integer rank;
+        private Double score;
+        private Integer weekNumber;
+        private String seasonName;
+        private String seasonLabel;
+        private List<PlayerRow> players;
     }
 
 }
