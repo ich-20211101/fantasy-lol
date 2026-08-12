@@ -66,46 +66,58 @@ public class LeaderboardService {
 
         }
 
-        Pageable pageable = PageRequest.of(safePage - 1, safePageSize);
+        List<Long> participantUserIds = isOverall
+                ? weeklyStarterRepository.findDistinctUserIdsBySeasonName(resolvedSeasonName)
+                : weeklyStarterRepository.findDistinctUserIdsByWeekNumberAndSeasonName(resolvedWeekNumber, resolvedSeasonName);
 
-        Page<UserScore> scorePage = isOverall
-                ?
-                userScoreRepository.findLatestPerUserBySeasonNameOrderBySeasonalScoreDesc(resolvedSeasonName, pageable)
-                :
-                userScoreRepository.findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(resolvedWeekNumber, resolvedSeasonName, pageable);
+        if (participantUserIds.isEmpty()) {
+            return LeaderboardDto.Response.builder()
+                    .rows(List.of())
+                    .hasMore(false)
+                    .tallying(true)
+                    .weekNumber(isOverall ? null : resolvedWeekNumber)
+                    .seasonName(resolvedSeasonName)
+                    .seasonLabel(formatSeasonLabel(resolvedSeasonName))
+                    .build();
+        }
 
-        List<UserScore> scores = scorePage.getContent();
+        Map<Long, Double> scoreByUserId = isOverall
+                ? userScoreRepository.findLatestPerUserBySeasonName(resolvedSeasonName).stream()
+                    .collect(Collectors.toMap(s -> s.getUser().getUserId(), UserScore::getSeasonalScore))
+                : userScoreRepository.findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(resolvedWeekNumber, resolvedSeasonName).stream()
+                    .collect(Collectors.toMap(s -> s.getUser().getUserId(), UserScore::getWeeklyScore));
 
-        Set<Long> userIds = scores.stream()
-                .map(s -> s.getUser().getUserId())
-                .collect(Collectors.toSet());
+        Set<Long> userIdSet = new HashSet<>(participantUserIds);
 
-        Map<Long, Team> teamByUserId = teamRepository.findByUserUserIdIn(userIds).stream()
+        Map<Long, User> userById = userRepository.findAllById(userIdSet).stream()
+                .collect(Collectors.toMap(User::getUserId, u -> u));
+
+        Map<Long, Team> teamByUserId = teamRepository.findByUserUserIdIn(userIdSet).stream()
                 .collect(Collectors.toMap(t -> t.getUser().getUserId(), t -> t));
 
-        int startRank = (safePage - 1) * safePageSize + 1;
+        List<LeaderboardDto.Row> allRows = participantUserIds.stream()
+                .map(userId -> LeaderboardDto.Row.builder()
+                        .userId(userId)
+                        .team(Optional.ofNullable(teamByUserId.get(userId)).map(Team::getTeamName).orElse(null))
+                        .owner(Optional.ofNullable(userById.get(userId)).map(User::getUsername).orElse(null))
+                        .score(scoreByUserId.getOrDefault(userId, 0.0))
+                        .build())
+                .sorted(Comparator.comparing(LeaderboardDto.Row::getScore, Comparator.reverseOrder()))
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        List<LeaderboardDto.Row> rows = new ArrayList<>();
-
-        for (int i = 0; i < scores.size(); i++) {
-
-            UserScore score = scores.get(i);
-            Team team = teamByUserId.get(score.getUser().getUserId());
-
-            rows.add(LeaderboardDto.Row.builder()
-                    .rank(startRank + i)
-                    .userId(score.getUser().getUserId())
-                    .team(team != null ? team.getTeamName() : null)
-                    .owner(score.getUser().getUsername())
-                    .score(isOverall ? score.getSeasonalScore() : score.getWeeklyScore())
-                    .build());
-
+        for (int i = 0; i < allRows.size(); i++) {
+            allRows.get(i).setRank(i + 1);
         }
+
+        int fromIndex = Math.min((safePage - 1) * safePageSize, allRows.size());
+        int toIndex = Math.min(fromIndex + safePageSize, allRows.size());
+        List<LeaderboardDto.Row> rows = new ArrayList<>(allRows.subList(fromIndex, toIndex));
+
 
         return LeaderboardDto.Response.builder()
                 .rows(rows)
-                .hasMore(scorePage.hasNext())
-                .tallying(rows.isEmpty())
+                .hasMore(toIndex < allRows.size())
+                .tallying(false)
                 .weekNumber(isOverall ? null : resolvedWeekNumber)
                 .seasonName(resolvedSeasonName)
                 .seasonLabel(formatSeasonLabel(resolvedSeasonName))

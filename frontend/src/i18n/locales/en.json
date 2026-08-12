@@ -32,6 +32,7 @@
     "pointPopupLine2": "Please choose a different player.",
     "priceInfoLine1": "Prices are based on",
     "priceInfoLine2": "{{season}} performance.",
+    "priceInfoNote": "*Price is fixed at the minimum if 5 or fewer matches were played.",
     "limitConfirm": "Confirm",
     "ctaLabel": "My Roster"
   },

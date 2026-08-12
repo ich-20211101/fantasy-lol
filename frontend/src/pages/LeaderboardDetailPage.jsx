@@ -166,12 +166,14 @@ export default function LeaderboardDetailPage() {
           <div className="lbd-summary">
             <div className="lbd-summary-cell">
               <div className="lbd-summary-label">Rank</div>
-              <div className="lbd-summary-value">{detail?.rank ?? '-'}</div>
+              <div className="lbd-summary-value">{detail?.score === 0 ? '-' : (detail?.rank ?? '-')}</div>
             </div>
             <div className="lbd-summary-divider" />
             <div className="lbd-summary-cell">
               <div className="lbd-summary-label">Score</div>
-              <div className="lbd-summary-value lbd-summary-value-mono">{detail?.score?.toLocaleString() ?? '-'}</div>
+              <div className="lbd-summary-value lbd-summary-value-mono">
+                {detail?.score === 0 ? '-' : (detail?.score?.toLocaleString() ?? '-')}
+              </div>
             </div>
           </div>
 

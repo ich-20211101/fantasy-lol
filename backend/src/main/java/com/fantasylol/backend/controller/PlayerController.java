@@ -36,8 +36,9 @@ public class PlayerController {
     public ResponseEntity<PlayerRankingDto.Response> getPlayerRankings(
             @RequestParam(defaultValue = "ALL") String position,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(playerService.getPlayerRankings(position, page, pageSize));
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) List<Long> playerIds) {
+        return ResponseEntity.ok(playerService.getPlayerRankings(position, page, pageSize, playerIds));
     }
 
     @PostMapping("/pricing/calculate")

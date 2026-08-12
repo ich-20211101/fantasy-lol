@@ -97,7 +97,10 @@ export default function RosterPage() {
         return next
       }
 
-      if (remainingPoint - player.price < 0) {
+      const remainingTenths = Math.round(remainingPoint * 10)
+      const priceTenths = Math.round(player.price * 10)
+
+      if (remainingTenths - priceTenths < 0) {
         setLimitPopupType('point')
         return next
       }
@@ -207,7 +210,11 @@ export default function RosterPage() {
                   <p>
                     {t('buildRoster.priceInfoLine1', { season: sourceSeasonLabel })} {t('buildRoster.priceInfoLine2')}
                   </p>
-                  <p className="build-price-info-formula">{PLAYER_SCORE_FORMULA}</p>
+                  <p className="build-price-info-formula">
+                    {PLAYER_SCORE_FORMULA}
+                    <br />
+                    {t('buildRoster.priceInfoNote')}
+                  </p>
                 </div>
               )}
             </div>

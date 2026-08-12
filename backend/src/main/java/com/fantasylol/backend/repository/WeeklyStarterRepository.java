@@ -3,6 +3,7 @@ package com.fantasylol.backend.repository;
 import com.fantasylol.backend.entity.WeeklyStarter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,12 @@ public interface WeeklyStarterRepository extends JpaRepository<WeeklyStarter, Lo
     List<WeeklyStarter> findByTeamTeamIdOrderByWeekNumberDesc(Long teamId);
 
     Optional<WeeklyStarter> findTopByOrderByLockedAtDesc();
+
+    @Query("SELECT DISTINCT ws.team.user.userId FROM WeeklyStarter ws WHERE ws.weekNumber = :weekNumber AND ws.season.seasonName = :seasonName")
+    List<Long> findDistinctUserIdsByWeekNumberAndSeasonName(@Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName);
+
+    @Query("SELECT DISTINCT ws.team.user.userId FROM WeeklyStarter ws WHERE ws.season.seasonName = :seasonName")
+    List<Long> findDistinctUserIdsBySeasonName(@Param("seasonName") String seasonName);
 
     @Query("SELECT DISTINCT ws.season.seasonName as seasonName, ws.weekNumber as weekNumber FROM WeeklyStarter ws ORDER BY ws.weekNumber DESC")
     List<SeasonWeekView> findDistinctSeasonWeeks();

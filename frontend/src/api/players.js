@@ -41,8 +41,12 @@ export async function updatePlayerStatus(playerId, status) {
   return text
 }
 
-export async function getPlayerRankings({ position = 'ALL', page = 1, pageSize = 20 } = {}) {
+export async function getPlayerRankings({ position = 'ALL', page = 1, pageSize = 20, playerIds } = {}) {
   const params = new URLSearchParams({ position, page, pageSize })
+
+  if (playerIds && playerIds.length > 0) {
+    params.set('playerIds', playerIds.join(','))
+  }
 
   try {
     const response = await fetch(`${API_BASE_URL}/players/rankings?${params.toString()}`, {

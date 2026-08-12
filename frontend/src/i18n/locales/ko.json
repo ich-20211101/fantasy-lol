@@ -32,6 +32,7 @@
     "pointPopupLine2": "다른 선수를 선택해주세요.",
     "priceInfoLine1": "{{season}} 성적을 기준으로",
     "priceInfoLine2": "책정된 가격입니다.",
+    "priceInfoNote": "*출전 경기 수 5경기 이하일 경우 최저가 고정",
     "limitConfirm": "확인",
     "ctaLabel": "내 로스터"
   },

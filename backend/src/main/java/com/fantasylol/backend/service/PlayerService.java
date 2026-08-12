@@ -59,7 +59,7 @@ public class PlayerService {
 
     @Cacheable(cacheNames = "playerRankings")
     @Transactional(readOnly = true)
-    public PlayerRankingDto.Response getPlayerRankings(String position, int page, int pageSize) {
+    public PlayerRankingDto.Response getPlayerRankings(String position, int page, int pageSize, List<Long> onlyPlayerIds) {
 
         Optional<Season> rankingSeason = seasonService.getRankingSeason();
 
@@ -84,12 +84,18 @@ public class PlayerService {
 
         List<PlayerRankingDto.Row> allRows = new ArrayList<>();
 
+        Set<Long> onlyPlayerIdSet = (onlyPlayerIds == null || onlyPlayerIds.isEmpty()) ? null : new HashSet<>(onlyPlayerIds);
+
         for (int i = 0; i < allRanked.size(); i++) {
 
             PlayerStatRepository.PlayerSeasonAggregate a = allRanked.get(i);
             Player player = a.getPlayer();
 
             if (!"ALL".equals(position) && !position.equals(player.getPosition())) {
+                continue;
+            }
+
+            if (onlyPlayerIdSet != null && !onlyPlayerIdSet.contains(player.getPlayerId())) {
                 continue;
             }
 

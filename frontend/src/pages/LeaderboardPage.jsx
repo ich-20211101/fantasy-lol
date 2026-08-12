@@ -245,15 +245,20 @@ export default function LeaderboardPage({ user, team }) {
           )}
 
           {!tallying && myRankActive && (
-            <div className="leaderboard-my-rank-card">
-              <span className="leaderboard-row-rank" style={{ fontSize: rankFontSize(myScore?.rank ?? '') }}>
-                {myScore?.rank ?? '-'}
+            <div
+              className="leaderboard-my-rank-card"
+              onClick={() => navigate(`/leaderboard/${user.userId}`, { state: selection })}
+            >
+              <span className="leaderboard-row-rank" style={{ fontSize: rankFontSize(myScore?.score === 0 ? '-' : (myScore?.rank ?? '')) }}>
+                {myScore?.score === 0 ? '-' : (myScore?.rank ?? '-')}
               </span>
               <div className="leaderboard-row-info">
                 <div className="leaderboard-row-team">{team?.teamName}</div>
                 <div className="leaderboard-row-owner">{user?.username}</div>
               </div>
-              <span className="leaderboard-row-score">{myScore?.score?.toLocaleString()}P</span>
+              <span className="leaderboard-row-score">
+                {myScore?.score === 0 ? '-' : `${myScore?.score?.toLocaleString()}P`}
+              </span>
             </div>
           )}
 
@@ -269,7 +274,9 @@ export default function LeaderboardPage({ user, team }) {
           ) : (
             <>
               {rows.map((row) => {
-                const isTop3 = row.rank <= 3
+                const isZeroScore = row.score === 0
+                const displayRank = isZeroScore ? '-' : row.rank
+                const isTop3 = !isZeroScore && row.rank <= 3
 
                 return (
                   <div
@@ -279,16 +286,18 @@ export default function LeaderboardPage({ user, team }) {
                   >
                     <span className="leaderboard-row-rank">
                       {isTop3 ? (
-                        <span className="leaderboard-row-rank-badge">{row.rank}</span>
+                        <span className="leaderboard-row-rank-badge">{displayRank}</span>
                       ) : (
-                        <span style={{ fontSize: rankFontSize(row.rank) }}>{row.rank}</span>
+                        <span style={{ fontSize: rankFontSize(displayRank) }}>{displayRank}</span>
                       )}
                     </span>
                     <div className="leaderboard-row-info">
                       <div className="leaderboard-row-team">{row.team}</div>
                       <div className="leaderboard-row-owner">{row.owner}</div>
                     </div>
-                    <span className="leaderboard-row-score">{row.score?.toLocaleString()}P</span>
+                    <span className="leaderboard-row-score">
+                      {isZeroScore ? '-' : `${row.score?.toLocaleString()}P`}
+                    </span>
                   </div>
                 )
               })}

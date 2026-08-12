@@ -117,11 +117,20 @@ export default function InfoPage({ user, team }) {
     setWeekIndex((prev) => (prev === idx ? prev : idx))
   }
 
-  const loadPage = useCallback(async (pageToLoad, position) => {
+  const rosterPlayerIds = useMemo(
+    () => new Set((team?.roster ?? []).map((r) => r.playerId)),
+    [team],
+  )
+
+  const loadPage = useCallback(async (pageToLoad, position, mine) => {
     setLoadingMore(true)
 
     try {
-      const data = await getPlayerRankings({ position: POSITION_TO_API_VALUE[position], page: pageToLoad })
+      const data = await getPlayerRankings({
+        position: POSITION_TO_API_VALUE[position],
+        page: pageToLoad,
+        playerIds: mine ? [...rosterPlayerIds] : undefined,
+      })
 
       if (!data) {
         setHasMore(false)
@@ -135,23 +144,13 @@ export default function InfoPage({ user, team }) {
     } finally {
       setLoadingMore(false)
     }
-  }, [])
+  }, [rosterPlayerIds])
 
   useEffect(() => {
     setPage(1)
     setHasMore(true)
-    loadPage(1, activeTab)
-  }, [activeTab, loadPage])
-
-  const rosterPlayerIds = useMemo(
-    () => new Set((team?.roster ?? []).map((r) => r.playerId)),
-    [team],
-  )
-
-  const visibleRows = useMemo(() => {
-    const withMine = rows.map((r) => ({ ...r, mine: rosterPlayerIds.has(r.playerId) }))
-    return mineOnly ? withMine.filter((r) => r.mine) : withMine
-  }, [rows, mineOnly, rosterPlayerIds])
+    loadPage(1, activeTab, mineOnly)
+  }, [activeTab, mineOnly, loadPage])
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current
@@ -164,9 +163,9 @@ export default function InfoPage({ user, team }) {
     if (nearBottom && !loadingMore && hasMore) {
       const nextPage = page + 1
       setPage(nextPage)
-      loadPage(nextPage, activeTab)
+      loadPage(nextPage, activeTab, mineOnly)
     }
-  }, [loadingMore, hasMore, page, loadPage, activeTab])
+  }, [loadingMore, hasMore, page, loadPage, activeTab, mineOnly])
 
   const scrollToTop = () => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
@@ -300,7 +299,7 @@ export default function InfoPage({ user, team }) {
             </div>
           ) : (
             <div className="info-rows">
-              {visibleRows.map((row, i) => (
+              {rows.map((row, i) => (
                 <div key={`${row.playerId}-${i}`} className="info-row">
                   <span className="info-row-rank">{row.rank}</span>
                   <div className="info-row-info">
@@ -313,7 +312,7 @@ export default function InfoPage({ user, team }) {
                 </div>
               ))}
 
-              {mineOnly && visibleRows.length === 0 && (
+              {mineOnly && rows.length === 0 && (
                 <div className="info-rows-empty">{t('info.rowsEmpty')}</div>
               )}
 
