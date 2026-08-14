@@ -119,8 +119,8 @@ public class UserScoreService {
 
             userScore.setWeeklyScore(userScore.getWeeklyScore() + delta);
 
-            double currentSeasonalScore = userScoreRepository.findSeasonalScoreByUserIdAndSeasonName(userId, seasonName);
-            userScore.setSeasonalScore(currentSeasonalScore + delta);
+            double otherWeeksScore = userScoreRepository.findSeasonalScoreExcludingWeekByUserIdAndSeasonName(userId, seasonName, weekNumber);
+            userScore.setSeasonalScore(otherWeeksScore + userScore.getWeeklyScore());
 
             userScoreRepository.save(userScore);
 

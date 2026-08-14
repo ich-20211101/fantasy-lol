@@ -114,7 +114,7 @@ export default function RosterPage() {
     if (selectedCount === 0) return
 
     const selectedPlayers = players.filter(player => selectedIds.has(player.playerId))
-    navigate('/roster/mine', { state: { selectedPlayers } })
+    navigate('/roster/mine', { state: { selectedPlayers, seasonLabel: sourceSeasonLabel } })
   }
 
   return (
@@ -152,7 +152,7 @@ export default function RosterPage() {
         <Header variant="back" title={t('buildRoster.headerTitle')} onBack={() => navigate('/')} />
 
         <section className="build-round">
-          <span>{t('common.round')}</span>
+          <span>{sourceSeasonLabel}</span>
           <strong>{remainingPoint.toFixed(1)} P</strong>
         </section>
 

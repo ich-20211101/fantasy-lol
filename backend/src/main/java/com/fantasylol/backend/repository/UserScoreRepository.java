@@ -15,8 +15,8 @@ public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
     @Query("SELECT us FROM UserScore us WHERE us.user.userId = :userId AND us.weekNumber = :weekNumber AND us.season.seasonName = :seasonName")
     Optional<UserScore> findByUserUserIdAndWeekNumberAndSeasonName(@Param("userId") Long userId, @Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName);
 
-    @Query("SELECT COALESCE(SUM(s.weeklyScore), 0) FROM UserScore s WHERE s.user.userId = :userId AND s.season.seasonName = :seasonName")
-    Double findSeasonalScoreByUserIdAndSeasonName(@Param("userId") Long userId, @Param("seasonName") String seasonName);
+    @Query("SELECT COALESCE(SUM(s.weeklyScore), 0) FROM UserScore s WHERE s.user.userId = :userId AND s.season.seasonName = :seasonName AND s.weekNumber <> :weekNumber")
+    Double findSeasonalScoreExcludingWeekByUserIdAndSeasonName(@Param("userId") Long userId, @Param("seasonName") String seasonName, @Param("weekNumber") Integer weekNumber);
 
     @Query("SELECT us FROM UserScore us WHERE us.weekNumber = :weekNumber AND us.season.seasonName = :seasonName ORDER BY us.weeklyScore DESC")
     List<UserScore> findByWeekNumberAndSeasonNameOrderByWeeklyScoreDesc(@Param("weekNumber") Integer weekNumber, @Param("seasonName") String seasonName);

@@ -41,14 +41,15 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStat, Long> {
     interface PlayerSeasonAggregate {
         Player getPlayer();
         Double getAvgScore();
+        Double getTotalScore();
         Long getMatchesPlayed();
     }
 
     @Query("""
-        SELECT ps.player AS player, AVG(ps.actualScore) AS avgScore, COUNT(DISTINCT ps.match) AS matchesPlayed
-        FROM PlayerStat ps
-        WHERE ps.match.season.seasonName = :seasonName
-        GROUP BY ps.player
+            SELECT ps.player AS player, AVG(ps.actualScore) AS avgScore, SUM(ps.actualScore) AS totalScore, COUNT(DISTINCT ps.match) AS matchesPlayed
+            FROM PlayerStat ps
+            WHERE ps.match.season.seasonName = :seasonName
+            GROUP BY ps.player
         """)
     List<PlayerSeasonAggregate> findSeasonAggregates(@Param("seasonName") String seasonName);
 

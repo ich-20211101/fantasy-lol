@@ -16,6 +16,7 @@ export default function MyRosterPage() {
   const location = useLocation()
   const teamAbbreviations = useProTeamAbbreviations()
   const initialPlayers = location.state?.selectedPlayers
+  const seasonLabel = location.state?.seasonLabel ?? ''
 
   const [selectedPlayers, setSelectedPlayers] = useState(initialPlayers ?? [])
 
@@ -60,7 +61,7 @@ export default function MyRosterPage() {
         />
 
         <section className="myroster-round">
-          <span>{t('common.round')}</span>
+          <span>{seasonLabel}</span>
           <span className="myroster-round-spacer" aria-hidden="true">40 P</span>
         </section>
 

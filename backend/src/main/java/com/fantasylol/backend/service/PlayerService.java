@@ -79,7 +79,7 @@ public class PlayerService {
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
 
         List<PlayerStatRepository.PlayerSeasonAggregate> allRanked = playerStatRepository.findSeasonAggregates(seasonName).stream()
-                .sorted(Comparator.comparing(PlayerStatRepository.PlayerSeasonAggregate::getAvgScore).reversed())
+                .sorted(Comparator.comparing(PlayerStatRepository.PlayerSeasonAggregate::getTotalScore).reversed())
                 .toList();
 
         List<PlayerRankingDto.Row> allRows = new ArrayList<>();
@@ -105,7 +105,7 @@ public class PlayerService {
                     .name(player.getPlayerName())
                     .team(player.getTeamName())
                     .pos(player.getPosition())
-                    .score(a.getAvgScore())
+                    .score(a.getTotalScore())
                     .matchesPlayed(a.getMatchesPlayed())
                     .build());
 
