@@ -15,4 +15,6 @@ public interface SeasonSettlementRepository extends JpaRepository<SeasonSettleme
     @Query("SELECT ss FROM SeasonSettlement ss WHERE ss.season.seasonName = :seasonName ORDER BY ss.rank ASC")
     List<SeasonSettlement> findBySeasonNameOrderByRankAsc(@Param("seasonName") String seasonName);
 
+    List<SeasonSettlement> findByUserUserId(Long userId);
+
 }

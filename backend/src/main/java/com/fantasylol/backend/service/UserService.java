@@ -22,6 +22,10 @@ public class UserService {
     private final TeamRosterRepository teamRosterRepository;
     private final UserScoreRepository userScoreRepository;
     private final WithdrawalFeedbackRepository withdrawalFeedbackRepository;
+    private final WeeklyStarterRepository weeklyStarterRepository;
+    private final WeeklyPlayerScoreRepository weeklyPlayerScoreRepository;
+    private final WeeklySettlementRepository weeklySettlementRepository;
+    private final SeasonSettlementRepository seasonSettlementRepository;
 
     private static final List<String> BANNED = List.of("시발","씨발","병신","새끼","좆","존나","ㅅㅂ","ㅄ","fuck","shit");
 
@@ -92,12 +96,16 @@ public class UserService {
 
         teamRepository.findByUserUserId(user.getUserId()).ifPresent(team -> {
 
+            weeklyStarterRepository.deleteAll(weeklyStarterRepository.findByTeamTeamIdOrderByWeekNumberDesc(team.getTeamId()));
+            weeklyPlayerScoreRepository.deleteAll(weeklyPlayerScoreRepository.findByTeamTeamId(team.getTeamId()));
             teamRosterRepository.deleteAll(teamRosterRepository.findByTeamTeamId(team.getTeamId()));
             teamRepository.delete(team);
 
         });
 
         userScoreRepository.deleteAll(userScoreRepository.findByUserUserId(user.getUserId()));
+        weeklySettlementRepository.deleteAll(weeklySettlementRepository.findByUserUserId(user.getUserId()));
+        seasonSettlementRepository.deleteAll(seasonSettlementRepository.findByUserUserId(user.getUserId()));
 
         userRepository.delete(user);
 

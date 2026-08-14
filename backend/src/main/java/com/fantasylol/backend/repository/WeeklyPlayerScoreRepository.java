@@ -15,4 +15,6 @@ public interface WeeklyPlayerScoreRepository extends JpaRepository<WeeklyPlayerS
 
     List<WeeklyPlayerScore> findByTeamTeamIdAndSeasonSeasonId(Long teamId, Long seasonId);
 
+    List<WeeklyPlayerScore> findByTeamTeamId(Long teamId);
+
 }

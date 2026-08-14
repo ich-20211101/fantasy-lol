@@ -15,4 +15,6 @@ public interface WeeklySettlementRepository extends JpaRepository<WeeklySettleme
     @Query("SELECT ws FROM WeeklySettlement ws WHERE ws.season.seasonName = :seasonName AND ws.weekNumber = :weekNumber ORDER BY ws.rank ASC")
     List<WeeklySettlement> findBySeasonNameAndWeekNumberOrderByRankAsc(@Param("seasonName") String seasonName, @Param("weekNumber") Integer weekNumber);
 
+    List<WeeklySettlement> findByUserUserId(Long userId);
+
 }
