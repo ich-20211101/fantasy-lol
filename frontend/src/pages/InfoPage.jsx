@@ -21,7 +21,6 @@ const POSITION_TO_API_VALUE = {
 }
 
 const DOW_LABELS = ['일', '월', '화', '수', '목', '금', '토']
-const MAX_WEEK_DAYS = 5
 
 function dayKeyFromKst(kst) {
   return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}-${String(kst.getUTCDate()).padStart(2, '0')}`
@@ -43,13 +42,16 @@ function toKst(dateTimeUtc) {
   }
 }
 
-// 오늘부터 시작해서 경기 있는 날만, 최대 MAX_WEEK_DAYS개까지
-function buildUpcomingDays(weekMatches) {
+// 이번 주(월~일) 전체 중 경기 있는 날만 (지난 경기 포함)
+function buildWeekDays(weekMatches) {
   const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const daysSinceMonday = (nowKst.getUTCDay() + 6) % 7
+  const weekStart = new Date(nowKst)
+  weekStart.setUTCDate(nowKst.getUTCDate() - daysSinceMonday)
 
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(nowKst)
-    d.setUTCDate(nowKst.getUTCDate() + i)
+    const d = new Date(weekStart)
+    d.setUTCDate(weekStart.getUTCDate() + i)
 
     return {
       key: dayKeyFromKst(d),
@@ -68,7 +70,23 @@ function buildUpcomingDays(weekMatches) {
 
   days.forEach((d) => d.matches.sort((a, b) => a.time.localeCompare(b.time)))
 
-  return days.filter((d) => d.matches.length > 0).slice(0, MAX_WEEK_DAYS)
+  return days.filter((d) => d.matches.length > 0)
+}
+
+// 오늘 경기 있는 날 -> 오늘 이후 가장 가까운 경기 날 -> 이번 주 마지막 경기 날 순으로 기본 위치 결정
+function defaultWeekIndex(weekDays) {
+  if (weekDays.length === 0) return 0
+
+  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const todayKey = dayKeyFromKst(nowKst)
+
+  const exact = weekDays.findIndex((d) => d.key === todayKey)
+  if (exact !== -1) return exact
+
+  const next = weekDays.findIndex((d) => d.key > todayKey)
+  if (next !== -1) return next
+
+  return weekDays.length - 1
 }
 
 export default function InfoPage({ user, team }) {
@@ -98,8 +116,17 @@ export default function InfoPage({ user, team }) {
     })
   }, [])
 
-  // 목록은 이미 오늘부터 시작하도록 정렬되어 있으므로 초기 위치는 0
-  const weekDays = useMemo(() => buildUpcomingDays(weekMatches), [weekMatches])
+  const weekDays = useMemo(() => buildWeekDays(weekMatches), [weekMatches])
+
+  useEffect(() => {
+    if (weekDays.length === 0) return
+
+    const idx = defaultWeekIndex(weekDays)
+    setWeekIndex(idx)
+
+    const el = weekScrollRef.current
+    if (el) el.scrollTo({ left: idx * el.clientWidth, behavior: 'auto' })
+  }, [weekDays])
 
   const goToWeekIndex = (i) => {
     const clamped = Math.max(0, Math.min(weekDays.length - 1, i))

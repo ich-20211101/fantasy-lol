@@ -1,5 +1,6 @@
 package com.fantasylol.backend.service;
 
+import com.fantasylol.backend.exception.LeaguepediaApiException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -123,7 +124,13 @@ public class LeaguepediaClient {
         HttpEntity<Void> request = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
 
-        return objectMapper.readTree(response.getBody());
+        JsonNode result = objectMapper.readTree(response.getBody());
+
+        if (result.has("error")) {
+            throw new LeaguepediaApiException("Leaguepedia API error: " + result.path("error").path("info").asText());
+        }
+
+        return result;
 
     }
 
@@ -161,7 +168,7 @@ public class LeaguepediaClient {
         while (true) {
             try {
                 return cargoQuery(tables, fields, where, orderBy, limit, offset);
-            } catch (HttpClientErrorException e) {
+            } catch (HttpClientErrorException | LeaguepediaApiException e) {
 
                 attempts++;
 
