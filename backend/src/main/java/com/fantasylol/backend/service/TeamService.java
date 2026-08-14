@@ -200,18 +200,12 @@ public class TeamService {
             teamRosterRepository.deleteAll(existing);
         }
 
-        Set<String> assignedStarterPositions = new LinkedHashSet<>();
-
         List<TeamRoster> newRoster = players.stream()
-                .map(player -> {
-                    boolean isStarter = assignedStarterPositions.add(player.getPosition());
-                    return TeamRoster.builder()
-                            .team(team)
-                            .player(player)
-                            .isStarter(isStarter)
-                            .purchaseTeamName(player.getTeamName())
-                            .build();
-                })
+                .map(player -> TeamRoster.builder()
+                        .team(team)
+                        .player(player)
+                        .purchaseTeamName(player.getTeamName())
+                        .build())
                 .collect(Collectors.toList());
 
         teamRosterRepository.saveAll(newRoster);
