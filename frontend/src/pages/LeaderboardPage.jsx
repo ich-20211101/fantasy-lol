@@ -119,7 +119,7 @@ export default function LeaderboardPage({ user, team }) {
 
   const goToGoogleLogin = () => navigate('/')
 
-  const hasScoreHistory = Boolean(myScore) && Boolean(team) && myScore.score > 0
+  const hasScoreHistory = Boolean(myScore) && Boolean(team)
 
   const myRankLoggedOut = !user
   const myRankNoHistory = Boolean(user) && !hasScoreHistory
