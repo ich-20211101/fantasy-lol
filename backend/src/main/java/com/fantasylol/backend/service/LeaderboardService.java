@@ -66,9 +66,15 @@ public class LeaderboardService {
 
         }
 
-        List<Long> participantUserIds = isOverall
-                ? weeklyStarterRepository.findDistinctUserIdsBySeasonName(resolvedSeasonName)
-                : weeklyStarterRepository.findDistinctUserIdsByWeekNumberAndSeasonName(resolvedWeekNumber, resolvedSeasonName);
+        List<Long> participantUserIds;
+
+        if (isOverall) {
+            Set<Long> ids = new LinkedHashSet<>(weeklyStarterRepository.findDistinctUserIdsBySeasonName(resolvedSeasonName));
+            teamRepository.findByCurrentSeasonName(resolvedSeasonName).forEach(t -> ids.add(t.getUser().getUserId()));
+            participantUserIds = new ArrayList<>(ids);
+        } else {
+            participantUserIds = weeklyStarterRepository.findDistinctUserIdsByWeekNumberAndSeasonName(resolvedWeekNumber, resolvedSeasonName);
+        }
 
         if (participantUserIds.isEmpty()) {
             return LeaderboardDto.Response.builder()
