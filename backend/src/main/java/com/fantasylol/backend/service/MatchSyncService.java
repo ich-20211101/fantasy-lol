@@ -13,7 +13,9 @@ import com.fantasylol.backend.util.PlayerNameSanitizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,9 +39,13 @@ public class MatchSyncService {
     private final ScoreCalculator scoreCalculator;
     private final SeasonWeekService seasonWeekService;
     private final SeasonRepository seasonRepository;
+    private final UserScoreService userScoreService;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private final UserScoreService userScoreService;
+
+    @Autowired
+    @Lazy
+    private MatchSyncService self;
 
     @CacheEvict(cacheNames = {"weekMatches", "recentResults"}, allEntries = true)
     @Transactional
@@ -67,8 +73,6 @@ public class MatchSyncService {
                 .collect(Collectors.joining(","));
 
         String whereClause = "DateTime_UTC >= '" + from + "' AND DateTime_UTC <= '" + to + "'" + " AND OverviewPage IN (" + overviewPageFilter + ")";
-
-
 
         // 1. 그날 매치 목록 조회
         JsonNode matchSchedules = leaguepediaClient.cargoQuery(
@@ -101,7 +105,7 @@ public class MatchSyncService {
         for (JsonNode gameNode : gamesResponse.path("cargoquery")) {
 
             JsonNode g = gameNode.path("title");
-            String key = matchupKey(g.path("OverviewPage").asText(), g.path("Team1").asText(), g.path("Team2").asText());
+            String key = matchupKey(g.path("OverviewPage").asText(), g.path("Team1").asText(), g.path("Team2").asText(), g.path("DateTime UTC").asText());
 
             gamesByMatchup.computeIfAbsent(key, k -> new ArrayList<>()).add(gameNode);
             allGameIds.add(g.path("GameId").asText());
@@ -146,10 +150,12 @@ public class MatchSyncService {
 
     }
 
-    private String matchupKey(String overviewPage, String team1, String team2) {
+    private String matchupKey(String overviewPage, String team1, String team2, String dateTimeUtc) {
         String[] teams = {team1, team2};
         Arrays.sort(teams);
-        return overviewPage + "|" + teams[0] + "|" + teams[1];
+        String datePart = (dateTimeUtc != null && dateTimeUtc.length() >= 10) ? dateTimeUtc.substring(0, 10) : dateTimeUtc;
+
+        return overviewPage + "|" + teams[0] + "|" + teams[1] + "|" + datePart;
     }
 
     private void syncMatch(JsonNode matchNode, Map<String, List<JsonNode>> gamesByMatchup, Map<String, List<JsonNode>> statsByGameId) throws Exception {
@@ -169,7 +175,7 @@ public class MatchSyncService {
             return;
         }
 
-        List<JsonNode> gameList = gamesByMatchup.get(matchupKey(overviewPage, team1, team2));
+        List<JsonNode> gameList = gamesByMatchup.get(matchupKey(overviewPage, team1, team2, dateTimeStr));
 
         if (gameList == null || gameList.isEmpty()) {
             log.info("No games found for match: {} vs {}", team1, team2);
@@ -274,79 +280,37 @@ public class MatchSyncService {
 
     }
 
-    // [TEST/INIT] 시즌 이름 하나로 그 시즌 전체 매치+선수스탯을 한 번에 동기화
-    // 날짜별로 쪼개서 도는 syncByDate()와 달리 OverviewPage만으로 조회해서 요청 수를 최소화함
-    @CacheEvict(cacheNames = {"weekMatches", "recentResults"}, allEntries = true)
-    @Transactional
+    // [TEST/INIT] 시즌 시작일~종료일(진행중이면 오늘까지)을 하루씩 syncByDate()로 순회하는 백필 — 시즌 초기 세팅 시에만 사용
     public void syncBySeasonName(String seasonName) throws Exception {
 
-        if (!seasonRepository.existsBySeasonName(seasonName)) {
+        Season season = seasonRepository.findBySeasonName(seasonName).orElse(null);
+
+        if (season == null) {
             log.info("등록되지 않은 시즌이라 동기화 스킵: {}", seasonName);
             return;
         }
 
-        leaguepediaClient.login();
+        LocalDate today = KstTime.nowKstDate();
+        LocalDate end = (season.getEndDate() != null && season.getEndDate().isBefore(today))
+                ? season.getEndDate()
+                : today;
 
-        String whereClause = "OverviewPage = '" + seasonName + "'";
+        int daysSynced = 0;
 
-        List<JsonNode> matchList = leaguepediaClient.cargoQueryAll("MatchSchedule", "Team1,Team2,Winner,OverviewPage,DateTime_UTC", whereClause, "DateTime_UTC", 500);
+        for (LocalDate date = season.getStartDate(); !date.isAfter(end); date = date.plusDays(1)) {
 
-        if (matchList.isEmpty()) {
-            log.info("해당 시즌의 매치를 찾을 수 없습니다: {}", seasonName);
-            return;
-        }
-
-        Thread.sleep(3000);
-
-        List<JsonNode> gameList = leaguepediaClient.cargoQueryAll("ScoreboardGames", "GameId,Team1,Team2,DateTime_UTC,OverviewPage", whereClause, "DateTime_UTC", 500);
-
-        Map<String, List<JsonNode>> gamesByMatchup = new HashMap<>();
-        List<String> allGameIds = new ArrayList<>();
-
-        for (JsonNode gameNode : gameList) {
-            JsonNode g = gameNode.path("title");
-            String key = matchupKey(g.path("OverviewPage").asText(), g.path("Team1").asText(), g.path("Team2").asText());
-            gamesByMatchup.computeIfAbsent(key, k -> new ArrayList<>()).add(gameNode);
-            allGameIds.add(g.path("GameId").asText());
-        }
-
-        Map<String, List<JsonNode>> statsByGameId = new HashMap<>();
-
-        if (!allGameIds.isEmpty()) {
-
-            int chunkSize = 50;
-
-            for (int i = 0; i < allGameIds.size(); i += chunkSize) {
-                List<String> chunk = allGameIds.subList(i, Math.min(i + chunkSize, allGameIds.size()));
-
-                String gameIdList = chunk.stream()
-                        .map(id -> "'" + id + "'")
-                        .collect(Collectors.joining(","));
-
-                Thread.sleep(3000);
-
-                List<JsonNode> statNodes = leaguepediaClient.cargoQueryAll("ScoreboardPlayers", "GameId,Name,Team,Role,Champion,Kills,Deaths,Assists,Gold,CS,DamageToChampions,VisionScore,PlayerWin", "GameId IN (" + gameIdList + ")", null, 500);
-
-                for (JsonNode statNode : statNodes) {
-                    String gameId = statNode.path("title").path("GameId").asText();
-                    statsByGameId.computeIfAbsent(gameId, k -> new ArrayList<>()).add(statNode);
-                }
-            }
-
-        }
-
-        int synced = 0;
-
-        for (JsonNode matchNode : matchList) {
             try {
-                syncMatch(matchNode, gamesByMatchup, statsByGameId);
-                synced++;
+                self.syncByDate(date);
+                daysSynced++;
             } catch (Exception e) {
-                log.error("Failed to sync match: {}", matchNode, e);
+                log.error("Failed to sync date {} for season {}", date, seasonName, e);
             }
+
+            Thread.sleep(3000);
+
         }
 
-        log.info("Season sync completed: {} ({} matches processed)", seasonName, synced);
+        log.info("Season sync completed: {} ({} days processed)", seasonName, daysSynced);
 
     }
 
