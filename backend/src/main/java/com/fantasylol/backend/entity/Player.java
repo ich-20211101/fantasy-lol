@@ -25,7 +25,9 @@ public class Player {
     @Column(nullable = false)
     private String teamName;
 
-    private String currentSeasonName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_season_id")
+    private Season currentSeason;
 
     private Double price;
 

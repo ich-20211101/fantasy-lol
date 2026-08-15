@@ -3,6 +3,7 @@ package com.fantasylol.backend.service;
 import com.fantasylol.backend.dto.LeaderboardDto;
 import com.fantasylol.backend.entity.*;
 import com.fantasylol.backend.repository.*;
+import com.fantasylol.backend.util.KstTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,6 +31,7 @@ public class LeaderboardService {
     private final TeamRosterRepository teamRosterRepository;
     private final WeeklyPlayerScoreRepository weeklyPlayerScoreRepository;
     private final UserRepository userRepository;
+    private final SeasonService seasonService;
 
     @Cacheable(cacheNames = "leaderboard")
     @Transactional(readOnly = true)
@@ -38,16 +40,15 @@ public class LeaderboardService {
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
 
-        boolean isOverall = weekNumber == null;
+        boolean isOverall;
+        Integer resolvedWeekNumber;
+        String resolvedSeasonName;
 
-        Integer resolvedWeekNumber = weekNumber;
-        String resolvedSeasonName = seasonName;
+        if (seasonName == null) {
 
-        if (resolvedSeasonName == null) {
+            Season active = seasonService.getActiveSeason().orElse(null);
 
-            Optional<WeeklyStarter> latest = weeklyStarterRepository.findTopByOrderByLockedAtDesc();
-
-            if (latest.isEmpty()) {
+            if (active == null) {
                 return LeaderboardDto.Response.builder()
                         .rows(List.of())
                         .hasMore(false)
@@ -58,19 +59,21 @@ public class LeaderboardService {
                         .build();
             }
 
-            resolvedSeasonName = latest.get().getSeason().getSeasonName();
+            resolvedSeasonName = active.getSeasonName();
+            resolvedWeekNumber = seasonService.resolveWeekNumber(resolvedSeasonName, KstTime.nowKstDate());
+            isOverall = false;
 
-            if (!isOverall) {
-                resolvedWeekNumber = latest.get().getWeekNumber();
-            }
-
+        } else {
+            resolvedSeasonName = seasonName;
+            resolvedWeekNumber = weekNumber;
+            isOverall = weekNumber == null;
         }
 
         List<Long> participantUserIds;
 
         if (isOverall) {
             Set<Long> ids = new LinkedHashSet<>(weeklyStarterRepository.findDistinctUserIdsBySeasonName(resolvedSeasonName));
-            teamRepository.findByCurrentSeasonName(resolvedSeasonName).forEach(t -> ids.add(t.getUser().getUserId()));
+            teamRepository.findBySeasonSeasonName(resolvedSeasonName).forEach(t -> ids.add(t.getUser().getUserId()));
             participantUserIds = new ArrayList<>(ids);
         } else {
             participantUserIds = weeklyStarterRepository.findDistinctUserIdsByWeekNumberAndSeasonName(resolvedWeekNumber, resolvedSeasonName);
@@ -98,7 +101,7 @@ public class LeaderboardService {
         Map<Long, User> userById = userRepository.findAllById(userIdSet).stream()
                 .collect(Collectors.toMap(User::getUserId, u -> u));
 
-        Map<Long, Team> teamByUserId = teamRepository.findByUserUserIdIn(userIdSet).stream()
+        Map<Long, Team> teamByUserId = teamRepository.findByUserUserIdInAndSeasonSeasonName(userIdSet, resolvedSeasonName).stream()
                 .collect(Collectors.toMap(t -> t.getUser().getUserId(), t -> t));
 
         List<LeaderboardDto.Row> allRows = participantUserIds.stream()
@@ -175,11 +178,11 @@ public class LeaderboardService {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
-        Team team = teamRepository.findByUserUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
-
         Season season = seasonRepository.findBySeasonName(resolvedSeasonName)
                 .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다: " + resolvedSeasonName));
+
+        Team team = teamRepository.findByUserUserIdAndSeasonSeasonId(userId, season.getSeasonId())
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(team.getTeamId());
 

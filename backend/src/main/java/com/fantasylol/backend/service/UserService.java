@@ -1,6 +1,7 @@
 package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.dto.UserDto;
+import com.fantasylol.backend.entity.Team;
 import com.fantasylol.backend.entity.User;
 import com.fantasylol.backend.entity.WithdrawalFeedback;
 import com.fantasylol.backend.repository.*;
@@ -94,14 +95,14 @@ public class UserService {
                 .note(request.getNote())
                 .build());
 
-        teamRepository.findByUserUserId(user.getUserId()).ifPresent(team -> {
+        for (Team team : teamRepository.findByUserUserId(user.getUserId())) {
 
             weeklyStarterRepository.deleteAll(weeklyStarterRepository.findByTeamTeamIdOrderByWeekNumberDesc(team.getTeamId()));
             weeklyPlayerScoreRepository.deleteAll(weeklyPlayerScoreRepository.findByTeamTeamId(team.getTeamId()));
             teamRosterRepository.deleteAll(teamRosterRepository.findByTeamTeamId(team.getTeamId()));
             teamRepository.delete(team);
 
-        });
+        }
 
         userScoreRepository.deleteAll(userScoreRepository.findByUserUserId(user.getUserId()));
         weeklySettlementRepository.deleteAll(weeklySettlementRepository.findByUserUserId(user.getUserId()));

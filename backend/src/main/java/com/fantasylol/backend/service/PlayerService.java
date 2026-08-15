@@ -1,5 +1,6 @@
 package com.fantasylol.backend.service;
 
+import com.fantasylol.backend.dto.PlayerDto;
 import com.fantasylol.backend.dto.PlayerPurchaseDto;
 import com.fantasylol.backend.dto.PlayerRankingDto;
 import com.fantasylol.backend.entity.Player;
@@ -31,15 +32,23 @@ public class PlayerService {
     private final SeasonService seasonService;
 
     @Cacheable(cacheNames = "players")
-    public List<Player> getAllPlayers(boolean activeOnly) {
+    public List<PlayerDto.Response> getAllPlayers(boolean activeOnly) {
 
-        if (!activeOnly) {
-            return playerRepository.findAll();
-        }
+        List<Player> players = activeOnly
+                ? seasonService.getActiveSeason()
+                .map(season -> playerRepository.findByCurrentSeasonSeasonIdAndStatus(season.getSeasonId(), "CURRENT"))
+                .orElse(List.of())
+                : playerRepository.findAll();
 
-        return seasonService.getActiveSeason()
-                .map(season -> playerRepository.findByCurrentSeasonNameAndStatus(season.getSeasonName(), "CURRENT"))
-                .orElse(List.of());
+        return players.stream()
+                .map(p -> PlayerDto.Response.builder()
+                        .playerId(p.getPlayerId())
+                        .playerName(p.getPlayerName())
+                        .position(p.getPosition())
+                        .teamName(p.getTeamName())
+                        .status(p.getStatus())
+                        .build())
+                .toList();
 
     }
 
@@ -164,9 +173,16 @@ public class PlayerService {
     public PlayerPurchaseDto.Response getPurchaseList() {
 
         Optional<Season> rosterSourceSeason = seasonService.getRosterSourceSeason();
+        String activeSeasonName = seasonService.getActiveSeason().map(Season::getSeasonName).orElse(null);
 
         if (rosterSourceSeason.isEmpty()) {
-            return PlayerPurchaseDto.Response.builder().rows(List.of()).sourceSeasonName(null).sourceSeasonLabel(null).build();
+            return PlayerPurchaseDto.Response.builder()
+                    .rows(List.of())
+                    .sourceSeasonName(null)
+                    .sourceSeasonLabel(null)
+                    .activeSeasonName(activeSeasonName)
+                    .activeSeasonLabel(formatSeasonLabel(activeSeasonName))
+                    .build();
         }
 
         String seasonName = rosterSourceSeason.get().getSeasonName();
@@ -191,6 +207,8 @@ public class PlayerService {
                 .rows(rows)
                 .sourceSeasonName(seasonName)
                 .sourceSeasonLabel(formatSeasonLabel(seasonName))
+                .activeSeasonName(activeSeasonName)
+                .activeSeasonLabel(formatSeasonLabel(activeSeasonName))
                 .build();
 
     }

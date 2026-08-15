@@ -2,6 +2,7 @@ package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.dto.TeamDto;
 import com.fantasylol.backend.entity.Player;
+import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.entity.Team;
 import com.fantasylol.backend.entity.TeamRoster;
 import com.fantasylol.backend.entity.User;
@@ -42,18 +43,22 @@ public class TeamService {
 
         User user = getUser(oAuth2User);
         List<Player> players = validateAndFetchRosterPlayers(request.getPlayerIds());
-        Team team = teamRepository.findByUserUserId(user.getUserId())
-                .orElseGet(() -> Team.builder().user(user).build());
 
-        if (isRosterLockedForActiveSeason(team)) {
+        Season activeSeason = seasonService.getActiveSeason()
+                .orElseThrow(() -> new IllegalStateException("현재 진행중인 시즌이 없습니다"));
+
+        if (teamRepository.findByUserUserIdAndSeasonSeasonId(user.getUserId(), activeSeason.getSeasonId()).isPresent()) {
             throw new IllegalStateException("이미 이번 시즌 로스터를 제출했습니다. 다음 시즌부터 변경할 수 있습니다");
         }
 
-        team.setTeamName(request.getTeamName());
-        seasonService.getActiveSeason().ifPresent(season -> team.setCurrentSeasonName(season.getSeasonName()));
+        Team team = Team.builder()
+                .user(user)
+                .season(activeSeason)
+                .teamName(request.getTeamName())
+                .build();
         Team savedTeam = teamRepository.save(team);
 
-        replaceRoster(savedTeam, players);
+        saveRoster(savedTeam, players);
 
         List<TeamRoster> roster = teamRosterRepository.findByTeamTeamId(savedTeam.getTeamId());
 
@@ -66,6 +71,14 @@ public class TeamService {
 
         User user = getUser(oAuth2User);
         Team team = getOwnedTeam(teamId, user);
+
+        boolean isCurrentSeasonTeam = seasonService.getActiveSeason()
+                .map(season -> season.getSeasonId().equals(team.getSeason().getSeasonId()))
+                .orElse(false);
+
+        if (!isCurrentSeasonTeam) {
+            throw new IllegalStateException("현재 시즌 팀이 아닙니다");
+        }
 
         if (weeklyStarterService.isCurrentWeekLockedForTeam(team)) {
             throw new IllegalStateException("이번 주 스타터가 이미 확정되어 변경할 수 없습니다");
@@ -95,7 +108,8 @@ public class TeamService {
 
         User user = getUser(oAuth2User);
 
-        return teamRepository.findByUserUserId(user.getUserId())
+        return seasonService.getActiveSeason()
+                .flatMap(season -> teamRepository.findByUserUserIdAndSeasonSeasonId(user.getUserId(), season.getSeasonId()))
                 .map(team -> toResponse(team, teamRosterRepository.findByTeamTeamId(team.getTeamId())))
                 .orElse(null);
 
@@ -105,7 +119,9 @@ public class TeamService {
     public List<TeamDto.RosterPlayerResponse> getStarters(OAuth2User oAuth2User) {
 
         User user = getUser(oAuth2User);
-        Team team = teamRepository.findByUserUserId(user.getUserId())
+        Season activeSeason = seasonService.getActiveSeason()
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        Team team = teamRepository.findByUserUserIdAndSeasonSeasonId(user.getUserId(), activeSeason.getSeasonId())
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         Map<Long, Double> scoreByPlayerId = loadScoresByPlayerId();
@@ -193,12 +209,7 @@ public class TeamService {
 
     }
 
-    private void replaceRoster(Team team, List<Player> players) {
-
-        List<TeamRoster> existing = teamRosterRepository.findByTeamTeamId(team.getTeamId());
-        if (!existing.isEmpty()) {
-            teamRosterRepository.deleteAll(existing);
-        }
+    private void saveRoster(Team team, List<Player> players) {
 
         List<TeamRoster> newRoster = players.stream()
                 .map(player -> TeamRoster.builder()
@@ -234,14 +245,6 @@ public class TeamService {
 
     }
 
-    private boolean isRosterLockedForActiveSeason(Team team) {
-
-        return seasonService.getActiveSeason()
-                .map(season -> season.getSeasonName().equals(team.getCurrentSeasonName()))
-                .orElse(false);
-
-    }
-
     private TeamDto.Response toResponse(Team team, List<TeamRoster> roster) {
 
         Map<Long, Double> scoreByPlayerId = loadScoresByPlayerId();
@@ -263,7 +266,7 @@ public class TeamService {
         return TeamDto.Response.builder()
                 .teamId(team.getTeamId())
                 .teamName(team.getTeamName())
-                .rosterLocked(isRosterLockedForActiveSeason(team))
+                .rosterLocked(true)
                 .starterLocked(weeklyStarterService.isCurrentWeekLockedForTeam(team))
                 .roster(rosterResponses)
                 .build();
@@ -273,11 +276,12 @@ public class TeamService {
     @Transactional
     public void deleteMyTeam(OAuth2User oAuth2User) {
         User user = getUser(oAuth2User);
-        Team team = teamRepository.findByUserUserId(user.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        List<Team> teams = teamRepository.findByUserUserId(user.getUserId());
 
-        teamRosterRepository.deleteAll(teamRosterRepository.findByTeamTeamId(team.getTeamId()));
-        teamRepository.delete(team);
+        for (Team team : teams) {
+            teamRosterRepository.deleteAll(teamRosterRepository.findByTeamTeamId(team.getTeamId()));
+        }
+        teamRepository.deleteAll(teams);
     }
 
     private Map<Long, Double> loadScoresByPlayerId() {

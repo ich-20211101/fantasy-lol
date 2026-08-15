@@ -224,7 +224,7 @@ public class MatchSyncService {
                     .map(existing -> {
                         existing.setTeamName(teamName);
                         existing.setPosition(s.path("Role").asText());
-                        existing.setCurrentSeasonName(match.getSeason().getSeasonName());
+                        existing.setCurrentSeason(match.getSeason());
                         existing.setStatus("CURRENT");
                         return existing;
                     })
@@ -232,7 +232,7 @@ public class MatchSyncService {
                             .playerName(playerName)
                             .teamName(teamName)
                             .position(s.path("Role").asText())
-                            .currentSeasonName(match.getSeason().getSeasonName())
+                            .currentSeason(match.getSeason())
                             .build());
 
             player = playerRepository.save(player);

@@ -9,10 +9,16 @@ import java.util.Optional;
 
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
-    Optional<Team> findByUserUserId(Long userId);
+    List<Team> findByUserUserId(Long userId);
+
+    Optional<Team> findByUserUserIdAndSeasonSeasonId(Long userId, Long seasonId);
 
     List<Team> findByUserUserIdIn(Collection<Long> userIds);
 
-    List<Team> findByCurrentSeasonName(String seasonName);
+    List<Team> findByUserUserIdInAndSeasonSeasonName(Collection<Long> userIds, String seasonName);
+
+    List<Team> findBySeasonSeasonId(Long seasonId);
+
+    List<Team> findBySeasonSeasonName(String seasonName);
 
 }

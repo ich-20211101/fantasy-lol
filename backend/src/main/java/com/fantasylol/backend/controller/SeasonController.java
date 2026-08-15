@@ -1,5 +1,6 @@
 package com.fantasylol.backend.controller;
 
+import com.fantasylol.backend.dto.SeasonDto;
 import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +28,7 @@ public class SeasonController {
 
     @GetMapping
     @Operation(summary = "[ADMIN] List all registered seasons")
-    public ResponseEntity<List<Season>> listSeasons() {
+    public ResponseEntity<List<SeasonDto.Response>> listSeasons() {
         return ResponseEntity.ok(seasonService.getAllSeasons());
     }
 

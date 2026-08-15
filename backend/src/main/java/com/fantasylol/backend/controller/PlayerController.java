@@ -1,5 +1,6 @@
 package com.fantasylol.backend.controller;
 
+import com.fantasylol.backend.dto.PlayerDto;
 import com.fantasylol.backend.dto.PlayerPurchaseDto;
 import com.fantasylol.backend.dto.PlayerRankingDto;
 import com.fantasylol.backend.entity.Player;
@@ -27,7 +28,7 @@ public class PlayerController {
 
     @GetMapping
     @Operation(summary = "Get all players")
-    public ResponseEntity<List<Player>> getAllPlayers(@RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
+    public ResponseEntity<List<PlayerDto.Response>> getAllPlayers(@RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
         return ResponseEntity.ok(playerService.getAllPlayers(activeOnly));
     }
 

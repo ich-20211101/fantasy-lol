@@ -42,12 +42,14 @@ export default function RosterPage() {
   const [limitPopupType, setLimitPopupType] = useState(null)
   const [priceInfoOpen, setPriceInfoOpen] = useState(false)
   const [sourceSeasonLabel, setSourceSeasonLabel] = useState('')
+  const [activeSeasonLabel, setActiveSeasonLabel] = useState('')
 
   useEffect(() => {
     getPurchaseList()
       .then(data => {
         setPlayers((data?.rows ?? []).map(mapPurchaseRow))
         setSourceSeasonLabel(data?.sourceSeasonLabel ?? '')
+        setActiveSeasonLabel(data?.activeSeasonLabel ?? '')
       })
       .catch(error => {
         console.error(error)
@@ -114,7 +116,7 @@ export default function RosterPage() {
     if (selectedCount === 0) return
 
     const selectedPlayers = players.filter(player => selectedIds.has(player.playerId))
-    navigate('/roster/mine', { state: { selectedPlayers, seasonLabel: sourceSeasonLabel } })
+    navigate('/roster/mine', { state: { selectedPlayers, seasonLabel: activeSeasonLabel } })
   }
 
   return (
@@ -152,7 +154,7 @@ export default function RosterPage() {
         <Header variant="back" title={t('buildRoster.headerTitle')} onBack={() => navigate('/')} />
 
         <section className="build-round">
-          <span>{sourceSeasonLabel}</span>
+          <span>{activeSeasonLabel}</span>
           <strong>{remainingPoint.toFixed(1)} P</strong>
         </section>
 

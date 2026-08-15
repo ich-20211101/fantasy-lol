@@ -22,10 +22,12 @@ public class Team {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id", nullable = false)
+    private Season season;
+
     @Column(nullable = false)
     private String teamName;
-
-    private String currentSeasonName;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,6 +1,7 @@
 package com.fantasylol.backend.service;
 
 import com.fantasylol.backend.entity.Player;
+import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.repository.PlayerRepository;
 import com.fantasylol.backend.repository.SeasonRepository;
 import com.fantasylol.backend.util.PlayerNameSanitizer;
@@ -27,9 +28,8 @@ public class PlayerSyncService {
     @Transactional
     public int syncPlayers(String overviewPage) throws Exception {
 
-        if (!seasonRepository.existsBySeasonName(overviewPage)) {
-            throw new IllegalArgumentException("등록되지 않은 시즌입니다. 먼저 시즌을 등록해주세요: " + overviewPage);
-        }
+        Season season = seasonRepository.findBySeasonName(overviewPage)
+                .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 시즌입니다. 먼저 시즌을 등록해주세요: " + overviewPage));
 
         leaguepediaClient.login();
 
@@ -68,7 +68,7 @@ public class PlayerSyncService {
                     .map(existing -> {
                         existing.setTeamName(teamName);
                         existing.setPosition(role);
-                        existing.setCurrentSeasonName(overviewPage);
+                        existing.setCurrentSeason(season);
                         existing.setStatus("CURRENT");
                         return existing;
                     })
@@ -76,7 +76,7 @@ public class PlayerSyncService {
                             .playerName(playerName)
                             .teamName(teamName)
                             .position(role)
-                            .currentSeasonName(overviewPage)
+                            .currentSeason(season)
                             .build());
 
             playerRepository.save(player);

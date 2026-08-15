@@ -30,6 +30,8 @@ public class PlayerPurchaseDto {
         private List<Row> rows;
         private String sourceSeasonName;
         private String sourceSeasonLabel;
+        private String activeSeasonName;
+        private String activeSeasonLabel;
     }
 
 

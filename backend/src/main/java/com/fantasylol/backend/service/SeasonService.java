@@ -1,5 +1,6 @@
 package com.fantasylol.backend.service;
 
+import com.fantasylol.backend.dto.SeasonDto;
 import com.fantasylol.backend.entity.Season;
 import com.fantasylol.backend.entity.SeasonStatus;
 import com.fantasylol.backend.repository.SeasonRepository;
@@ -45,10 +46,21 @@ public class SeasonService {
     }
 
     @Transactional(readOnly = true)
-    public List<Season> getAllSeasons() {
+    public List<SeasonDto.Response> getAllSeasons() {
+
         return seasonRepository.findAll().stream()
                 .sorted(Comparator.comparing(Season::getStartDate).reversed())
+                .map(s -> SeasonDto.Response.builder()
+                        .seasonId(s.getSeasonId())
+                        .seasonName(s.getSeasonName())
+                        .status(s.getStatus().name())
+                        .featured(s.getFeatured())
+                        .minGamesForRanking(s.getMinGamesForRanking())
+                        .rosterSourceSeason(s.getRosterSourceSeason())
+                        .build())
                 .toList();
+
+
     }
 
     @Transactional(readOnly = true)

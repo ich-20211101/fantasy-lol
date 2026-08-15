@@ -10,6 +10,7 @@ import com.fantasylol.backend.repository.WeeklyStarterRepository;
 import com.fantasylol.backend.util.KstTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class WeeklyStarterService {
     private final WeeklyStarterRepository weeklyStarterRepository;
     private final SeasonService seasonService;
 
+    @CacheEvict(cacheNames = {"leaderboard", "leaderboardDetail"}, allEntries = true)
     @Transactional
     public int lockStartersForDate(LocalDate date, String seasonName) {
 
@@ -40,7 +42,7 @@ public class WeeklyStarterService {
 
     private int lockStartersForWeek(Integer weekNumber, Season season) {
 
-        List<Team> teams = teamRepository.findAll();
+        List<Team> teams = teamRepository.findBySeasonSeasonId(season.getSeasonId());
         int lockedCount = 0;
 
         for (Team team : teams) {
@@ -80,13 +82,8 @@ public class WeeklyStarterService {
     @Transactional(readOnly = true)
     public boolean isCurrentWeekLockedForTeam(Team team) {
 
-        String seasonName = team.getCurrentSeasonName();
-        if (seasonName == null) return false;
-
-        Season season = seasonService.getBySeasonName(seasonName).orElse(null);
-        if (season == null) return false;
-
-        int weekNumber = seasonService.resolveWeekNumber(seasonName, KstTime.nowKstDate());
+        Season season = team.getSeason();
+        int weekNumber = seasonService.resolveWeekNumber(season.getSeasonName(), KstTime.nowKstDate());
 
         return weeklyStarterRepository.existsByTeamTeamIdAndWeekNumberAndSeasonSeasonId(team.getTeamId(), weekNumber, season.getSeasonId());
 

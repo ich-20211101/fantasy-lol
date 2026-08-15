@@ -19,39 +19,6 @@ CREATE TABLE IF NOT EXISTS pro_teams (
     updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS players (
-    player_id                       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    player_name                     VARCHAR(100) NOT NULL,
-    position                        VARCHAR(20) NOT NULL,
-    team_name                       VARCHAR(100) NOT NULL,
-    current_season_name             VARCHAR(255),
-    price                           DOUBLE PRECISION,
-    price_insufficient_data BOOLEAN NOT NULL DEFAULT FALSE,
-    status                          VARCHAR(20) NOT NULL DEFAULT 'CURRENT'
-);
-
-CREATE TABLE IF NOT EXISTS teams (
-    team_id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id             BIGINT NOT NULL,
-    team_name           VARCHAR(100) NOT NULL,
-    roster_locked       BOOLEAN DEFAULT FALSE,
-    current_season_name VARCHAR(100),
-    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE IF NOT EXISTS team_roster (
-    team_roster_id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    team_id         BIGINT NOT NULL,
-    player_id       BIGINT NOT NULL,
-    is_starter      BOOLEAN DEFAULT FALSE,
-    purchase_team_name VARCHAR(100),
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (team_id) REFERENCES teams(team_id),
-    FOREIGN KEY (player_id) REFERENCES players(player_id)
-);
-
 CREATE TABLE IF NOT EXISTS seasons (
     season_id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     season_name             VARCHAR(100) NOT NULL UNIQUE,
@@ -62,6 +29,41 @@ CREATE TABLE IF NOT EXISTS seasons (
     min_games_for_ranking   INT,
     roster_source_season    BOOLEAN NOT NULL DEFAULT FALSE,
     created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS players (
+    player_id                       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    player_name                     VARCHAR(100) NOT NULL,
+    position                        VARCHAR(20) NOT NULL,
+    team_name                       VARCHAR(100) NOT NULL,
+    current_season_id               BIGINT,
+    price                           DOUBLE PRECISION,
+    price_insufficient_data         BOOLEAN NOT NULL DEFAULT FALSE,
+    status                          VARCHAR(20) NOT NULL DEFAULT 'CURRENT',
+    FOREIGN KEY (current_season_id) REFERENCES seasons(season_id)
+);
+
+CREATE TABLE IF NOT EXISTS teams (
+    team_id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id             BIGINT NOT NULL,
+    season_id           BIGINT NOT NULL,
+    team_name           VARCHAR(100) NOT NULL,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (season_id) REFERENCES seasons(season_id),
+    UNIQUE (user_id, season_id)
+);
+
+CREATE TABLE IF NOT EXISTS team_roster (
+    team_roster_id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    team_id             BIGINT NOT NULL,
+    player_id           BIGINT NOT NULL,
+    is_starter          BOOLEAN DEFAULT FALSE,
+    purchase_team_name  VARCHAR(100),
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(player_id)
 );
 
 CREATE TABLE IF NOT EXISTS matches (
@@ -106,17 +108,9 @@ CREATE TABLE IF NOT EXISTS user_scores (
     weekly_score    DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     seasonal_score  DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     updated_at      TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (season_id) REFERENCES seasons(season_id),
     UNIQUE (user_id, week_number, season_id)
-);
-
-CREATE TABLE IF NOT EXISTS withdrawal_feedbacks (
-    withdrawal_feedback_id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id                 BIGINT,
-    reason                  VARCHAR(50) NOT NULL,
-    note                    VARCHAR(500),
-    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS weekly_starters (
@@ -126,7 +120,7 @@ CREATE TABLE IF NOT EXISTS weekly_starters (
     week_number         INT NOT NULL,
     season_id           BIGINT NOT NULL,
     locked_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id),
     FOREIGN KEY (season_id) REFERENCES seasons(season_id),
     UNIQUE (team_id, week_number, season_id, player_id)
@@ -141,7 +135,7 @@ CREATE TABLE IF NOT EXISTS weekly_player_scores (
     is_starter              BOOLEAN NOT NULL DEFAULT FALSE,
     score                   DOUBLE PRECISION NOT NULL DEFAULT 0,
     updated_at              TIMESTAMP,
-    FOREIGN KEY (team_id) REFERENCES teams(team_id),
+    FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id),
     FOREIGN KEY (season_id) REFERENCES seasons(season_id),
     UNIQUE (team_id, player_id, season_id, week_number)
@@ -168,7 +162,7 @@ CREATE TABLE IF NOT EXISTS weekly_settlements (
     total_score             DOUBLE PRECISION NOT NULL,
     rank                    INT NOT NULL,
     settled_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (season_id) REFERENCES seasons(season_id),
     UNIQUE (user_id, season_id, week_number)
 );
@@ -180,14 +174,28 @@ CREATE TABLE IF NOT EXISTS season_settlements (
     total_score             DOUBLE PRECISION NOT NULL,
     rank                    INT NOT NULL,
     settled_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (season_id) REFERENCES seasons(season_id),
     UNIQUE (user_id, season_id)
 );
 
+CREATE TABLE IF NOT EXISTS withdrawal_feedbacks (
+    withdrawal_feedback_id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id                 BIGINT,
+    reason                  VARCHAR(50) NOT NULL,
+    note                    VARCHAR(500),
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_teams_user_id ON teams(user_id);
+CREATE INDEX IF NOT EXISTS idx_teams_season_id ON teams(season_id);
+CREATE INDEX IF NOT EXISTS idx_players_current_season_id ON players(current_season_id);
 CREATE INDEX IF NOT EXISTS idx_team_roster_team_id ON team_roster(team_id);
 CREATE INDEX IF NOT EXISTS idx_player_stats_match_id ON player_stats(match_id);
 CREATE INDEX IF NOT EXISTS idx_player_stats_player_id ON player_stats(player_id);
 CREATE INDEX IF NOT EXISTS idx_user_scores_user_id ON user_scores(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_scores_season_week ON user_scores(season_id, week_number);
 CREATE INDEX IF NOT EXISTS idx_weekly_player_scores_team_season_week ON weekly_player_scores(team_id, season_id, week_number);
+CREATE INDEX IF NOT EXISTS idx_weekly_starters_player_id ON weekly_starters(player_id);
+CREATE INDEX IF NOT EXISTS idx_matches_season_id ON matches(season_id);
+CREATE INDEX IF NOT EXISTS idx_matches_match_date ON matches(match_date);

@@ -54,7 +54,7 @@ public class UserScoreService {
                 .map(ws -> ws.getTeam().getTeamId() + ":" + ws.getPlayer().getPlayerId())
                 .collect(Collectors.toSet());
 
-        List<TeamRoster> rosterEntries = teamRosterRepository.findByPlayerPlayerIdIn(playerIds);
+        List<TeamRoster> rosterEntries = teamRosterRepository.findByPlayerPlayerIdInAndTeamSeasonSeasonId(playerIds, seasonId);
 
         for (TeamRoster entry : rosterEntries) {
 
@@ -137,17 +137,26 @@ public class UserScoreService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String resolvedSeasonName = seasonName;
+        String resolvedSeasonName;
+        Integer resolvedWeekNumber;
 
-        if (resolvedSeasonName == null) {
-            Optional<WeeklyStarter> latest = weeklyStarterRepository.findTopByOrderByLockedAtDesc();
-            if (latest.isEmpty()) {
+        if (seasonName == null) {
+
+            Season active = seasonService.getActiveSeason().orElse(null);
+
+            if (active == null) {
                 return UserScoreDto.Response.builder().rank(null).score(0.0).build();
             }
-            resolvedSeasonName = latest.get().getSeason().getSeasonName();
+
+            resolvedSeasonName = active.getSeasonName();
+            resolvedWeekNumber = seasonService.resolveWeekNumber(resolvedSeasonName, KstTime.nowKstDate());
+
+        } else {
+            resolvedSeasonName = seasonName;
+            resolvedWeekNumber = weekNumber;
         }
 
-        if (weekNumber == null) {
+        if (resolvedWeekNumber == null) {
 
             UserScore latest = userScoreRepository
                     .findTopByUserUserIdAndSeasonNameOrderByWeekNumberDesc(user.getUserId(), resolvedSeasonName)
@@ -168,7 +177,7 @@ public class UserScoreService {
         }
 
         UserScore weekScore = userScoreRepository
-                .findByUserUserIdAndWeekNumberAndSeasonName(user.getUserId(), weekNumber, resolvedSeasonName)
+                .findByUserUserIdAndWeekNumberAndSeasonName(user.getUserId(), resolvedWeekNumber, resolvedSeasonName)
                 .orElse(null);
 
         if (weekScore == null) {
@@ -176,7 +185,7 @@ public class UserScoreService {
         }
 
         long higherCount = userScoreRepository
-                .countByWeekNumberAndSeasonNameAndWeeklyScoreGreaterThan(weekNumber, resolvedSeasonName, weekScore.getWeeklyScore());
+                .countByWeekNumberAndSeasonNameAndWeeklyScoreGreaterThan(resolvedWeekNumber, resolvedSeasonName, weekScore.getWeeklyScore());
 
         return UserScoreDto.Response.builder()
                 .rank((int) higherCount + 1)

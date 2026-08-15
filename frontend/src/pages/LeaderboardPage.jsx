@@ -31,9 +31,13 @@ export default function LeaderboardPage({ user, team }) {
   const [tallying, setTallying] = useState(false)
   const [showToTop, setShowToTop] = useState(false)
   const [resolvedWeekNumber, setResolvedWeekNumber] = useState(null)
+  const [resolvedSeasonName, setResolvedSeasonName] = useState(null)
   const [resolvedSeasonLabel, setResolvedSeasonLabel] = useState(null)
 
-  const isOverall = selection.weekNumber == null
+  // selection.seasonName이 null이면 아직 아무것도 명시적으로 고르지 않은 기본 상태 — 이땐 "전체"가 아니라
+  // 백엔드가 골라준 활성 시즌의 이번 주차를 보여줌. "전체"는 유저가 드롭다운에서 직접 고른 경우에만 성립.
+  const isOverall = selection.seasonName !== null && selection.weekNumber == null
+  const displayWeekNumber = selection.weekNumber ?? resolvedWeekNumber
 
   useEffect(() => {
     getLeaderboardRounds().then((data) => {
@@ -59,6 +63,7 @@ export default function LeaderboardPage({ user, team }) {
       setRows((prev) => (pageToLoad === 1 ? (data.rows ?? []) : [...prev, ...(data.rows ?? [])]))
       setHasMore(Boolean(data.hasMore))
       setResolvedWeekNumber(data.weekNumber ?? null)
+      setResolvedSeasonName(data.seasonName ?? null)
       setResolvedSeasonLabel(data.seasonLabel ?? null)
     } finally {
       setLoadingMore(false)
@@ -130,12 +135,10 @@ export default function LeaderboardPage({ user, team }) {
     ? rounds.find((r) => r.seasonName === selection.seasonName)
     : mostRecentRound
 
-  const headerRoundLabel = isOverall
-    ? (resolvedSeasonLabel ?? selectedRound?.seasonLabel ?? '')
-    : (selectedRound?.seasonLabel ?? '')
+  const headerRoundLabel = resolvedSeasonLabel ?? selectedRound?.seasonLabel ?? ''
   const headerWeekLabel = isOverall
-    ? (resolvedWeekNumber != null ? `WEEK ${resolvedWeekNumber}` : 'Overall')
-    : `WEEK ${selection.weekNumber}`
+    ? 'Overall'
+    : (displayWeekNumber != null ? `WEEK ${displayWeekNumber}` : '')
 
   return (
     <main className="leaderboard-page">
@@ -160,9 +163,10 @@ export default function LeaderboardPage({ user, team }) {
 
           {weekSelectOpen && (
             <div className="leaderboard-week-dropdown">
-              {rounds.map((round, roundIndex) => {
-                const isMostRecent = roundIndex === 0
-                const isRoundSelected = isMostRecent ? true : selection.seasonName === round.seasonName
+              {rounds.map((round) => {
+                const isRoundSelected = selection.seasonName === null
+                  ? round.seasonName === resolvedSeasonName
+                  : selection.seasonName === round.seasonName
 
                 return (
                   <div key={round.seasonName}>
@@ -190,8 +194,7 @@ export default function LeaderboardPage({ user, team }) {
                     {expandedSeasonName === round.seasonName && (
                       <div className="leaderboard-round-weeks">
                         {(() => {
-                          const isOverallSelected = isOverall
-                            && (selection.seasonName ? selection.seasonName === round.seasonName : isMostRecent)
+                          const isOverallSelected = isOverall && selection.seasonName === round.seasonName
 
                           return (
                             <div
@@ -204,7 +207,9 @@ export default function LeaderboardPage({ user, team }) {
                           )
                         })()}
                         {round.weeks.map((weekNumber) => {
-                          const isSelected = !isOverall && selection.seasonName === round.seasonName && selection.weekNumber === weekNumber
+                          const isSelected = selection.seasonName === null
+                            ? (round.seasonName === resolvedSeasonName && weekNumber === resolvedWeekNumber)
+                            : (!isOverall && selection.seasonName === round.seasonName && selection.weekNumber === weekNumber)
 
                           return (
                             <div
