@@ -3,6 +3,9 @@ package com.fantasylol.backend.dto;
 import lombok.*;
 
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class RecentMatchDto {
 
