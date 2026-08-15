@@ -14,6 +14,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,10 +34,16 @@ public class LeaguepediaClient {
     private String password;
 
     private String sessionCookie;
+    private Instant lastLoginAt;
+    private static final Duration SESSION_TTL = Duration.ofMinutes(30);
 
     private static final String BASE_URL = "https://lol.fandom.com/api.php";
 
     public void login() throws Exception {
+
+        if (sessionCookie != null && lastLoginAt != null && Duration.between(lastLoginAt, Instant.now()).compareTo(SESSION_TTL) < 0) {
+            return;
+        }
 
         String tokenUrl = BASE_URL + "?action=query&meta=tokens&type=login&format=json";
         ResponseEntity<String> tokenResponse = restTemplate.getForEntity(tokenUrl, String.class);
@@ -78,6 +86,8 @@ public class LeaguepediaClient {
         }
 
         log.info("Login response: {}", loginResponse.getBody());
+
+        lastLoginAt = Instant.now();
 
     }
 
@@ -164,6 +174,7 @@ public class LeaguepediaClient {
     private JsonNode cargoQueryWithRetry(String tables, String fields, String where, String orderBy, int limit, int offset) throws Exception {
 
         int attempts = 0;
+        boolean relogged = false;
 
         while (true) {
             try {
@@ -175,6 +186,14 @@ public class LeaguepediaClient {
                 if (attempts >= 5) {
                     log.error("Leaguepedia API 요청 5회 실패, 포기: {}", e.getMessage());
                     throw e;
+                }
+
+                if (!relogged) {
+                    relogged = true;
+                    log.warn("Leaguepedia API 요청 실패, 세션 만료 의심되어 재로그인 후 재시도: {}", e.getMessage());
+                    lastLoginAt = null;
+                    login();
+                    continue;
                 }
 
                 long waitMs = 30000L * attempts;
