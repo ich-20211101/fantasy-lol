@@ -200,10 +200,12 @@ public class SeasonService {
                     "날짜(%s)가 시즌 시작일(%s)보다 이릅니다: %s".formatted(date, season.getStartDate(), seasonName));
         }
 
-        long daysSinceStart = ChronoUnit.DAYS.between(season.getStartDate(), date);
+        LocalDate seasonWeekStart = season.getStartDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate dateWeekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        long weeksSinceStart = ChronoUnit.WEEKS.between(seasonWeekStart, dateWeekStart);
 
-        return (int) (daysSinceStart / 7) + 1;
-
+        return (int) weeksSinceStart + 1;
+        
     }
 
     @CacheEvict(cacheNames = {"leaderboardRounds", "playerRankings"}, allEntries = true)
