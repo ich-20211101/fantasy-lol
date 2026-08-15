@@ -22,21 +22,13 @@ function toKstDateLabel(dateTimeUtc) {
   return `${mm}/${dd} (${RESULT_DOW_LABELS[kst.getUTCDay()]})`
 }
 
-function getIsoWeek(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-  const dayNum = d.getUTCDay() || 7
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7)
-}
-
 function getSecondsUntilNextMonday() {
-  const now = new Date()
-  const next = new Date(now)
-  const daysUntilMonday = (8 - now.getDay()) % 7 || 7
-  next.setDate(now.getDate() + daysUntilMonday)
-  next.setHours(0, 0, 0, 0)
-  return Math.max(0, Math.floor((next - now) / 1000))
+  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const next = new Date(nowKst)
+  const daysUntilMonday = (8 - nowKst.getUTCDay()) % 7 || 7
+  next.setUTCDate(nowKst.getUTCDate() + daysUntilMonday)
+  next.setUTCHours(0, 0, 0, 0)
+  return Math.max(0, Math.floor((next - nowKst) / 1000))
 }
 
 const RANK_POPUP_STORAGE_KEY = 'lfm_rank_popup_dismissed_at'
@@ -128,7 +120,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
     return t('myTeam.daysLeft', { count: days })
   }, [countdown, i18n.language, t])
 
-  const weekNumber = useMemo(() => getIsoWeek(new Date()), [])
+  const weekNumber = team.weekNumber
 
   // [TEST] 테스트 편의용 — 나중에 제거 예정
   const handleDeleteTeam = async () => {
@@ -153,7 +145,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
         {rankPopupOpen && (
           <div className="myteam-rank-overlay">
             <div className="myteam-rank-modal">
-              <p className="myteam-rank-eyebrow">{t('myTeam.rankEyebrowRound')}</p>
+              <p className="myteam-rank-eyebrow">{team.seasonLabel}</p>
               <p className="myteam-rank-eyebrow">{t('myTeam.rankEyebrowWeek', { week: weekNumber - 1 })}</p>
 
               {recentResults.length > 0 && (
@@ -206,7 +198,7 @@ export default function MyTeamPage({ team, onTeamDeleted }) {
         <Header variant="logo" />
 
         <div className={`myteam-title ${collapsed ? 'collapsed' : ''}`}>
-          <div className="myteam-title-label">{t('myTeam.rankEyebrowRound')}</div>
+          <div className="myteam-title-label">{team.seasonLabel}</div>
           <div className="myteam-title-row">
             <span className="myteam-title-week">{t('myTeam.rankEyebrowWeek', { week: weekNumber })}</span>
             <span className="myteam-title-countdown">{countdownStr}</span>

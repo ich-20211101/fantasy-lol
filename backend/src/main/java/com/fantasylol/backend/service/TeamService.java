@@ -11,6 +11,7 @@ import com.fantasylol.backend.repository.PlayerStatRepository;
 import com.fantasylol.backend.repository.TeamRepository;
 import com.fantasylol.backend.repository.TeamRosterRepository;
 import com.fantasylol.backend.repository.UserRepository;
+import com.fantasylol.backend.util.KstTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -263,14 +264,23 @@ public class TeamService {
                         .build())
                 .toList();
 
+        Season season = team.getSeason();
+
         return TeamDto.Response.builder()
                 .teamId(team.getTeamId())
                 .teamName(team.getTeamName())
                 .rosterLocked(true)
                 .starterLocked(weeklyStarterService.isCurrentWeekLockedForTeam(team))
+                .seasonLabel(formatSeasonLabel(season.getSeasonName()))
+                .weekNumber(seasonService.resolveWeekNumber(season.getSeasonName(), KstTime.nowKstDate()))
                 .roster(rosterResponses)
                 .build();
 
+    }
+
+    private String formatSeasonLabel(String seasonName) {
+        if (seasonName == null) return null;
+        return seasonName.replace("/", " · ").replace(" Season", "");
     }
 
     @Transactional

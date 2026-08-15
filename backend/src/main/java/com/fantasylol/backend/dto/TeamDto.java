@@ -36,6 +36,8 @@ public class TeamDto {
         private String teamName;
         private boolean rosterLocked;
         private boolean starterLocked;
+        private String seasonLabel;
+        private Integer weekNumber;
         private List<RosterPlayerResponse> roster;
     }
 
