@@ -51,7 +51,7 @@ public class RedisCacheConfig implements CachingConfigurer {
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
-                .withInitialCacheConfigurations(Map.of("weekMatches", config.entryTtl(Duration.ofMinutes(5))))
+                .withInitialCacheConfigurations(Map.of("weekMatches", config.entryTtl(Duration.ofHours(1))))
                 .build();
 
     }

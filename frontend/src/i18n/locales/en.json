@@ -159,9 +159,11 @@
     "section1Body": "Calculated based on real match records (Player Stats).",
     "section1Note": "When building your roster, players are priced based on their average score from last season.",
     "section2Title": "2. Player Pricing",
-    "section2ComingSoon": "Coming soon",
+    "section2Body": "Player prices are based on their average score per game in the season used as the roster purchase basis.",
+    "section2Note": "Players with fewer than 5 matches in that season are fixed at the minimum price (5.0P) due to insufficient sample size.",
+    "section2Formula": "Players with 5+ matches: scaled between 5.0P and 25.0P based on percentile rank of average score (lowest rank = 5.0P, highest rank = 25.0P)",
     "section3Title": "3. User Score",
-    "section3Body": "A user's ranking score is calculated as the average of the actual scores of the 5 players registered as the starting squad.",
-    "section3Formula": "Sum of the 5 starting squad players' scores ÷ 5"
+    "section3Body": "A user's ranking score is calculated as the sum of the actual scores of the 5 players registered as the starting squad.",
+    "section3Formula": "Sum of the 5 starting squad players' scores"
   }
 }

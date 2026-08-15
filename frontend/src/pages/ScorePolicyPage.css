@@ -99,21 +99,6 @@
   font-weight: 600;
 }
 
-.score-policy-coming-soon {
-  margin-top: 10px;
-  border: 1.5px dashed rgba(11, 11, 12, 0.24);
-  border-radius: 14px;
-  padding: 20px;
-  text-align: center;
-}
-
-.score-policy-coming-soon span {
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  color: #9a9a9e;
-}
-
 .score-policy-spacer {
   flex: 1;
   min-height: 20px;

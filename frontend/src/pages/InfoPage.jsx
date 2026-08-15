@@ -107,13 +107,16 @@ export default function InfoPage({ user, team }) {
   const [showToTop, setShowToTop] = useState(false)
 
   const [weekMatches, setWeekMatches] = useState([])
+  const [weekMatchesLoading, setWeekMatchesLoading] = useState(true)
   const [weekIndex, setWeekIndex] = useState(0)
   const weekScrollRef = useRef(null)
 
   useEffect(() => {
-    getWeekMatches().then((data) => {
-      if (data) setWeekMatches(data)
-    })
+    getWeekMatches()
+      .then((data) => {
+        if (data) setWeekMatches(data)
+      })
+      .finally(() => setWeekMatchesLoading(false))
   }, [])
 
   const weekDays = useMemo(() => buildWeekDays(weekMatches), [weekMatches])
@@ -217,7 +220,54 @@ export default function InfoPage({ user, team }) {
         <Header variant="logo" />
 
         <div className="info-scroll" ref={scrollRef} onScroll={handleScroll}>
-          {weekDays.length > 0 && (
+          {weekMatchesLoading && (
+            <div className="info-week">
+              <div className="info-week-scroll">
+                <div className="info-week-day">
+                  <div className="info-week-day-label">
+                    <div className="info-week-date"><span className="info-skeleton-bar" style={{ width: 28 }} /></div>
+                    <div className="info-week-dow"><span className="info-skeleton-bar" style={{ width: 16 }} /></div>
+                  </div>
+                  <div className="info-week-matches">
+                    {[0, 1].map((i) => (
+                      <div className="info-week-match" key={i}>
+                        <span className="info-week-match-time"><span className="info-skeleton-bar" style={{ width: 32 }} /></span>
+                        <div className="info-week-match-team">
+                          <div className="info-week-match-team-name"><span className="info-skeleton-bar" style={{ width: 36 }} /></div>
+                          <div className="info-week-match-score"><span className="info-skeleton-bar" style={{ width: 14 }} /></div>
+                        </div>
+                        <span className="info-week-match-vs">vs</span>
+                        <div className="info-week-match-team">
+                          <div className="info-week-match-team-name"><span className="info-skeleton-bar" style={{ width: 36 }} /></div>
+                          <div className="info-week-match-score"><span className="info-skeleton-bar" style={{ width: 14 }} /></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="info-week-nav">
+                <span className="info-week-arrow" style={{ opacity: 0.3 }}>
+                  <svg width="5" height="8" viewBox="0 0 6 10" fill="none">
+                    <path d="M5 1L1 5l4 4" stroke="#6a6a6f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className="info-week-dot" />
+                ))}
+                <span className="info-week-arrow" style={{ opacity: 0.3 }}>
+                  <svg width="5" height="8" viewBox="0 0 6 10" fill="none">
+                    <path d="M1 1l4 4-4 4" stroke="#6a6a6f" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+
+              <div className="info-week-divider" />
+            </div>
+          )}
+
+          {!weekMatchesLoading && weekDays.length > 0 && (
             <div className="info-week">
               <div className="info-week-scroll" ref={weekScrollRef} onScroll={handleWeekScroll}>
                 {weekDays.map((day) => (

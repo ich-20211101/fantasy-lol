@@ -35,8 +35,12 @@ export default function ScorePolicyPage() {
 
           <div className="score-policy-section" style={{ marginTop: 32 }}>
             <div className="score-policy-section-title">{t('scorePolicy.section2Title')}</div>
-            <div className="score-policy-coming-soon">
-              <span>{t('scorePolicy.section2ComingSoon')}</span>
+            <p className="score-policy-section-body">{t('scorePolicy.section2Body')}</p>
+            <div className="score-policy-formula-box">
+              <div className="score-policy-formula-summary">{t('scorePolicy.section2Formula')}</div>
+            </div>
+            <div className="score-policy-note">
+              <p>{t('scorePolicy.section2Note')}</p>
             </div>
           </div>
 
