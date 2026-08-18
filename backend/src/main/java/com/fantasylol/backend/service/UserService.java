@@ -55,6 +55,7 @@ public class UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .profileImageUrl(user.getProfileImageUrl())
+                .hasBuiltAnyTeam(user.getHasBuiltAnyTeam())
                 .build();
 
     }

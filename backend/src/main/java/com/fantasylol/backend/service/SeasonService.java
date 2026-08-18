@@ -205,7 +205,7 @@ public class SeasonService {
         long weeksSinceStart = ChronoUnit.WEEKS.between(seasonWeekStart, dateWeekStart);
 
         return (int) weeksSinceStart + 1;
-        
+
     }
 
     @CacheEvict(cacheNames = {"leaderboardRounds", "playerRankings"}, allEntries = true)

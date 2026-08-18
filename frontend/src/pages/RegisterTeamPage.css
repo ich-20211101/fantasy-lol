@@ -214,10 +214,10 @@
 }
 
 .register-done-card {
-  margin-top: 32px;
+  margin-top: 24px;
   border: 1px solid rgba(11, 11, 12, 0.14);
   border-radius: 20px;
-  padding: 22px 24px 20px;
+  padding: 20px 24px 20px;
   background: #f8f9fa;
   overflow: hidden;
 }
@@ -272,11 +272,19 @@
 }
 
 .register-done-desc {
-  margin: 24px 2px 0;
-  font-size: 14px;
+  margin: 10px 2px 0;
+  font-size: 16px;
   line-height: 1.65;
   color: #0b0b0c;
-  font-weight: 500;
+  font-weight: 400;
+}
+
+.register-done-lead {
+  margin: 24px 2px 0;
+  font-size: 20px;
+  line-height: 1.5;
+  color: #0b0b0c;
+  font-weight: 800;
 }
 
 .register-done-actions {
@@ -284,23 +292,6 @@
   display: flex;
   gap: 11px;
   padding: 12px 20px 30px;
-}
-
-.register-done-home {
-  flex: none;
-  border: 1.5px solid #0b0b0c;
-  background: #f8f9fa;
-  border-radius: 16px;
-  padding: 18px 22px;
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: #0b0b0c;
-  cursor: pointer;
-}
-
-.register-done-home:hover {
-  background: rgba(11, 11, 12, 0.06);
 }
 
 .register-done-lineup {

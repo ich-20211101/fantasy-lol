@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     profile_image_url   VARCHAR(500),         -- 추가: 구글 프로필 사진
     role                VARCHAR(20) DEFAULT 'USER', -- 추가: 권한관리
     password            VARCHAR(255),
+    has_built_any_team  BOOLEAN NOT NULL DEFAULT FALSE,
     created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

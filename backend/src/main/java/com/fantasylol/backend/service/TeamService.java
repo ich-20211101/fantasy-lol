@@ -57,7 +57,13 @@ public class TeamService {
                 .season(activeSeason)
                 .teamName(request.getTeamName())
                 .build();
+
         Team savedTeam = teamRepository.save(team);
+
+        if (!Boolean.TRUE.equals(user.getHasBuiltAnyTeam())) {
+            user.setHasBuiltAnyTeam(true);
+            userRepository.save(user);
+        }
 
         saveRoster(savedTeam, players);
 

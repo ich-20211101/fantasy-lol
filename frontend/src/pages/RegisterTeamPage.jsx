@@ -99,15 +99,15 @@ export default function RegisterTeamPage({ user, onTeamCreated }) {
               </div>
             </div>
 
-            <p className="register-done-desc">
-              {t('registerTeam.doneDescLine1')}<br />{t('registerTeam.doneDescLine2')}
+            <p className="register-done-desc">{t('registerTeam.doneDesc')}</p>
+
+            <p className="register-done-lead">
+              {t('registerTeam.doneLeadLine1')}<br />{t('registerTeam.doneLeadLine2')}
             </p>
+            <p className="register-done-desc">{t('registerTeam.doneSubDesc')}</p>
           </div>
 
           <div className="register-done-actions">
-            <button type="button" className="register-done-home" onClick={() => navigate('/')}>
-              {t('registerTeam.doneHomeBtn')}
-            </button>
             <button type="button" className="register-done-lineup" onClick={() => navigate('/starters')}>
               {t('registerTeam.doneLineupBtn')}
             </button>

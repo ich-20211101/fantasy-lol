@@ -1,0 +1,738 @@
+.tour-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Pretendard', 'Archivo', system-ui, sans-serif;
+  text-align: left;
+}
+
+.tour-step {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* round / eyebrow row (build & my-roster steps) */
+.tour-round {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 22px 4px;
+}
+
+.tour-round-solo {
+  height: 67px;
+  padding: 12px 22px 0;
+}
+
+.tour-round span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.4px;
+  color: #0b0b0c;
+}
+
+.tour-round strong {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 15px;
+  background: #0b0b0c;
+  color: #f8f9fa;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* tabs */
+.tour-tabs {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 22px 0;
+}
+
+.tour-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid transparent;
+}
+
+.tour-tab.active {
+  border-bottom-color: #0b0b0c;
+}
+
+.tour-tab-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tour-tab span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  color: #c0c0c4;
+}
+
+.tour-tab.active span {
+  color: #0b0b0c;
+}
+
+.tour-tab svg {
+  color: #dcdce0;
+}
+
+.tour-tab svg.filled {
+  color: #0b0b0c;
+}
+
+/* scrollable body shared by every step */
+.tour-list {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.tour-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* my-roster (step 2) scroll body */
+.tour-round-solo + .tour-scroll {
+  padding: 12px 22px 12px;
+  gap: 14px;
+}
+
+/* set-lineup (step 4) scroll body */
+.tour-week + .tour-scroll {
+  padding: 16px 22px 12px;
+  gap: 11px;
+}
+
+.tour-list-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #6a6a6f;
+  margin-bottom: 1px;
+}
+
+.tour-bench-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 1px;
+}
+
+.tour-bench-note {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: #9a9a9e;
+  text-align: right;
+}
+
+/* player rows */
+.tour-player {
+  border: 1.5px solid rgba(11, 11, 12, 0.16);
+  border-radius: 16px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #f8f9fa;
+}
+
+.tour-player.selected,
+.tour-player.filled {
+  border: 1.5px solid #0b0b0c;
+  box-shadow: inset 0 0 0 1px #0b0b0c;
+}
+
+.tour-player-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tour-player-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-player-title span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+  color: #0b0b0c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tour-player-title .tour-player-score {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 12px;
+  color: #f8f9fa;
+  background: #0b0b0c;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.tour-player-main p {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  color: #9a9a9e;
+  font-weight: 500;
+}
+
+.tour-point {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0b0b0c;
+}
+
+.tour-toggle {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1.6px solid #b2b2b7;
+  border-radius: 50%;
+  background: #f8f9fa;
+  color: #b2b2b7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-toggle.selected {
+  border-color: #8a8a8f;
+  color: #8a8a8f;
+}
+
+.tour-remove {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1.6px solid #8a8a8f;
+  border-radius: 50%;
+  background: #f8f9fa;
+  color: #8a8a8f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-demote,
+.tour-promote {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-demote {
+  border: 1.6px solid #0b0b0c;
+}
+
+.tour-promote {
+  border: 1.6px solid rgba(11, 11, 12, 0.3);
+}
+
+.tour-slot-empty {
+  border: 1.5px dashed rgba(11, 11, 12, 0.24);
+  border-radius: 16px;
+  padding: 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tour-slot-empty span {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #a4a4a8;
+}
+
+.tour-divider {
+  height: 1px;
+  background: rgba(11, 11, 12, 0.1);
+  margin: 12px 2px 6px;
+}
+
+/* my-roster dashboard + slots */
+.tour-dashboard {
+  flex: none;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(11, 11, 12, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tour-dashboard-cell {
+  flex: 1;
+  padding: 15px 18px;
+}
+
+.tour-dashboard-cell.right {
+  text-align: right;
+}
+
+.tour-dashboard-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #9a9a9e;
+  font-weight: 500;
+}
+
+.tour-dashboard-value {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  color: #0b0b0c;
+  margin-top: 5px;
+}
+
+.tour-dashboard-value span {
+  color: #c8c8cc;
+}
+
+.tour-dashboard-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(11, 11, 12, 0.12);
+}
+
+.tour-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.tour-slot-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #6a6a6f;
+}
+
+/* register-done step */
+.tour-done {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 24px 0;
+}
+
+.tour-done h1 {
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 48px;
+  line-height: 0.94;
+  letter-spacing: -1.8px;
+  color: #0b0b0c;
+  text-transform: uppercase;
+}
+
+.tour-done-desc {
+  margin: 10px 2px 0;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #0b0b0c;
+  font-weight: 400;
+}
+
+.tour-done-card {
+  margin-top: 24px;
+  border: 1px solid rgba(11, 11, 12, 0.14);
+  border-radius: 20px;
+  padding: 20px 24px 20px;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+.tour-done-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
+  color: #9a9a9e;
+  font-weight: 500;
+}
+
+.tour-done-row {
+  margin-top: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.tour-done-row + .tour-done-row {
+  margin-top: 6px;
+}
+
+.tour-done-key {
+  flex: none;
+  width: 40px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9a9a9e;
+}
+
+.tour-done-val {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.6px;
+  color: #0b0b0c;
+}
+
+.tour-done-lead {
+  margin: 24px 2px 0;
+  font-size: 20px;
+  line-height: 1.5;
+  color: #0b0b0c;
+  font-weight: 800;
+}
+
+/* set-lineup week bar (in-flow) */
+.tour-week {
+  flex: none;
+  padding: 18px 22px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tour-week-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tour-week-label {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  color: #0b0b0c;
+}
+
+.tour-week-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: -0.7px;
+  font-variant-numeric: tabular-nums;
+  color: #0b0b0c;
+}
+
+.tour-autofill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid #0b0b0c;
+  background: transparent;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  color: #0b0b0c;
+  text-transform: uppercase;
+}
+
+.tour-close-x {
+  position: absolute;
+  top: 26px;
+  right: 20px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(11, 11, 12, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* action buttons at bottom of a step */
+.tour-action {
+  flex: none;
+  display: flex;
+  gap: 11px;
+  padding: 12px 20px 56px;
+}
+
+.tour-action button {
+  flex: 1;
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 19px;
+  background: #0b0b0c;
+  color: #f8f9fa;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.tour-action button span {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+
+.tour-action button:disabled {
+  background: #eef0f7;
+  color: #a6acbd;
+}
+
+.tour-btn-alt {
+  padding: 18px !important;
+  font-size: 15px !important;
+}
+
+.tour-action-secondary {
+  flex: none !important;
+  width: auto !important;
+  border: 1.5px solid #0b0b0c !important;
+  background: #f8f9fa !important;
+  color: #0b0b0c !important;
+  padding: 18px 22px !important;
+  font-size: 15px !important;
+}
+
+/* overlay layer: dim scrim + spotlight "holes" + callouts + clones, all
+   absolutely positioned with the exact px offsets from the source design */
+.tour-overlay-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* a "hole": box-shadow spread of 9999px darkens the entire frame except
+   this rect, so no separate dim layer is needed */
+.tour-hole {
+  position: absolute;
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(11, 11, 12, 0.72);
+}
+
+.tour-bubble {
+  background: #f8f9fa;
+  border-radius: 14px;
+  padding: 14px 18px;
+  max-width: 280px;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5);
+}
+
+.tour-bubble p {
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #0b0b0c;
+  text-align: center;
+}
+
+.tour-bubble-sm {
+  padding: 12px 14px;
+}
+
+.tour-bubble-sm p {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.tour-callout-up {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.tour-callout-side {
+  position: absolute;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(-50%);
+}
+
+/* real toggle button, brought above the dim scrim in place instead of a
+   separately-positioned clone, so it always lines up with its own row */
+.tour-toggle-spotlight {
+  position: relative;
+  z-index: 6;
+}
+
+.tour-week-clone {
+  position: absolute;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tour-callout-week {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-callout-starter {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.tour-confirm-clone {
+  position: absolute;
+  width: 348px;
+  height: 57px;
+  border: none;
+  border-radius: 16px;
+  background: #0b0b0c;
+  color: #f8f9fa;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* pagination bar */
+.tour-pagination {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-arrow {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(11, 11, 12, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tour-arrow:first-child {
+  margin-right: 12px;
+}
+
+.tour-arrow:not(:first-child) {
+  margin-left: 12px;
+}
+
+.tour-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tour-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(11, 11, 12, 0.5);
+  padding: 6px 10px;
+  border-radius: 20px;
+}
+
+.tour-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(248, 249, 250, 0.35);
+}
+
+.tour-dot.active {
+  background: #f8f9fa;
+}
+
+.tour-close-text {
+  position: absolute;
+  right: 20px;
+  border: none;
+  background: rgba(11, 11, 12, 0.5);
+  color: #f8f9fa;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+}

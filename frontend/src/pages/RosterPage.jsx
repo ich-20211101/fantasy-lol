@@ -6,6 +6,7 @@ import './RosterPage.css'
 import { getPurchaseList } from '../api/players'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import OnboardingTour from '../components/OnboardingTour'
 import { useProTeamAbbreviations, abbreviateTeam } from '../hooks/useProTeamAbbreviations'
 import { POSITIONS, POS_LABEL } from '../constants/positions'
 import { PLAYER_SCORE_FORMULA } from '../constants/scoreFormula'
@@ -25,12 +26,13 @@ function mapPurchaseRow(row) {
   }
 }
 
-export default function RosterPage() {
+export default function RosterPage({ user }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const teamAbbreviations = useProTeamAbbreviations()
 
+  const [showTour, setShowTour] = useState(() => !!user && !user.hasBuiltAnyTeam)
   const [players, setPlayers] = useState([])
   const [selectedIds, setSelectedIds] = useState(() => {
     const incoming = location.state?.selectedPlayers
@@ -119,9 +121,13 @@ export default function RosterPage() {
     navigate('/roster/mine', { state: { selectedPlayers, seasonLabel: activeSeasonLabel } })
   }
 
+  const closeTour = () => setShowTour(false)
+
   return (
     <main className="build-page">
       <section className="build-frame">
+        {showTour && <OnboardingTour onClose={closeTour} />}
+
         {limitPopupType && (
           <div className="build-limit-overlay">
             <div className="build-limit-modal">

@@ -36,6 +36,10 @@ public class User {
 
     private String password;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean hasBuiltAnyTeam = false;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

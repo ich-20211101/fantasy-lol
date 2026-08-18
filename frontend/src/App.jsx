@@ -222,7 +222,7 @@ function App() {
 
         <Route
           path="/roster"
-          element={user ? <RosterPage /> : <LoggedOutState />}
+          element={user ? <RosterPage user={user} /> : <LoggedOutState />}
         />
 
         <Route

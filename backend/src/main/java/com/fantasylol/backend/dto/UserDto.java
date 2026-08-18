@@ -24,6 +24,7 @@ public class UserDto {
         private String username;
         private String email;
         private String profileImageUrl;
+        private Boolean hasBuiltAnyTeam;
     }
 
     @Getter
