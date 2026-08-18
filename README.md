@@ -1,4 +1,3 @@
-```markdown
 # ⚔️ Fantasy LoL
 
 **A fantasy esports app for the LCK, built and run solo from backend to deployment.**
