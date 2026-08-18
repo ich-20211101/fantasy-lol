@@ -1,5 +1,3 @@
-그대로 복사해서 쓰시면 됩니다:
-
 ```markdown
 # ⚔️ Fantasy LoL
 
@@ -315,4 +313,3 @@ Open `http://localhost:5173`
 ## Disclaimer
 
 This is an unofficial fan project. It's not affiliated with Riot Games or the LCK. All match data is used for simulation and fantasy content only.
-```
